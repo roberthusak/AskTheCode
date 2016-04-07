@@ -1,8 +1,9 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AskTheCode.Core
 {
-    public class InspectionLocation
+    public sealed class InspectionLocation
     {
         internal InspectionLocation(MethodDeclarationSyntax inspectedDeclaration)
         {

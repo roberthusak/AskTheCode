@@ -1,20 +1,31 @@
-﻿using Microsoft.CodeAnalysis;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.Core
 {
-    public static class InspectionContextProvider
+    public sealed class InspectionContextProvider
     {
-        public static InspectionContext CreateContext(Workspace workspace)
+        static InspectionContextProvider()
         {
-            Contract.Requires<ArgumentNullException>(workspace != null);
+            Default = new InspectionContextProvider();
+        }
 
-            return new InspectionContext(workspace);
+        private InspectionContextProvider()
+        {
+        }
+
+        public static InspectionContextProvider Default { get; private set; }
+
+        public InspectionContext CreateContext(Solution solution)
+        {
+            Contract.Requires<ArgumentNullException>(solution != null, nameof(solution));
+
+            return new InspectionContext(solution);
         }
     }
 }

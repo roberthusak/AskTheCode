@@ -2,7 +2,14 @@
 
 namespace AskTheCode.Core
 {
-    public class InspectionNode
+    public enum InspectionNodeState
+    {
+        Unexplored,
+        Exploring,
+        Explored
+    }
+
+    public sealed class InspectionNode
     {
         internal InspectionNode(
             InspectionContext context,
@@ -12,27 +19,20 @@ namespace AskTheCode.Core
         {
             this.Context = context;
             this.Parent = parent;
-            this.InspectionLocation = inspectionLocation;
-            this.InspectionConditions = inspectionConditions;
+            this.Location = inspectionLocation;
+            this.Conditions = inspectionConditions;
         }
 
         public InspectionContext Context { get; private set; }
 
         public InspectionNode Parent { get; private set; }
 
-        public InspectionLocation InspectionLocation { get; private set; }
+        public InspectionLocation Location { get; private set; }
 
-        public InspectionConditions InspectionConditions { get; private set; }
+        public InspectionConditions Conditions { get; private set; }
 
         public InspectionNodeState State { get; internal set; }
 
         public IEnumerable<InspectionNode> Children { get; internal set; }
-    }
-
-    public enum InspectionNodeState
-    {
-        Unexplored,
-        Exploring,
-        Explored
     }
 }

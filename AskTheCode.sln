@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Vsix", "src\AskTheCode.Vsix\AskTheCode.Vsix.csproj", "{B5DC00A9-F9A3-4577-8E59-195162DA79C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Core", "src\AskTheCode.Core\AskTheCode.Core.csproj", "{9DDF533A-C7FA-454E-9EFD-39305819CE04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ViewModel", "src\AskTheCode.ViewModel\AskTheCode.ViewModel.csproj", "{D3713CE8-935F-4B88-A281-EFE7AE07903B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{9DDF533A-C7FA-454E-9EFD-39305819CE04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DDF533A-C7FA-454E-9EFD-39305819CE04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DDF533A-C7FA-454E-9EFD-39305819CE04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3713CE8-935F-4B88-A281-EFE7AE07903B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3713CE8-935F-4B88-A281-EFE7AE07903B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3713CE8-935F-4B88-A281-EFE7AE07903B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3713CE8-935F-4B88-A281-EFE7AE07903B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

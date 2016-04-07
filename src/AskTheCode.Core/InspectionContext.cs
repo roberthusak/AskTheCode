@@ -1,36 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using System.Diagnostics.Contracts;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Shared.Extensions;
+using Microsoft.CodeAnalysis.Text;
 
 namespace AskTheCode.Core
 {
     public sealed class InspectionContext
     {
-        internal InspectionContext(Workspace workspace)
+        internal InspectionContext(Solution solution)
         {
-            Contract.Requires<ArgumentNullException>(workspace != null);
+            Contract.Requires<ArgumentNullException>(solution != null, nameof(solution));
 
-            this.CurrentWorkspace = workspace;
+            this.Solution = solution;
         }
 
-        public Workspace CurrentWorkspace { get; private set; }
+        public Solution Solution { get; private set; }
 
         public InspectionNode InspectionTreeRoot { get; private set; }
 
-        public async void StartInspecting(DocumentId documentId, LinePosition position, string expression)
+        public async Task StartInspecting(Document document, LinePosition position, string expression)
         {
+            Contract.Requires<ArgumentNullException>(document != null, nameof(document));
+            Contract.Requires<ArgumentException>(document.Project != null);
+            Contract.Requires<ArgumentException>(document.Project.Solution == this.Solution);
             Contract.Requires<ArgumentException>(!string.IsNullOrEmpty(expression));
-            Contract.Requires(this.CurrentWorkspace.CurrentSolution != null);
             Contract.Requires<InvalidOperationException>(this.InspectionTreeRoot != null);
 
-            var document = this.CurrentWorkspace.CurrentSolution.GetDocument(documentId);
             var root = await document.GetSyntaxRootAsync();
             var semanticModel = await document.GetSemanticModelAsync();
             var sourceText = await root.SyntaxTree.GetTextAsync();
@@ -48,7 +49,7 @@ namespace AskTheCode.Core
                 new InspectionConditions(expression));
         }
 
-        public async void InspectNode(InspectionNode node)
+        public async Task InspectNode(InspectionNode node)
         {
             Contract.Requires<ArgumentException>(node.Context == this);
 

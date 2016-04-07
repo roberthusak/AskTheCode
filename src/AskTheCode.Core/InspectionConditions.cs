@@ -1,6 +1,6 @@
 ﻿namespace AskTheCode.Core
 {
-    public class InspectionConditions
+    public sealed class InspectionConditions
     {
         internal InspectionConditions(string expression)
         {
