@@ -13,7 +13,7 @@ namespace AskTheCode.ViewModel
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged(string propertyName)
+        protected virtual void OnPropertyChanged<T>(string propertyName, T previousValue)
         {
         }
 
@@ -21,7 +21,8 @@ namespace AskTheCode.ViewModel
         /// Checks if a property already matches a desired value.  Sets the property and notifies listeners only when
         /// necessary.
         /// </summary>
-        /// <see cref="https://blogs.msdn.microsoft.com/msgulfcommunity/2013/03/13/understanding-the-basics-of-mvvm-design-pattern/"/>
+        /// <seealso href="https://blogs.msdn.microsoft.com/msgulfcommunity/2013/03/13/understanding-the-basics-of-mvvm-design-pattern/">
+        /// Original code on MSDN blog</seealso>
         /// <typeparam name="T">Type of the property.</typeparam>
         /// <param name="storage">Reference to a property with both getter and setter.</param>
         /// <param name="value">Desired value for the property.</param>
@@ -37,8 +38,9 @@ namespace AskTheCode.ViewModel
                 return false;
             }
 
+            T previousValue = storage;
             storage = value;
-            this.OnPropertyChanged(propertyName);
+            this.OnPropertyChanged<T>(propertyName, previousValue);
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             return true;
         }

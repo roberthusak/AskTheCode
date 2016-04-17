@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="AskTheCode.Vsix.MainWindowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:AskTheCode.ViewModel;assembly=AskTheCode.ViewModel"
+             Background="{DynamicResource VsBrush.Window}"
+             Foreground="{DynamicResource VsBrush.WindowText}"
+             mc:Ignorable="d"
+             d:DesignHeight="242" d:DesignWidth="786"
+             Name="MyToolWindow">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Text="{Binding SearchedExpression}" Margin="2" />
+            <Button Grid.Column="1" Command="{Binding SearchCommand}" Content="Search" Width="60" Margin="2" />
+        </Grid>
+        <TreeView Grid.Row="1" ItemsSource="{Binding TreeNodes}" SelectedItemChanged="SelectedTreeNodeChanged" Margin="2">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type vm:TreeNodeView}" ItemsSource="{Binding Children}">
+                    <TextBlock Text="{Binding Name}" />
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        <Grid Grid.Row="1" Grid.Column="1" DataContext="{Binding SelectedTreeNode}" Margin="2">
+            <TextBlock Text="{Binding Description}" FontFamily="{DynamicResource VsFont.EnvironmentFontFamily}" />
+        </Grid>
+    </Grid>
+</UserControl>

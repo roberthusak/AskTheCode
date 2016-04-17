@@ -12,16 +12,20 @@ namespace AskTheCode.ViewModel
         private readonly Action<object> onExecute;
         private readonly Func<object, bool> onCanExecute;
 
-        public Command(Action<object> onExecute, Func<object, bool> onCanExecute = null, string name = null)
+        public Command(Action onExecute, Func<bool> onCanExecute = null)
+            : this(
+                  (parameter) => onExecute(),
+                  (onCanExecute != null) ? new Func<object, bool>((parameter) => onCanExecute()) : null)
+        {
+        }
+
+        public Command(Action<object> onExecute, Func<object, bool> onCanExecute = null)
         {
             this.onExecute = onExecute;
             this.onCanExecute = onCanExecute;
-            this.Name = name;
         }
 
         public event EventHandler CanExecuteChanged;
-
-        public string Name { get; private set; }
 
         public bool CanExecute(object parameter)
         {
@@ -38,6 +42,11 @@ namespace AskTheCode.ViewModel
         public void Execute(object parameter)
         {
             this.onExecute(parameter);
+        }
+
+        public void NotifyCanExecuteChanged()
+        {
+            this.CanExecuteChanged?.Invoke(this, new EventArgs());
         }
     }
 }

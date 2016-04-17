@@ -30,7 +30,7 @@ namespace AskTheCode.Core
             Contract.Requires<ArgumentException>(document.Project != null);
             Contract.Requires<ArgumentException>(document.Project.Solution == this.Solution);
             Contract.Requires<ArgumentException>(!string.IsNullOrEmpty(expression));
-            Contract.Requires<InvalidOperationException>(this.InspectionTreeRoot != null);
+            Contract.Requires<InvalidOperationException>(this.InspectionTreeRoot == null);
 
             var root = await document.GetSyntaxRootAsync();
             var semanticModel = await document.GetSemanticModelAsync();

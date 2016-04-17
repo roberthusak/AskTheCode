@@ -19,6 +19,7 @@ namespace AskTheCode.ViewModel
         private InspectionContext context;
 
         private string searchedExpression;
+        private TreeNodeView selectedTreeNode;
 
         public ControlView(IIdeServices ideServices, InspectionContextProvider contextProvider)
         {
@@ -27,7 +28,7 @@ namespace AskTheCode.ViewModel
 
             this.contextProvider = contextProvider;
             this.ideServices = ideServices;
-            this.SearchCommand = new Command(this.Search, name: "Search");
+            this.SearchCommand = new Command(this.Search);
         }
 
         public string SearchedExpression
@@ -38,9 +39,15 @@ namespace AskTheCode.ViewModel
 
         public ObservableCollection<TreeNodeView> TreeNodes { get; } = new ObservableCollection<TreeNodeView>();
 
+        public TreeNodeView SelectedTreeNode
+        {
+            get { return this.selectedTreeNode; }
+            set { this.SetProperty(ref this.selectedTreeNode, value); }
+        }
+
         public ICommand SearchCommand { get; private set; }
 
-        public async void Search(object parameter)
+        public async void Search()
         {
             // TODO: Validate searched text
 
@@ -65,6 +72,29 @@ namespace AskTheCode.ViewModel
             this.TreeNodes.Add(treeNode);
 
             // TODO: Handle inspecting of multiple nodes in one run
+        }
+
+        protected override void OnPropertyChanged<T>(string propertyName, T previousValue)
+        {
+            if (propertyName == nameof(this.SelectedTreeNode))
+            {
+                Contract.Assert(typeof(T) == typeof(TreeNodeView));
+
+                this.OnTreeNodeSelected(previousValue as TreeNodeView);
+            }
+        }
+
+        private void OnTreeNodeSelected(TreeNodeView previousValue)
+        {
+            if (previousValue != null)
+            {
+                previousValue.Hide();
+            }
+
+            if (this.SelectedTreeNode != null)
+            {
+                this.SelectedTreeNode.Show();
+            }
         }
     }
 }
