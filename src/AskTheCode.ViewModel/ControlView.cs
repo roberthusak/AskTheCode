@@ -66,7 +66,6 @@ namespace AskTheCode.ViewModel
 
             this.context = this.contextProvider.CreateContext(solution);
             await this.context.StartInspecting(document, position, this.SearchedExpression);
-            await this.context.InspectNode(this.context.InspectionTreeRoot);
 
             var treeNode = new TreeNodeView(this.ideServices, this.context.InspectionTreeRoot);
             this.TreeNodes.Add(treeNode);
@@ -86,15 +85,16 @@ namespace AskTheCode.ViewModel
 
         private void OnTreeNodeSelected(TreeNodeView previousValue)
         {
-            if (previousValue != null)
-            {
-                previousValue.Hide();
-            }
+            // TODO: Do it somehow automatically and intuitively in the final version
+            //if (previousValue != null)
+            //{
+            //    previousValue.Hide();
+            //}
 
-            if (this.SelectedTreeNode != null)
-            {
-                this.SelectedTreeNode.Show();
-            }
+            //if (this.SelectedTreeNode != null)
+            //{
+            //    this.SelectedTreeNode.Show();
+            //}
         }
     }
 }

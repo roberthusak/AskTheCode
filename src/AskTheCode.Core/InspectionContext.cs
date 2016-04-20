@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Text;
 
@@ -40,13 +41,15 @@ namespace AskTheCode.Core
             Contract.Assert(absolutePosition <= sourceText.Length); // TODO: Or '<'?
 
             var inspectedToken = root.FindToken(absolutePosition);  // TODO: Check it is valid
-            var inspectedDeclaration = inspectedToken.Parent?.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+            var syntaxNode = inspectedToken.Parent;
 
-            this.InspectionTreeRoot = new InspectionNode(
-                this,
-                null,
-                new InspectionLocation(inspectedDeclaration),
-                new InspectionConditions(expression));
+            // TODO: Create a sophisticated validation mechanism to give appropriate information to the end user
+            Contract.Assert(syntaxNode != null);
+
+            // TODO: Implement real conditions handling instead of this
+            var inspectionConditions = new InspectionConditions(expression);
+
+            this.InspectionTreeRoot = this.CreateNode(semanticModel, syntaxNode, null, inspectionConditions);
         }
 
         public async Task InspectNode(InspectionNode node)
@@ -55,9 +58,27 @@ namespace AskTheCode.Core
 
             node.State = InspectionNodeState.Exploring;
 
-            // TODO: Here perform the inspection and create a children list with any available children
+            // Here perform the inspection and create a children list with any available children
+            var referencedSymbols = await SymbolFinder.FindReferencesAsync(
+                node.Location.DeclarationSymbol,
+                this.Solution);
+            var children = new List<InspectionNode>();
+            foreach (var referenceLocation in referencedSymbols.SelectMany(rs => rs.Locations))
+            {
+                Contract.Assert(referenceLocation.Location.IsInSource);
 
-            node.Children = new List<InspectionNode>();
+                var childDocument = referenceLocation.Document;
+                var childTree = referenceLocation.Location.SourceTree;
+                var childRoot = await childTree.GetRootAsync();
+                var childSemanticModel = await childDocument.GetSemanticModelAsync();
+                var childSyntaxNode = childRoot.FindNode(referenceLocation.Location.SourceSpan);
+
+                // TODO: Infer the conditions appropriately
+                var child = this.CreateNode(childSemanticModel, childSyntaxNode, node, node.Conditions);
+                children.Add(child);
+            }
+
+            node.Children = children;
 
             // If the exploring finished, propagate the state to the tree root
             if (node.Children.Count() == 0)
@@ -75,6 +96,33 @@ namespace AskTheCode.Core
                     }
                 }
             }
+        }
+
+        private InspectionNode CreateNode(
+            SemanticModel semanticModel,
+            SyntaxNode syntaxNode,
+            InspectionNode parent,
+            InspectionConditions inspectionConditions)
+        {
+            // FIXME (for static methods and static field initializers?)
+            var containingDeclarationsCollection =
+                from node in syntaxNode.AncestorsAndSelf()
+                where node is AccessorDeclarationSyntax || node is MemberDeclarationSyntax
+                //where node is BaseMethodDeclarationSyntax || node is AccessorDeclarationSyntax
+                //    || node is PropertyDeclarationSyntax || node is BaseFieldDeclarationSyntax
+                select node;
+            var inspectedDeclaration = containingDeclarationsCollection.FirstOrDefault();
+            var inspectedSymbol = semanticModel.GetDeclaredSymbol(inspectedDeclaration) as IMethodSymbol;
+
+            // TODO: Create a sophisticated validation mechanism to give appropriate information to the end user
+            Contract.Assert(inspectedDeclaration != null);
+            Contract.Assert(inspectedSymbol != null);
+
+            return new InspectionNode(
+                this,
+                parent,
+                new InspectionLocation(inspectedDeclaration, inspectedSymbol),
+                inspectionConditions);
         }
     }
 }

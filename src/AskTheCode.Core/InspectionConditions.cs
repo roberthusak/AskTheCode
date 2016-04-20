@@ -1,9 +1,14 @@
-﻿namespace AskTheCode.Core
+﻿using System;
+using System.Diagnostics.Contracts;
+
+namespace AskTheCode.Core
 {
     public sealed class InspectionConditions
     {
         internal InspectionConditions(string expression)
         {
+            Contract.Requires<ArgumentNullException>(expression != null, nameof(expression));
+
             this.Expression = expression;
         }
 

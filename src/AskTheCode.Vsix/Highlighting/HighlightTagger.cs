@@ -5,6 +5,7 @@ using AskTheCode.ViewModel;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Tagging;
+using System.Diagnostics.Contracts;
 
 namespace AskTheCode.Vsix.Highlighting
 {
@@ -17,13 +18,17 @@ namespace AskTheCode.Vsix.Highlighting
         public HighlightTagger(ITextView textView, ITextBuffer buffer, IHighlightService highlightService)
         {
             this.textView = textView;
-            this.buffer = buffer;
+            this.Buffer = buffer;
             this.highlightService = highlightService;
 
-            this.highlightService.HighlightChanged += this.HighlightChanged;
+            var textDocument = buffer.Properties.GetProperty<ITextDocument>(typeof(ITextDocument));
+
+            this.highlightService.RegisterTagger(this);
         }
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
+
+        public ITextBuffer Buffer { get; private set; }
 
         private IDictionary<HighlightType, NormalizedSnapshotSpanCollection> Highlights { get; set; }
 
@@ -71,20 +76,18 @@ namespace AskTheCode.Vsix.Highlighting
 
         public void Dispose()
         {
-            this.highlightService.HighlightChanged -= this.HighlightChanged;
+            this.highlightService.UnregisterTagger(this);
         }
 
-        private void HighlightChanged(object sender, HighlightEventArgs e)
+        public void HighlightText(ITextSnapshot snapshot, IDictionary<HighlightType, NormalizedSnapshotSpanCollection> highlights)
         {
-            if (e.Snapshot.TextBuffer != this.buffer)
-            {
-                return;
-            }
+            Contract.Requires(snapshot.TextBuffer == this.Buffer);
+            Contract.Requires<ArgumentNullException>(highlights != null, nameof(highlights));
 
-            this.Highlights = e.Highlights;
+            this.Highlights = highlights;
 
             // TODO: Return only the smallest span that contains all the spans in the collection
-            var snapshotSpan = new SnapshotSpan(e.Snapshot, 0, e.Snapshot.Length);
+            var snapshotSpan = new SnapshotSpan(snapshot, 0, snapshot.Length);
 
             this.TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(snapshotSpan));
         }

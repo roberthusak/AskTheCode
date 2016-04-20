@@ -4,9 +4,12 @@ using Microsoft.VisualStudio.Text;
 
 namespace AskTheCode.Vsix.Highlighting
 {
+    // TODO: Rename this class if the text highlighting system doesn't revert back to events
     internal class HighlightEventArgs
     {
-        public HighlightEventArgs(ITextSnapshot snapshot, IDictionary<HighlightType, NormalizedSnapshotSpanCollection> highlights)
+        public HighlightEventArgs(
+            ITextSnapshot snapshot,
+            IDictionary<HighlightType, NormalizedSnapshotSpanCollection> highlights)
         {
             this.Snapshot = snapshot;
             this.Highlights = highlights;

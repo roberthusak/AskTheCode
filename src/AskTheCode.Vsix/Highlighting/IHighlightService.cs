@@ -8,7 +8,9 @@ namespace AskTheCode.Vsix.Highlighting
 {
     internal interface IHighlightService
     {
-        event EventHandler<HighlightEventArgs> HighlightChanged;
+        void RegisterTagger(HighlightTagger tagger);
+
+        void UnregisterTagger(HighlightTagger tagger);
 
         void HighlightText(
             ITextSnapshot snapshot,
