@@ -16,7 +16,6 @@ namespace AskTheCode.SmtLibStandard
         Or,
         Xor,
         Implies,
-        IfThenElse,
 
         Negate,
         Multiply,
@@ -30,7 +29,9 @@ namespace AskTheCode.SmtLibStandard
         GreaterThan,
         LessThanOrEqual,
         GreaterThanOrEqual,
+
         Equal,
-        Distinct
+        Distinct,
+        IfThenElse
     }
 }

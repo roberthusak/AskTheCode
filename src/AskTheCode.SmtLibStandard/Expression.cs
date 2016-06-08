@@ -24,6 +24,7 @@ namespace AskTheCode.SmtLibStandard
 
         public int ChildrenCount { get; private set; }
 
+        // TODO: Consider publishing them as an array (immutable, if possible) or at least provide indexing
         public IEnumerable<Expression> Children
         {
             get

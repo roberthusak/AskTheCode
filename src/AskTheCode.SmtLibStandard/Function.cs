@@ -32,8 +32,6 @@ namespace AskTheCode.SmtLibStandard
                     return "xor";
                 case ExpressionKind.Implies:
                     return "=>";
-                case ExpressionKind.IfThenElse:
-                    return "ite";
 
                 case ExpressionKind.Negate:
                     return "-";
@@ -59,10 +57,14 @@ namespace AskTheCode.SmtLibStandard
                     return "<=";
                 case ExpressionKind.GreaterThanOrEqual:
                     return ">=";
+
                 case ExpressionKind.Equal:
                     return "=";
                 case ExpressionKind.Distinct:
                     return "distinct";
+                case ExpressionKind.IfThenElse:
+                    return "ite";
+
                 case ExpressionKind.Interpretation:
                 case ExpressionKind.Variable:
                 default:
