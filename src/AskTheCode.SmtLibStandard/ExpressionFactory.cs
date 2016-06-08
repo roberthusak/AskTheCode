@@ -114,14 +114,14 @@ namespace AskTheCode.SmtLibStandard
         {
             CheckNumericBinaryFunctionArguments(left, right);
 
-            return BinaryFunction(ExpressionKind.DivideReal, left.Sort, left, right);
+            return BinaryFunction(ExpressionKind.DivideReal, Sort.Real, left, right);
         }
 
         public static Function DivideInteger(Expression left, Expression right)
         {
             CheckNumericBinaryFunctionArguments(left, right);
 
-            return BinaryFunction(ExpressionKind.DivideInteger, left.Sort, left, right);
+            return BinaryFunction(ExpressionKind.DivideInteger, Sort.Int, left, right);
         }
 
         public static Function Modulus(Expression left, Expression right)
@@ -203,7 +203,7 @@ namespace AskTheCode.SmtLibStandard
             Contract.Requires(operands.Length > 1);
             Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
 
-            return ArbitraryFunction(ExpressionKind.Distinct, operands[0].Sort, operands, false);
+            return ArbitraryFunction(ExpressionKind.Distinct, Sort.Bool, operands, false);
         }
 
         public static Function DistinctNested(params Expression[] operands)
@@ -212,7 +212,7 @@ namespace AskTheCode.SmtLibStandard
             Contract.Requires(operands.Length > 1);
             Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
 
-            return ArbitraryFunction(ExpressionKind.Distinct, operands[0].Sort, operands, true);
+            return ArbitraryFunction(ExpressionKind.Distinct, Sort.Bool, operands, true);
         }
 
         public static Function IfThenElse(Expression condition, Expression valueTrue, Expression valueFalse)
@@ -223,7 +223,7 @@ namespace AskTheCode.SmtLibStandard
             Contract.Requires(condition.Sort == Sort.Bool);
             Contract.Requires(valueTrue.Sort == valueFalse.Sort);
 
-            return TernaryFunction(ExpressionKind.IfThenElse, Sort.Bool, condition, valueTrue, valueFalse);
+            return TernaryFunction(ExpressionKind.IfThenElse, valueTrue.Sort, condition, valueTrue, valueFalse);
         }
 
         [ContractAbbreviator]
