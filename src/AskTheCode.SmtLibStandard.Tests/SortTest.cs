@@ -8,7 +8,7 @@ namespace AskTheCode.SmtLibStandard.Tests
     [TestClass]
     public class SortTest
     {
-        [ClassInitialize]
+        [AssemblyInitialize]
         public static void Initialize(TestContext context)
         {
             // Call anything on the class in order to run the static constructor

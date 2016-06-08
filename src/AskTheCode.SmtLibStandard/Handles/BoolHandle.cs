@@ -51,6 +51,18 @@ namespace AskTheCode.SmtLibStandard.Handles
             };
         }
 
+        public static bool operator true(BoolHandle self)
+        {
+            // To prevent short-circuit evaluation
+            return false;
+        }
+
+        public static bool operator false(BoolHandle self)
+        {
+            // To prevent short-circuit evaluation
+            return false;
+        }
+
         public static BoolHandle operator !(BoolHandle handle)
         {
             return (BoolHandle)ExpressionFactory.Not(handle.Expression);
@@ -58,8 +70,6 @@ namespace AskTheCode.SmtLibStandard.Handles
 
         public static BoolHandle operator &(BoolHandle left, BoolHandle right)
         {
-            // TODO: Automatically "pack" the same operators with arbitrary number of operands underneath each other
-            //       to one containing all of them: (and a b c) instead of (and (and a b) c)
             return (BoolHandle)ExpressionFactory.And(left.Expression, right.Expression);
         }
 
