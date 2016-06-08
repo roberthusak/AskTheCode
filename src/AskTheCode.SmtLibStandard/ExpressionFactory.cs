@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Text;
 
 namespace AskTheCode.SmtLibStandard
@@ -41,20 +42,30 @@ namespace AskTheCode.SmtLibStandard
 
         public static Function And(params Expression[] operands)
         {
-            Contract.Requires(operands != null);
-            Contract.Requires(operands.Length > 0);
-            Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == Sort.Bool));
+            CheckBoolArbitraryFunctionArguments(operands);
 
-            return ArbitraryFunction(ExpressionKind.And, Sort.Bool, operands);
+            return ArbitraryFunction(ExpressionKind.And, Sort.Bool, operands, false);
+        }
+
+        public static Function AndNested(params Expression[] operands)
+        {
+            CheckBoolArbitraryFunctionArguments(operands);
+
+            return ArbitraryFunction(ExpressionKind.And, Sort.Bool, operands, true);
         }
 
         public static Function Or(params Expression[] operands)
         {
-            Contract.Requires(operands != null);
-            Contract.Requires(operands.Length > 0);
-            Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == Sort.Bool));
+            CheckBoolArbitraryFunctionArguments(operands);
 
-            return ArbitraryFunction(ExpressionKind.Or, Sort.Bool, operands);
+            return ArbitraryFunction(ExpressionKind.Or, Sort.Bool, operands, false);
+        }
+
+        public static Function OrNested(params Expression[] operands)
+        {
+            CheckBoolArbitraryFunctionArguments(operands);
+
+            return ArbitraryFunction(ExpressionKind.Or, Sort.Bool, operands, true);
         }
 
         public static Function Xor(Expression left, Expression right)
@@ -98,12 +109,16 @@ namespace AskTheCode.SmtLibStandard
 
         public static Function Multiply(params Expression[] operands)
         {
-            Contract.Requires(operands != null);
-            Contract.Requires(operands.Length > 0);
-            Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
-            Contract.Requires(operands[0].Sort.IsNumeric);
+            CheckNumericArbitraryFunctionArguments(operands);
 
-            return ArbitraryFunction(ExpressionKind.Multiply, operands[0].Sort, operands);
+            return ArbitraryFunction(ExpressionKind.Multiply, operands[0].Sort, operands, false);
+        }
+
+        public static Function MultiplyNested(params Expression[] operands)
+        {
+            CheckNumericArbitraryFunctionArguments(operands);
+
+            return ArbitraryFunction(ExpressionKind.Multiply, operands[0].Sort, operands, true);
         }
 
         public static Function DivideReal(Expression left, Expression right)
@@ -153,17 +168,31 @@ namespace AskTheCode.SmtLibStandard
             Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
             Contract.Requires(operands[0].Sort.IsNumeric);
 
-            return ArbitraryFunction(ExpressionKind.Add, operands[0].Sort, operands);
+            return ArbitraryFunction(ExpressionKind.Add, operands[0].Sort, operands, false);
+        }
+
+        public static Function AddNested(params Expression[] operands)
+        {
+            CheckNumericArbitraryFunctionArguments(operands);
+
+            return ArbitraryFunction(ExpressionKind.Add, operands[0].Sort, operands, true);
         }
 
         public static Function Subtract(params Expression[] operands)
+        {
+            CheckNumericArbitraryFunctionArguments(operands);
+
+            return ArbitraryFunction(ExpressionKind.Subtract, operands[0].Sort, operands, false);
+        }
+
+        public static Function SubtractNested(params Expression[] operands)
         {
             Contract.Requires(operands != null);
             Contract.Requires(operands.Length > 1);
             Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
             Contract.Requires(operands[0].Sort.IsNumeric);
 
-            return ArbitraryFunction(ExpressionKind.Subtract, operands[0].Sort, operands);
+            return ArbitraryFunction(ExpressionKind.Subtract, operands[0].Sort, operands, true);
         }
 
         public static Function LessThan(Expression left, Expression right)
@@ -221,7 +250,33 @@ namespace AskTheCode.SmtLibStandard
             Contract.Requires(operands.Length > 1);
             Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
 
-            return ArbitraryFunction(ExpressionKind.Distinct, operands[0].Sort, operands);
+            return ArbitraryFunction(ExpressionKind.Distinct, operands[0].Sort, operands, false);
+        }
+
+        public static Function DistinctNested(params Expression[] operands)
+        {
+            Contract.Requires(operands != null);
+            Contract.Requires(operands.Length > 1);
+            Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
+
+            return ArbitraryFunction(ExpressionKind.Distinct, operands[0].Sort, operands, true);
+        }
+
+        [ContractArgumentValidator]
+        private static void CheckBoolArbitraryFunctionArguments(Expression[] operands)
+        {
+            Contract.Requires(operands != null);
+            Contract.Requires(operands.Length > 1);
+            Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == Sort.Bool));
+        }
+
+        [ContractArgumentValidator]
+        private static void CheckNumericArbitraryFunctionArguments(Expression[] operands)
+        {
+            Contract.Requires(operands != null);
+            Contract.Requires(operands.Length > 1);
+            Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
+            Contract.Requires(operands[0].Sort.IsNumeric);
         }
 
         /// <remarks>
@@ -268,9 +323,21 @@ namespace AskTheCode.SmtLibStandard
         /// TernaryFunction and ArbitraryFunction. These might get used for the performance reasons - in order not to
         /// handle an array for every function (and just for the last variant).
         /// </remarks>
-        private static Function ArbitraryFunction(ExpressionKind kind, Sort sort, Expression[] operands)
+        private static Function ArbitraryFunction(
+            ExpressionKind kind,
+            Sort sort,
+            Expression[] operands,
+            bool preserveNesting)
         {
-            return new Function(kind, sort, operands);
+            if (preserveNesting || !operands.Any(op => op.Kind == kind && op.Sort == sort))
+            {
+                return new Function(kind, sort, operands);
+            }
+
+            var mergedOperands = operands
+                .SelectMany(op => (op.Kind == kind && op.Sort == sort) ? op.Children : Enumerable.Repeat(op, 1))
+                .ToArray();
+            return new Function(kind, sort, mergedOperands);
         }
     }
 }
