@@ -50,6 +50,21 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
         }
 
         [TestMethod]
+        public void MultiplyOperatorMergedProperly()
+        {
+            var nultiplyABC = a * b * c;
+
+            ExpressionTestHelper.CheckExpressionWithChildren(
+                nultiplyABC.Expression,
+                ExpressionKind.Multiply,
+                Sort.Int,
+                "(* a b c)",
+                a.Expression,
+                b.Expression,
+                c.Expression);
+        }
+
+        [TestMethod]
         public void DivideRealOperatorConstructedProperly()
         {
             var aDivideRealB = a.DivideReal(b);
@@ -117,6 +132,21 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
                 "(+ a b)",
                 a.Expression,
                 b.Expression);
+        }
+
+        [TestMethod]
+        public void AddOperatorMergedProperly()
+        {
+            var addABC = a + b + c;
+
+            ExpressionTestHelper.CheckExpressionWithChildren(
+                addABC.Expression,
+                ExpressionKind.Add,
+                Sort.Int,
+                "(+ a b c)",
+                a.Expression,
+                b.Expression,
+                c.Expression);
         }
 
         [TestMethod]
@@ -234,6 +264,69 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
                 b.Expression);
         }
 
-        // TODO: Test also the nested operators
+        [TestMethod]
+        public void NestedOperatorsWorkProperly()
+        {
+            var nested = (a == b) || (b >= a + a * c + a / b);
+
+            var or = nested.Expression;
+
+            ExpressionTestHelper.CheckExpression(
+                or,
+                ExpressionKind.Or,
+                Sort.Bool,
+                "(or (= a b) (>= b (+ a (* a c) (div a b))))",
+                2);
+
+            var eq = or.Children.ElementAt(0);
+
+            ExpressionTestHelper.CheckExpressionWithChildren(
+                eq,
+                ExpressionKind.Equal,
+                Sort.Bool,
+                "(= a b)",
+                a.Expression,
+                b.Expression);
+
+            var geq = or.Children.ElementAt(1);
+
+            ExpressionTestHelper.CheckExpression(
+                geq,
+                ExpressionKind.GreaterThanOrEqual,
+                Sort.Bool,
+                "(>= b (+ a (* a c) (div a b)))",
+                2);
+            Assert.AreEqual(b.Expression, geq.Children.ElementAt(0));
+
+            var add = geq.Children.ElementAt(1);
+
+            ExpressionTestHelper.CheckExpression(
+                add,
+                ExpressionKind.Add,
+                Sort.Int,
+                "(+ a (* a c) (div a b))",
+                3);
+            Assert.AreEqual(a.Expression, add.Children.ElementAt(0));
+
+            var mul = add.Children.ElementAt(1);
+
+            ExpressionTestHelper.CheckExpressionWithChildren(
+                mul,
+                ExpressionKind.Multiply,
+                Sort.Int,
+                "(* a c)",
+                a.Expression,
+                c.Expression);
+
+            var div = add.Children.ElementAt(2);
+
+            ExpressionTestHelper.CheckExpressionWithChildren(
+                div,
+                ExpressionKind.DivideInteger,
+                Sort.Int,
+                "(div a b)",
+                a.Expression,
+                b.Expression);
+        }
     }
 }

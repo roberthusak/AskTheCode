@@ -50,6 +50,21 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
         }
 
         [TestMethod]
+        public void AndOperatorMergedProperly()
+        {
+            var andABC = a && b && c;
+
+            ExpressionTestHelper.CheckExpressionWithChildren(
+                andABC.Expression,
+                ExpressionKind.And,
+                Sort.Bool,
+                "(and a b c)",
+                a.Expression,
+                b.Expression,
+                c.Expression);
+        }
+
+        [TestMethod]
         public void OrOperatorConstructedProperly()
         {
             var aOrB = a || b;
@@ -61,6 +76,21 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
                 "(or a b)",
                 a.Expression,
                 b.Expression);
+        }
+
+        [TestMethod]
+        public void OrOperatorMergedProperly()
+        {
+            var orABC = a || b || c;
+
+            ExpressionTestHelper.CheckExpressionWithChildren(
+                orABC.Expression,
+                ExpressionKind.Or,
+                Sort.Bool,
+                "(or a b c)",
+                a.Expression,
+                b.Expression,
+                c.Expression);
         }
 
         [TestMethod]
@@ -117,6 +147,33 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
                 "(distinct a b)",
                 a.Expression,
                 b.Expression);
+
+            var f = aNeqB != c;
+        }
+
+        [TestMethod]
+        public void DistinctOperatorNestedProperly()
+        {
+            var aNeqBNeqC = (a != b != c);
+
+            ExpressionTestHelper.CheckExpression(
+                aNeqBNeqC.Expression,
+                ExpressionKind.Distinct,
+                Sort.Bool,
+                "(distinct (distinct a b) c)",
+                2);
+
+            var aNeqB = aNeqBNeqC.Expression.Children.ElementAt(0);
+
+            ExpressionTestHelper.CheckExpressionWithChildren(
+                aNeqB,
+                ExpressionKind.Distinct,
+                Sort.Bool,
+                "(distinct a b)",
+                a.Expression,
+                b.Expression);
+
+            Assert.AreEqual(c.Expression, aNeqBNeqC.Expression.Children.ElementAt(1));
         }
 
         [TestMethod]
@@ -137,7 +194,7 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
         [TestMethod]
         public void NestedOperatorsWorkProperly()
         {
-            var nested = (a && b && c) | (b == c) | b.Implies(c);
+            var nested = (a && b && c) || (b == c) || b.Implies(c);
 
             var or = nested.Expression;
 
