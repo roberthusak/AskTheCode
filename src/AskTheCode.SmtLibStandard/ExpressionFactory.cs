@@ -203,15 +203,6 @@ namespace AskTheCode.SmtLibStandard
             Contract.Requires(operands.Length > 1);
             Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
 
-            return ArbitraryFunction(ExpressionKind.Distinct, Sort.Bool, operands, false);
-        }
-
-        public static Function DistinctNested(params Expression[] operands)
-        {
-            Contract.Requires(operands != null);
-            Contract.Requires(operands.Length > 1);
-            Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
-
             return ArbitraryFunction(ExpressionKind.Distinct, Sort.Bool, operands, true);
         }
 
