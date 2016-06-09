@@ -53,6 +53,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ExpressionTestHelper.cs" />
     <Compile Include="Handles\BoolHandleTest.cs" />
     <Compile Include="Handles\IntHandleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
