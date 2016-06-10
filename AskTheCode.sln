@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard.Tests", "src\AskTheCode.SmtLibStandard.Tests\AskTheCode.SmtLibStandard.Tests.csproj", "{6F1AC3CA-3708-41FA-BCE6-F5E328EE4D2E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Common", "src\AskTheCode.Common\AskTheCode.Common.csproj", "{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{6F1AC3CA-3708-41FA-BCE6-F5E328EE4D2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F1AC3CA-3708-41FA-BCE6-F5E328EE4D2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F1AC3CA-3708-41FA-BCE6-F5E328EE4D2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
