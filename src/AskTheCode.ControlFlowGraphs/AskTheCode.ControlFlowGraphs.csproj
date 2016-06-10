@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AskTheCode.ControlFlowGraphs</RootNamespace>
+    <AssemblyName>AskTheCode.ControlFlowGraphs</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AskTheCode.ControlFlowGraphs.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AskTheCode.ControlFlowGraphs.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assignment.cs" />
+    <Compile Include="FlowGraph.cs" />
+    <Compile Include="FlowGraphBuilder.cs" />
+    <Compile Include="FlowGraphCallNode.cs" />
+    <Compile Include="FlowGraphEdge.cs" />
+    <Compile Include="FlowGraphEdgeId.cs" />
+    <Compile Include="FlowGraphEnterNode.cs" />
+    <Compile Include="FlowGraphGlobalVariable.cs" />
+    <Compile Include="FlowGraphId.cs" />
+    <Compile Include="FlowGraphInnerNode.cs" />
+    <Compile Include="FlowGraphLocalVariable.cs" />
+    <Compile Include="FlowGraphNode.cs" />
+    <Compile Include="FlowGraphNodeId.cs" />
+    <Compile Include="FlowGraphProviderBase.cs" />
+    <Compile Include="FlowGraphReturnNode.cs" />
+    <Compile Include="FlowGraphVariable.cs" />
+    <Compile Include="ILocation.cs" />
+    <Compile Include="Overlays\FlowGraphEdgeOverlay[T].cs" />
+    <Compile Include="Overlays\FlowGraphLocalVariableOverlay[T].cs" />
+    <Compile Include="Overlays\FlowGraphNodeOverlay[T].cs" />
+    <Compile Include="Overlays\FlowGraphsGlobalVariableOverlay[T].cs" />
+    <Compile Include="Overlays\FlowGraphsOverlay[T].cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AskTheCode.Common\AskTheCode.Common.csproj">
+      <Project>{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}</Project>
+      <Name>AskTheCode.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj">
+      <Project>{2a814f35-9b19-4487-9e85-c9d1a2ffc955}</Project>
+      <Name>AskTheCode.SmtLibStandard</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AskTheCode.ControlFlowGraphs.ruleset" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
+    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

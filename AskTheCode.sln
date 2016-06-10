@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Common", "src\AskTheCode.Common\AskTheCode.Common.csproj", "{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraphs", "src\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj", "{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

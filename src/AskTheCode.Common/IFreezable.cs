@@ -30,4 +30,27 @@ namespace AskTheCode.Common
 
         public TFreezable Value { get; }
     }
+
+    [Serializable]
+    public class FrozenObjectModificationException : InvalidOperationException
+    {
+        public FrozenObjectModificationException() { }
+
+        public FrozenObjectModificationException(string message)
+            : base(message)
+        {
+        }
+
+        public FrozenObjectModificationException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+
+        protected FrozenObjectModificationException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context)
+            : base(info, context)
+        {
+        }
+    }
 }
