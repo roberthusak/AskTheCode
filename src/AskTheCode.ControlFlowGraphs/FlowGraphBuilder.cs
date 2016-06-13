@@ -72,15 +72,18 @@ namespace AskTheCode.ControlFlowGraphs
         }
 
         public FlowGraphCallNode AddCallNode(
+            ILocation location,
             IEnumerable<Expression> arguments,
             IEnumerable<FlowGraphVariable> returnAssignments)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
+            Contract.Requires<ArgumentNullException>(location != null, nameof(location));
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
             var node = new FlowGraphCallNode(
                 this.Graph,
                 nodeId,
+                location,
                 arguments ?? Enumerable.Empty<Expression>(),
                 returnAssignments ?? Enumerable.Empty<FlowGraphVariable>());
             this.Graph.MutableNodes.Add(node);
