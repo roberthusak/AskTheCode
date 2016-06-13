@@ -11,11 +11,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ViewModel", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard", "src\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj", "{2A814F35-9B19-4487-9E85-C9D1A2FFC955}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard.Tests", "src\AskTheCode.SmtLibStandard.Tests\AskTheCode.SmtLibStandard.Tests.csproj", "{6F1AC3CA-3708-41FA-BCE6-F5E328EE4D2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard.Tests", "test\AskTheCode.SmtLibStandard.Tests\AskTheCode.SmtLibStandard.Tests.csproj", "{6F1AC3CA-3708-41FA-BCE6-F5E328EE4D2E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Common", "src\AskTheCode.Common\AskTheCode.Common.csproj", "{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraphs", "src\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj", "{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{920D7616-3325-46F1-9171-0C17FEAEA66E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A3E11078-F440-4737-8FCC-A1E9247154F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{EAEC332F-9604-4A3E-86B1-6CFF427B7A45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,5 +60,14 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B5DC00A9-F9A3-4577-8E59-195162DA79C4} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
+		{9DDF533A-C7FA-454E-9EFD-39305819CE04} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
+		{D3713CE8-935F-4B88-A281-EFE7AE07903B} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
+		{2A814F35-9B19-4487-9E85-C9D1A2FFC955} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
+		{6F1AC3CA-3708-41FA-BCE6-F5E328EE4D2E} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
+		{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
+		{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 	EndGlobalSection
 EndGlobal
