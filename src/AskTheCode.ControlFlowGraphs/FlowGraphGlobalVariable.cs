@@ -11,7 +11,7 @@ namespace AskTheCode.ControlFlowGraphs
     {
         private readonly string displayName;
 
-        internal FlowGraphGlobalVariable(FlowGraphGlobalVariableId id, Sort sort, string displayName = null)
+        public FlowGraphGlobalVariable(FlowGraphGlobalVariableId id, Sort sort, string displayName = null)
             : base(sort)
         {
             Contract.Requires(id.IsValid);

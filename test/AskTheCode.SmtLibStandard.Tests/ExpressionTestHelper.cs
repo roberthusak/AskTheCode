@@ -7,9 +7,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AskTheCode.SmtLibStandard.Tests
 {
-    internal static class ExpressionTestHelper
+    public static class ExpressionTestHelper
     {
-        internal static void CheckExpression(
+        public static void CheckExpression(
             Expression expression,
             ExpressionKind kind,
             Sort sort,
@@ -28,7 +28,7 @@ namespace AskTheCode.SmtLibStandard.Tests
             }
         }
 
-        internal static void CheckExpressionWithChildren(
+        public static void CheckExpressionWithChildren(
             Expression expression,
             ExpressionKind kind,
             Sort sort,
@@ -42,6 +42,5 @@ namespace AskTheCode.SmtLibStandard.Tests
                 Assert.AreEqual(children[i], expression.Children.ElementAt(i));
             }
         }
-
     }
 }

@@ -21,6 +21,7 @@ namespace AskTheCode.ControlFlowGraphs
             Contract.Requires(arguments != null);
             Contract.Requires(returnAssignments != null);
 
+            this.Location = location;
             this.Arguments = arguments.ToImmutableArray();
             this.ReturnAssignments = returnAssignments.ToImmutableArray();
         }

@@ -29,6 +29,16 @@ namespace AskTheCode.Common
         }
 
         public TFreezable Value { get; }
+
+        public static implicit operator TFreezable(FrozenHandler<TFreezable> handler)
+        {
+            return handler.Value;
+        }
+
+        public static explicit operator FrozenHandler<TFreezable>(TFreezable value)
+        {
+            return new FrozenHandler<TFreezable>(value);
+        }
     }
 
     [Serializable]

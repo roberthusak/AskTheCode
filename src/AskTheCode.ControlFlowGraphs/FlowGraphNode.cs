@@ -20,9 +20,12 @@ namespace AskTheCode.ControlFlowGraphs
             this.OutgoingEdges = this.MutableOutgoingEdges;
         }
 
+        /// <remarks>
+        /// A node of a graph can be frozen only by freezing the graph, not directly.
+        /// </remarks>
         public bool CanFreeze
         {
-            get { return true; }
+            get { return false; }
         }
 
         public bool IsFrozen

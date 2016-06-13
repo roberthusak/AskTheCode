@@ -49,7 +49,7 @@ namespace AskTheCode.ControlFlowGraphs
             return this.Graph.Freeze();
         }
 
-        public FlowGraphEnterNode AddEnterNode(IEnumerable<FlowGraphVariable> parameters)
+        public FlowGraphEnterNode AddEnterNode(IEnumerable<FlowGraphVariable> parameters = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
@@ -73,8 +73,8 @@ namespace AskTheCode.ControlFlowGraphs
 
         public FlowGraphCallNode AddCallNode(
             ILocation location,
-            IEnumerable<Expression> arguments,
-            IEnumerable<FlowGraphVariable> returnAssignments)
+            IEnumerable<Expression> arguments = null,
+            IEnumerable<FlowGraphVariable> returnAssignments = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(location != null, nameof(location));
@@ -91,7 +91,7 @@ namespace AskTheCode.ControlFlowGraphs
             return node;
         }
 
-        public FlowGraphReturnNode AddReturnNode(IEnumerable<Expression> returnValues)
+        public FlowGraphReturnNode AddReturnNode(IEnumerable<Expression> returnValues = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
