@@ -9,15 +9,15 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public abstract class FlowGraphNode : IIdReferenced<FlowGraphNodeId>, IFreezable<FlowGraphNode>
     {
-        internal FlowGraphNode(FlowGraph graph, FlowGraphNodeId id, IEnumerable<Assignment> assignments)
+        internal FlowGraphNode(FlowGraph graph, FlowGraphNodeId id)
         {
             Contract.Requires(graph != null);
-            Contract.Requires(!id.Equals(default(FlowGraphNodeId)));
-            Contract.Requires(assignments != null);
+            Contract.Requires(id.IsValid);
 
             this.Graph = graph;
             this.Id = id;
-            this.Assignments = assignments.ToImmutableArray();
+            this.IngoingEdges = this.MutableIngoingEdges;
+            this.OutgoingEdges = this.MutableOutgoingEdges;
         }
 
         public bool CanFreeze
@@ -33,8 +33,6 @@ namespace AskTheCode.ControlFlowGraphs
         public FlowGraphNodeId Id { get; private set; }
 
         public FlowGraph Graph { get; private set; }
-
-        public IReadOnlyList<Assignment> Assignments { get; private set; }
 
         public IReadOnlyList<FlowGraphNode> IngoingEdges { get; private set; }
 

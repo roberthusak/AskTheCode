@@ -24,6 +24,8 @@ namespace AskTheCode.SmtLibStandard
 
         public int ChildrenCount { get; private set; }
 
+        public abstract string DisplayName { get; }
+
         // TODO: Consider publishing them as an array (immutable, if possible) or at least provide indexing
         public IEnumerable<Expression> Children
         {
@@ -49,18 +51,16 @@ namespace AskTheCode.SmtLibStandard
         {
             if (this.ChildrenCount == 0)
             {
-                return this.GetName();
+                return this.DisplayName;
             }
             else
             {
                 string childrenNames = string.Join(
                     " ",
                     this.Children.Select(child => child.ToString()));
-                return $"({this.GetName()} {childrenNames})";
+                return $"({this.DisplayName} {childrenNames})";
             }
         }
-
-        protected abstract string GetName();
 
         protected abstract Expression GetChild(int index);
 

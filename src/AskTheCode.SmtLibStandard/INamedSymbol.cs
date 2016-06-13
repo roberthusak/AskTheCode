@@ -6,6 +6,6 @@ namespace AskTheCode.SmtLibStandard
 {
     public interface INamedSymbol
     {
-        SymbolName Name { get; }
+        SymbolName SymbolName { get; }
     }
 }

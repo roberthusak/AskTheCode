@@ -52,9 +52,11 @@
     <Compile Include="FlowGraphEdgeId.cs" />
     <Compile Include="FlowGraphEnterNode.cs" />
     <Compile Include="FlowGraphGlobalVariable.cs" />
+    <Compile Include="FlowGraphGlobalVariableId.cs" />
     <Compile Include="FlowGraphId.cs" />
     <Compile Include="FlowGraphInnerNode.cs" />
     <Compile Include="FlowGraphLocalVariable.cs" />
+    <Compile Include="FlowGraphLocalVariableId.cs" />
     <Compile Include="FlowGraphNode.cs" />
     <Compile Include="FlowGraphNodeId.cs" />
     <Compile Include="FlowGraphProviderBase.cs" />

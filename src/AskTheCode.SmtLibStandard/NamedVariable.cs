@@ -12,14 +12,14 @@ namespace AskTheCode.SmtLibStandard
         {
             Contract.Requires<ArgumentNullException>(sort != null, nameof(sort));
 
-            this.Name = name;
+            this.SymbolName = name;
         }
 
-        public SymbolName Name { get; private set; }
-
-        protected override string GetName()
+        public override string DisplayName
         {
-            return this.Name.ToString();
+            get { return this.SymbolName.ToString(); }
         }
+
+        public SymbolName SymbolName { get; private set; }
     }
 }

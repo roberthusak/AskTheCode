@@ -11,7 +11,7 @@ namespace AskTheCode.ControlFlowGraphs
     {
         internal FlowGraphEdge(FlowGraphEdgeId id, FlowGraphNode from, FlowGraphNode to, BoolHandle condition)
         {
-            Contract.Requires(!id.Equals(default(FlowGraphEdge)));
+            Contract.Requires(id.IsValid);
             Contract.Requires(from != null);
             Contract.Requires(to != null);
             Contract.Requires(from.Graph == to.Graph);

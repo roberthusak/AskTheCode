@@ -1,11 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public struct FlowGraphEdgeId : IOrdinalId<FlowGraphEdgeId>
+    public struct FlowGraphGlobalVariableId : IOrdinalId<FlowGraphGlobalVariableId>
     {
         private readonly int value;
 
@@ -13,7 +15,7 @@ namespace AskTheCode.ControlFlowGraphs
         private readonly bool isValid;
 #endif
 
-        public FlowGraphEdgeId(int value)
+        public FlowGraphGlobalVariableId(int value)
         {
             this.value = value;
 
@@ -39,19 +41,20 @@ namespace AskTheCode.ControlFlowGraphs
             get { return this.value; }
         }
 
-        public bool Equals(FlowGraphEdgeId other)
+        public bool Equals(FlowGraphGlobalVariableId other)
         {
             return this.Value == other.Value;
         }
 
-        internal class Provider : IIdProvider<FlowGraphEdgeId>
+        // TODO: Should we change the type to something to be hashed (it might be dense)? String?
+        public class Provider : IIdProvider<FlowGraphGlobalVariableId>
         {
             private OrdinalIdValueGenerator valueGenerator = new OrdinalIdValueGenerator();
 
-            public FlowGraphEdgeId GenerateNewId()
+            public FlowGraphGlobalVariableId GenerateNewId()
             {
                 int id = this.valueGenerator.GenerateNextIdValue();
-                return new FlowGraphEdgeId(id);
+                return new FlowGraphGlobalVariableId(id);
             }
         }
     }

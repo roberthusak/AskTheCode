@@ -1,11 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using AskTheCode.Common;
+using System.Threading.Tasks;
 
-namespace AskTheCode.ControlFlowGraphs
+namespace AskTheCode.Common
 {
-    public struct FlowGraphId : IOrdinalId<FlowGraphId>
+    // TODO: Try to use Code Contracts to discourage the usage of default constructor (or at least in the comments)
+    public struct OrdinalId : IOrdinalId<OrdinalId>
     {
         private readonly int value;
 
@@ -13,7 +15,7 @@ namespace AskTheCode.ControlFlowGraphs
         private readonly bool isValid;
 #endif
 
-        public FlowGraphId(int value)
+        public OrdinalId(int value)
         {
             this.value = value;
 
@@ -39,20 +41,9 @@ namespace AskTheCode.ControlFlowGraphs
             get { return this.value; }
         }
 
-        public bool Equals(FlowGraphId other)
+        public bool Equals(OrdinalId other)
         {
             return this.Value == other.Value;
-        }
-
-        public class Provider : IIdProvider<FlowGraphId>
-        {
-            private OrdinalIdValueGenerator valueGenerator = new OrdinalIdValueGenerator();
-
-            public FlowGraphId GenerateNewId()
-            {
-                int id = this.valueGenerator.GenerateNextIdValue();
-                return new FlowGraphId(id);
-            }
         }
     }
 }

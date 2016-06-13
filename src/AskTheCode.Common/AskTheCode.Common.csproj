@@ -43,8 +43,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IFreezable.cs" />
-    <Compile Include="IIdReferenced.cs" />
+    <Compile Include="IId.cs" />
+    <Compile Include="IOrdinalId.cs" />
     <Compile Include="IOverlay.cs" />
+    <Compile Include="OrdinalId.cs" />
+    <Compile Include="OrdinalIdValueGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

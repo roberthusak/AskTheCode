@@ -16,17 +16,16 @@ namespace AskTheCode.SmtLibStandard
             this.Value = value;
         }
 
+        public override string DisplayName
+        {
+            get { return this.Value.ToString(); }
+        }
+
         public object Value { get; private set; }
 
         protected override Expression GetChild(int index)
         {
             throw new InvalidOperationException();
-        }
-
-        protected override string GetName()
-        {
-            // TODO: Display different sorts in a different way (ideally to fit into the SMT-LIB standard)
-            return this.Value.ToString();
         }
 
         protected override void ValidateThis()

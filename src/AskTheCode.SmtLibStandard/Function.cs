@@ -18,6 +18,11 @@ namespace AskTheCode.SmtLibStandard
             this.children = children;
         }
 
+        public override string DisplayName
+        {
+            get { return GetName(this.Kind); }
+        }
+
         public static string GetName(ExpressionKind kind)
         {
             switch (kind)
@@ -76,11 +81,6 @@ namespace AskTheCode.SmtLibStandard
         protected override Expression GetChild(int index)
         {
             return this.children[index];
-        }
-
-        protected override string GetName()
-        {
-            return GetName(this.Kind);
         }
 
         protected override void ValidateThis()

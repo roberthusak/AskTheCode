@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.Common
 {
-    public interface IIdReferenced<TId>
-        where TId : IId<TId>
+    public interface IOrdinalId<TSelf> : IId<TSelf>
     {
-        TId Id { get; }
-    }
-
-    public interface IId<TSelf> : IEquatable<TSelf>
-    {
+        int Value { get; }
     }
 }
