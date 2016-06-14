@@ -30,5 +30,15 @@ namespace AskTheCode.SmtLibStandard.Handles
                 this.expression = value;
             }
         }
+
+        public static explicit operator Handle(Expression expression)
+        {
+            return new Handle(expression);
+        }
+
+        public static implicit operator Expression(Handle handle)
+        {
+            return handle.Expression;
+        }
     }
 }

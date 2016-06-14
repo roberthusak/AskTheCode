@@ -34,9 +34,9 @@ namespace AskTheCode.SmtLibStandard.Handles
             }
         }
 
-        public static explicit operator RealHandle(Expression boolExpression)
+        public static explicit operator RealHandle(Expression realExpression)
         {
-            return new RealHandle(boolExpression);
+            return new RealHandle(realExpression);
         }
 
         public static explicit operator RealHandle(Handle handle)
@@ -44,12 +44,17 @@ namespace AskTheCode.SmtLibStandard.Handles
             return new RealHandle(handle.Expression);
         }
 
-        public static implicit operator Handle(RealHandle boolHandle)
+        public static implicit operator Handle(RealHandle realHandle)
         {
             return new Handle()
             {
-                Expression = boolHandle.Expression
+                Expression = realHandle.Expression
             };
+        }
+
+        public static implicit operator Expression(RealHandle handle)
+        {
+            return handle.Expression;
         }
 
         public override string ToString()

@@ -33,9 +33,9 @@ namespace AskTheCode.SmtLibStandard.Handles
             }
         }
 
-        public static explicit operator IntHandle(Expression boolExpression)
+        public static explicit operator IntHandle(Expression intExpression)
         {
-            return new IntHandle(boolExpression);
+            return new IntHandle(intExpression);
         }
 
         public static explicit operator IntHandle(Handle handle)
@@ -43,12 +43,17 @@ namespace AskTheCode.SmtLibStandard.Handles
             return new IntHandle(handle.Expression);
         }
 
-        public static implicit operator Handle(IntHandle boolHandle)
+        public static implicit operator Handle(IntHandle intHandle)
         {
             return new Handle()
             {
-                Expression = boolHandle.Expression
+                Expression = intHandle.Expression
             };
+        }
+
+        public static implicit operator Expression(IntHandle handle)
+        {
+            return handle.Expression;
         }
 
         public static IntHandle operator -(IntHandle handle)

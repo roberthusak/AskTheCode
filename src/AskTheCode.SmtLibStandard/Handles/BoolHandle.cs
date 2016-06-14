@@ -56,6 +56,11 @@ namespace AskTheCode.SmtLibStandard.Handles
             };
         }
 
+        public static implicit operator Expression(BoolHandle handle)
+        {
+            return handle.Expression;
+        }
+
         public static implicit operator BoolHandle(bool value)
         {
             return new BoolHandle(value);
