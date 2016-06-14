@@ -8,12 +8,29 @@ namespace AskTheCode.SmtLibStandard
 {
     public static class ExpressionFactory
     {
-        public static Interpretation Interpretation(Sort sort, object value)
+        static ExpressionFactory()
         {
-            Contract.Requires(sort != null);
-            Contract.Requires(value != null);
+            True = new Interpretation(Sort.Bool, true);
+            False = new Interpretation(Sort.Bool, false);
+        }
 
-            return new Interpretation(sort, value);
+        public static Interpretation True { get; private set; }
+
+        public static Interpretation False { get; private set; }
+
+        public static Interpretation BoolInterpretation(bool value)
+        {
+            return value ? True : False;
+        }
+
+        public static Interpretation IntInterpretation(long value)
+        {
+            return new Interpretation(Sort.Int, value);
+        }
+
+        public static Interpretation RealInterpretation(double value)
+        {
+            return new Interpretation(Sort.Real, value);
         }
 
         public static NamedVariable NamedVariable(Sort sort, SymbolName name)
@@ -222,6 +239,7 @@ namespace AskTheCode.SmtLibStandard
         {
             Contract.Requires(operands != null);
             Contract.Requires(operands.Length > 1);
+            Contract.Requires(Contract.ForAll(operands, operand => operand != null));
             Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == Sort.Bool));
         }
 
@@ -239,6 +257,7 @@ namespace AskTheCode.SmtLibStandard
         {
             Contract.Requires(operands != null);
             Contract.Requires(operands.Length > 1);
+            Contract.Requires(Contract.ForAll(operands, operand => operand != null));
             Contract.Requires(Contract.ForAll(operands, operand => operand.Sort == operands[0].Sort));
             Contract.Requires(operands[0].Sort.IsNumeric);
         }

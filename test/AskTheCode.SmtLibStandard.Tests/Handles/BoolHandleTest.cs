@@ -23,6 +23,30 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
         }
 
         [TestMethod]
+        public void InterpretationConstructedProperly()
+        {
+            var trueVal = new BoolHandle(true);
+
+            ExpressionTestHelper.CheckExpression(
+                trueVal.Expression,
+                ExpressionKind.Interpretation,
+                Sort.Bool,
+                true.ToString(),
+                0);
+            Assert.AreEqual(ExpressionFactory.True, trueVal.Expression);
+
+            BoolHandle falseVal = false;
+
+            ExpressionTestHelper.CheckExpression(
+                falseVal.Expression,
+                ExpressionKind.Interpretation,
+                Sort.Bool,
+                false.ToString(),
+                0);
+            Assert.AreEqual(ExpressionFactory.False, falseVal.Expression);
+        }
+
+        [TestMethod]
         public void NotOperatorConstructedProperly()
         {
             var notA = !a;

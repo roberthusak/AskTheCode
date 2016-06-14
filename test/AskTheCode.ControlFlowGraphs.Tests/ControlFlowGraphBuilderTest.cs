@@ -1,6 +1,7 @@
 ﻿using System;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.SmtLibStandard;
+using AskTheCode.SmtLibStandard.Handles;
 using AskTheCode.SmtLibStandard.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -98,6 +99,22 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var variable = new FlowGraphGlobalVariable(variableId, Sort.Bool, name);
 
             ExpressionTestHelper.CheckExpression(variable, ExpressionKind.Variable, Sort.Bool, name, 0);
+        }
+
+        [TestMethod]
+        public void EdgeCreatedProperly()
+        {
+            var graphId = new FlowGraphId(1);
+            var builder = new FlowGraphBuilder(graphId);
+
+            var nodeA = builder.AddInnerNode();
+            var nodeB = builder.AddInnerNode();
+            var edge = builder.AddEdge(nodeA, nodeB, true);
+
+            Assert.AreEqual(builder.Graph, edge.Graph);
+            Assert.AreEqual(nodeA, edge.From);
+            Assert.AreEqual(nodeB, edge.To);
+            Assert.AreEqual(ExpressionFactory.True, edge.Condition.Expression);
         }
     }
 }

@@ -17,6 +17,11 @@ namespace AskTheCode.SmtLibStandard.Handles
             this.expression = boolExpression;
         }
 
+        public BoolHandle(bool value)
+        {
+            this.expression = ExpressionFactory.BoolInterpretation(value);
+        }
+
         public Expression Expression
         {
             get
@@ -49,6 +54,11 @@ namespace AskTheCode.SmtLibStandard.Handles
             {
                 Expression = boolHandle.Expression
             };
+        }
+
+        public static implicit operator BoolHandle(bool value)
+        {
+            return new BoolHandle(value);
         }
 
         public static bool operator true(BoolHandle self)
