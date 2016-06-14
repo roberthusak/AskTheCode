@@ -80,5 +80,21 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             Assert.AreNotEqual(null, node.ReturnValues);
             Assert.AreEqual(returnValuesCount, node.ReturnValues.Count);
         }
+
+        internal static void CheckThrowExceptionNode(
+            FlowGraphThrowExceptionNode node,
+            FlowGraph graph,
+            int ingoingCount,
+            int outgoingCount,
+            ILocation constructorLocation,
+            int argumentsCount)
+        {
+            CheckNode(node, graph, ingoingCount, outgoingCount);
+
+            Assert.AreEqual(constructorLocation, node.ConstructorLocation);
+
+            Assert.AreNotEqual(null, node.Arguments);
+            Assert.AreEqual(argumentsCount, node.Arguments.Count);
+        }
     }
 }

@@ -134,6 +134,7 @@
     <Compile Include="Assignment.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="FlowGraphBuilder.cs" />
+    <Compile Include="FlowGraphThrowExceptionNode.cs" />
     <Compile Include="FlowGraphCallNode.cs" />
     <Compile Include="FlowGraphEdge.cs" />
     <Compile Include="FlowGraphEdgeId.cs" />

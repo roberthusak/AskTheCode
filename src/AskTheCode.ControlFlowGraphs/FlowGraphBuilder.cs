@@ -102,6 +102,24 @@ namespace AskTheCode.ControlFlowGraphs
             return node;
         }
 
+        public FlowGraphThrowExceptionNode AddThrowExceptionNode(
+            ILocation constructorLocation,
+            IEnumerable<Expression> arguments = null)
+        {
+            Contract.Requires<InvalidOperationException>(this.Graph != null);
+            Contract.Requires<ArgumentNullException>(constructorLocation != null, nameof(constructorLocation));
+
+            var nodeId = this.nodeIdProvider.GenerateNewId();
+            var node = new FlowGraphThrowExceptionNode(
+                this.Graph,
+                nodeId,
+                constructorLocation,
+                arguments ?? Enumerable.Empty<Expression>());
+            this.Graph.MutableNodes.Add(node);
+
+            return node;
+        }
+
         public FlowGraphEdge AddEdge(FlowGraphNode from, FlowGraphNode to, BoolHandle condition)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);

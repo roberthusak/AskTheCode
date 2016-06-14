@@ -76,6 +76,18 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         }
 
         [TestMethod]
+        public void EmptyThrowExceptionNodeCreatedProperly()
+        {
+            var graphId = new FlowGraphId(1);
+            var builder = new FlowGraphBuilder(graphId);
+
+            var location = new TestLocation(0);
+
+            var node = builder.AddThrowExceptionNode(location);
+            FlowGraphTestHelper.CheckThrowExceptionNode(node, builder.Graph, 0, 0, location, 0);
+        }
+
+        [TestMethod]
         public void LocalVariableCreatedProperly()
         {
             var graphId = new FlowGraphId(1);
@@ -116,5 +128,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             Assert.AreEqual(nodeB, edge.To);
             Assert.AreEqual(ExpressionFactory.True, edge.Condition.Expression);
         }
+
+        // TODO: Test also complex graphs
     }
 }
