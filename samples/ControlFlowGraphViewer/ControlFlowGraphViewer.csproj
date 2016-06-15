@@ -115,6 +115,10 @@
     <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj">
+      <Project>{a1a0861d-1d52-4f19-9782-96443d7f37f6}</Project>
+      <Name>AskTheCode.ControlFlowGraphs.Cli</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj">
       <Project>{c39b0a93-11c6-4cf1-b0b8-31bd15d6a7f5}</Project>
       <Name>AskTheCode.ControlFlowGraphs</Name>

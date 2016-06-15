@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraph
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlFlowGraphViewer", "samples\ControlFlowGraphViewer\ControlFlowGraphViewer.csproj", "{555E5794-603C-4F4F-8EF0-1DE8BBE8031C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraphs.Cli", "src\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj", "{A1A0861D-1D52-4F19-9782-96443D7F37F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{555E5794-603C-4F4F-8EF0-1DE8BBE8031C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{555E5794-603C-4F4F-8EF0-1DE8BBE8031C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{555E5794-603C-4F4F-8EF0-1DE8BBE8031C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1A0861D-1D52-4F19-9782-96443D7F37F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1A0861D-1D52-4F19-9782-96443D7F37F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1A0861D-1D52-4F19-9782-96443D7F37F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1A0861D-1D52-4F19-9782-96443D7F37F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,5 +89,6 @@ Global
 		{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 		{CB0A9CAE-BEEB-4475-8CAF-EF9314ADFC01} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
 		{555E5794-603C-4F4F-8EF0-1DE8BBE8031C} = {EAEC332F-9604-4A3E-86B1-6CFF427B7A45}
+		{A1A0861D-1D52-4F19-9782-96443D7F37F6} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 	EndGlobalSection
 EndGlobal
