@@ -9,7 +9,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 {
     internal static class FlowGraphTestHelper
     {
-        internal static void CheckNode(FlowGraphNode node, FlowGraph graph, int ingoingCount, int outgoingCount)
+        internal static void CheckNode(FlowNode node, FlowGraph graph, int ingoingCount, int outgoingCount)
         {
             Assert.AreEqual(graph, node.Graph);
             Assert.AreEqual(graph.IsFrozen, node.IsFrozen);
@@ -23,7 +23,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         }
 
         internal static void CheckEnterNode(
-            FlowGraphEnterNode node,
+            EnterFlowNode node,
             FlowGraph graph,
             int ingoingCount,
             int outgoingCount,
@@ -36,7 +36,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         }
 
         internal static void CheckInnerNode(
-            FlowGraphInnerNode node,
+            InnerFlowNode node,
             FlowGraph graph,
             int ingoingCount,
             int outgoingCount,
@@ -49,7 +49,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         }
 
         internal static void CheckCallNode(
-            FlowGraphCallNode node,
+            CallFlowNode node,
             FlowGraph graph,
             int ingoingCount,
             int outgoingCount,
@@ -69,7 +69,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         }
 
         internal static void CheckReturnNode(
-            FlowGraphReturnNode node,
+            ReturnFlowNode node,
             FlowGraph graph,
             int ingoingCount,
             int outgoingCount,
@@ -82,7 +82,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         }
 
         internal static void CheckThrowExceptionNode(
-            FlowGraphThrowExceptionNode node,
+            ThrowExceptionFlowNode node,
             FlowGraph graph,
             int ingoingCount,
             int outgoingCount,

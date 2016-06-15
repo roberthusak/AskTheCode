@@ -39,32 +39,32 @@ namespace AskTheCode.ControlFlowGraphs
 
         public FlowGraphId Id { get; private set; }
 
-        public IReadOnlyList<FlowGraphNode> Nodes { get; private set; }
+        public IReadOnlyList<FlowNode> Nodes { get; private set; }
 
-        public IReadOnlyList<FlowGraphEdge> Edges { get; private set; }
+        public IReadOnlyList<FlowEdge> Edges { get; private set; }
 
-        public IReadOnlyList<FlowGraphLocalVariable> LocalVariables { get; private set; }
+        public IReadOnlyList<LocalFlowVariable> LocalVariables { get; private set; }
 
         internal FlowGraphBuilder Builder { get; private set; }
 
-        internal List<FlowGraphNode> MutableNodes { get; private set; } = new List<FlowGraphNode>();
+        internal List<FlowNode> MutableNodes { get; private set; } = new List<FlowNode>();
 
-        internal List<FlowGraphEdge> MutableEdges { get; private set; } = new List<FlowGraphEdge>();
+        internal List<FlowEdge> MutableEdges { get; private set; } = new List<FlowEdge>();
 
-        internal List<FlowGraphLocalVariable> MutableLocalVariables { get; private set; }
-            = new List<FlowGraphLocalVariable>();
+        internal List<LocalFlowVariable> MutableLocalVariables { get; private set; }
+            = new List<LocalFlowVariable>();
 
-        public FlowGraphNode this[FlowGraphNodeId nodeId]
+        public FlowNode this[FlowNodeId nodeId]
         {
             get { return this.Nodes[nodeId.Value]; }
         }
 
-        public FlowGraphEdge this[FlowGraphEdgeId edgeId]
+        public FlowEdge this[FlowEdgeId edgeId]
         {
             get { return this.Edges[edgeId.Value]; }
         }
 
-        public FlowGraphLocalVariable this[FlowGraphLocalVariableId variableId]
+        public LocalFlowVariable this[LocalFlowVariableId variableId]
         {
             get { return this.LocalVariables[variableId.Value]; }
         }

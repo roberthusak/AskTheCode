@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
@@ -7,11 +7,11 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public class FlowGraphLocalVariable : FlowGraphVariable, IIdReferenced<FlowGraphLocalVariableId>
+    public class LocalFlowVariable : FlowVariable, IIdReferenced<LocalFlowVariableId>
     {
         private readonly string displayName;
 
-        internal FlowGraphLocalVariable(FlowGraph graph, FlowGraphLocalVariableId id, Sort sort, string displayName = null)
+        internal LocalFlowVariable(FlowGraph graph, LocalFlowVariableId id, Sort sort, string displayName = null)
             : base(sort)
         {
             Contract.Requires(graph != null);
@@ -29,6 +29,6 @@ namespace AskTheCode.ControlFlowGraphs
 
         public FlowGraph Graph { get; private set; }
 
-        public FlowGraphLocalVariableId Id { get; private set; }
+        public LocalFlowVariableId Id { get; private set; }
     }
 }

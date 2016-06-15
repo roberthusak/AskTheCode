@@ -32,14 +32,14 @@ namespace ControlFlowGraphViewer
             return aglGraph;
         }
 
-        private void DecorateNode(Node aglNode, FlowGraphNode flowNode)
+        private void DecorateNode(Node aglNode, FlowNode flowNode)
         {
             var label = new Label();
 
             // TODO: Make pretty when the Visitor pattern is implemented
-            if (flowNode is FlowGraphEnterNode)
+            if (flowNode is EnterFlowNode)
             {
-                var enterNode = (FlowGraphEnterNode)flowNode;
+                var enterNode = (EnterFlowNode)flowNode;
                 if (enterNode.Parameters.Count > 0)
                 {
                     string paramsString = string.Join(", ", enterNode.Parameters);
@@ -54,16 +54,16 @@ namespace ControlFlowGraphViewer
                     label.Text = "enter";
                 }
             }
-            else if (flowNode is FlowGraphInnerNode)
+            else if (flowNode is InnerFlowNode)
             {
-                var innerNode = (FlowGraphInnerNode)flowNode;
+                var innerNode = (InnerFlowNode)flowNode;
                 label.Text = string.Join(
                     "\n",
                     innerNode.Assignments.Select(assignment => $"{assignment.Variable} \u2190 {assignment.Value}"));
             }
-            else if (flowNode is FlowGraphCallNode)
+            else if (flowNode is CallFlowNode)
             {
-                var callNode = (FlowGraphCallNode)flowNode;
+                var callNode = (CallFlowNode)flowNode;
                 var labelBuild = new StringBuilder();
 
                 if (callNode.ReturnAssignments.Count > 0)
@@ -80,9 +80,9 @@ namespace ControlFlowGraphViewer
 
                 label.Text = labelBuild.ToString();
             }
-            else if (flowNode is FlowGraphReturnNode)
+            else if (flowNode is ReturnFlowNode)
             {
-                var retNode = (FlowGraphReturnNode)flowNode;
+                var retNode = (ReturnFlowNode)flowNode;
                 if (retNode.ReturnValues.Count > 1)
                 {
                     string retsString = string.Join(", ", retNode.ReturnValues);
@@ -97,9 +97,9 @@ namespace ControlFlowGraphViewer
                     label.Text = "return";
                 }
             }
-            else if (flowNode is FlowGraphThrowExceptionNode)
+            else if (flowNode is ThrowExceptionFlowNode)
             {
-                var exceptionNode = (FlowGraphThrowExceptionNode)flowNode;
+                var exceptionNode = (ThrowExceptionFlowNode)flowNode;
                 string argsString = string.Join(", ", exceptionNode.Arguments);
                 label.Text = $"throw {exceptionNode.ConstructorLocation}({argsString})";
             }
@@ -107,7 +107,7 @@ namespace ControlFlowGraphViewer
             aglNode.Label = label;
         }
 
-        private void DecorateEdge(Edge aglEdge, FlowGraphEdge flowEdge)
+        private void DecorateEdge(Edge aglEdge, FlowEdge flowEdge)
         {
             if (flowEdge.Condition.Expression == ExpressionFactory.True)
             {

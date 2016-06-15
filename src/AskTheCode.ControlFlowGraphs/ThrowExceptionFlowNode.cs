@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
@@ -7,11 +7,11 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public class FlowGraphThrowExceptionNode : FlowGraphNode
+    public class ThrowExceptionFlowNode : FlowNode
     {
-        internal FlowGraphThrowExceptionNode(
+        internal ThrowExceptionFlowNode(
             FlowGraph graph,
-            FlowGraphNodeId id,
+            FlowNodeId id,
             ILocation constructorLocation,
             IEnumerable<Expression> arguments)
             : base(graph, id)

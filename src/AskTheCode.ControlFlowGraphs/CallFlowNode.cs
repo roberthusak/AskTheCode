@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
@@ -7,14 +7,14 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public class FlowGraphCallNode : FlowGraphNode
+    public class CallFlowNode : FlowNode
     {
-        internal FlowGraphCallNode(
+        internal CallFlowNode(
             FlowGraph graph,
-            FlowGraphNodeId id,
+            FlowNodeId id,
             ILocation location,
             IEnumerable<Expression> arguments,
-            IEnumerable<FlowGraphVariable> returnAssignments)
+            IEnumerable<FlowVariable> returnAssignments)
             : base(graph, id)
         {
             Contract.Requires(location != null);
@@ -30,6 +30,6 @@ namespace AskTheCode.ControlFlowGraphs
 
         public IReadOnlyList<Expression> Arguments { get; private set; }
 
-        public IReadOnlyList<FlowGraphVariable> ReturnAssignments { get; private set; }
+        public IReadOnlyList<FlowVariable> ReturnAssignments { get; private set; }
     }
 }

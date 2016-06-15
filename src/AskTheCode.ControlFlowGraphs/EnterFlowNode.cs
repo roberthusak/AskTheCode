@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
@@ -6,9 +6,9 @@ using System.Text;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public class FlowGraphEnterNode : FlowGraphNode
+    public class EnterFlowNode : FlowNode
     {
-        internal FlowGraphEnterNode(FlowGraph graph, FlowGraphNodeId id, IEnumerable<FlowGraphVariable> parameters)
+        internal EnterFlowNode(FlowGraph graph, FlowNodeId id, IEnumerable<FlowVariable> parameters)
             : base(graph, id)
         {
             Contract.Requires(parameters != null);
@@ -16,6 +16,6 @@ namespace AskTheCode.ControlFlowGraphs
             this.Parameters = parameters.ToImmutableArray();
         }
 
-        public IReadOnlyList<FlowGraphVariable> Parameters { get; private set; }
+        public IReadOnlyList<FlowVariable> Parameters { get; private set; }
     }
 }

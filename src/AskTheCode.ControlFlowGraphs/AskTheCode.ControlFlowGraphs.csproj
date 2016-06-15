@@ -132,31 +132,31 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assignment.cs" />
+    <Compile Include="CallFlowNode.cs" />
+    <Compile Include="EnterFlowNode.cs" />
+    <Compile Include="FlowEdge.cs" />
+    <Compile Include="FlowEdgeId.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="FlowGraphBuilder.cs" />
-    <Compile Include="FlowGraphThrowExceptionNode.cs" />
-    <Compile Include="FlowGraphCallNode.cs" />
-    <Compile Include="FlowGraphEdge.cs" />
-    <Compile Include="FlowGraphEdgeId.cs" />
-    <Compile Include="FlowGraphEnterNode.cs" />
-    <Compile Include="FlowGraphGlobalVariable.cs" />
-    <Compile Include="FlowGraphGlobalVariableId.cs" />
     <Compile Include="FlowGraphId.cs" />
-    <Compile Include="FlowGraphInnerNode.cs" />
-    <Compile Include="FlowGraphLocalVariable.cs" />
-    <Compile Include="FlowGraphLocalVariableId.cs" />
-    <Compile Include="FlowGraphNode.cs" />
-    <Compile Include="FlowGraphNodeId.cs" />
     <Compile Include="FlowGraphProviderBase.cs" />
-    <Compile Include="FlowGraphReturnNode.cs" />
-    <Compile Include="FlowGraphVariable.cs" />
+    <Compile Include="FlowNode.cs" />
+    <Compile Include="FlowNodeId.cs" />
+    <Compile Include="FlowVariable.cs" />
+    <Compile Include="GlobalFlowVariable.cs" />
+    <Compile Include="GlobalFlowVariableId.cs" />
     <Compile Include="ILocation.cs" />
+    <Compile Include="InnerFlowNode.cs" />
+    <Compile Include="LocalFlowVariable.cs" />
+    <Compile Include="LocalFlowVariableId.cs" />
     <Compile Include="Overlays\FlowGraphEdgeOverlay[T].cs" />
     <Compile Include="Overlays\FlowGraphLocalVariableOverlay[T].cs" />
     <Compile Include="Overlays\FlowGraphNodeOverlay[T].cs" />
     <Compile Include="Overlays\FlowGraphsGlobalVariableOverlay[T].cs" />
     <Compile Include="Overlays\FlowGraphsOverlay[T].cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReturnFlowNode.cs" />
+    <Compile Include="ThrowExceptionFlowNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AskTheCode.Common\AskTheCode.Common.csproj">

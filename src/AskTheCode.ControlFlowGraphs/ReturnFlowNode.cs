@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
@@ -7,9 +7,9 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public class FlowGraphReturnNode : FlowGraphNode
+    public class ReturnFlowNode : FlowNode
     {
-        internal FlowGraphReturnNode(FlowGraph graph, FlowGraphNodeId id, IEnumerable<Expression> returnValues)
+        internal ReturnFlowNode(FlowGraph graph, FlowNodeId id, IEnumerable<Expression> returnValues)
             : base(graph, id)
         {
             Contract.Requires(returnValues != null);

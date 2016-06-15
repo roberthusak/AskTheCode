@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public struct FlowGraphNodeId : IOrdinalId<FlowGraphNodeId>
+    public struct FlowNodeId : IOrdinalId<FlowNodeId>
     {
         private readonly int value;
 
@@ -13,7 +13,7 @@ namespace AskTheCode.ControlFlowGraphs
         private readonly bool isValid;
 #endif
 
-        public FlowGraphNodeId(int value)
+        public FlowNodeId(int value)
         {
             this.value = value;
 
@@ -39,19 +39,19 @@ namespace AskTheCode.ControlFlowGraphs
             get { return this.value; }
         }
 
-        public bool Equals(FlowGraphNodeId other)
+        public bool Equals(FlowNodeId other)
         {
             return this.Value == other.Value;
         }
 
-        internal class Provider : IIdProvider<FlowGraphNodeId>
+        internal class Provider : IIdProvider<FlowNodeId>
         {
             private OrdinalIdValueGenerator valueGenerator = new OrdinalIdValueGenerator();
 
-            public FlowGraphNodeId GenerateNewId()
+            public FlowNodeId GenerateNewId()
             {
                 int id = this.valueGenerator.GenerateNextIdValue();
-                return new FlowGraphNodeId(id);
+                return new FlowNodeId(id);
             }
         }
     }

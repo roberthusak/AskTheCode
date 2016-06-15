@@ -7,7 +7,7 @@ using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public struct FlowGraphLocalVariableId : IOrdinalId<FlowGraphLocalVariableId>
+    public struct LocalFlowVariableId : IOrdinalId<LocalFlowVariableId>
     {
         private readonly int value;
 
@@ -15,7 +15,7 @@ namespace AskTheCode.ControlFlowGraphs
         private readonly bool isValid;
 #endif
 
-        public FlowGraphLocalVariableId(int value)
+        public LocalFlowVariableId(int value)
         {
             this.value = value;
 
@@ -41,19 +41,19 @@ namespace AskTheCode.ControlFlowGraphs
             get { return this.value; }
         }
 
-        public bool Equals(FlowGraphLocalVariableId other)
+        public bool Equals(LocalFlowVariableId other)
         {
             return this.Value == other.Value;
         }
 
-        internal class Provider : IIdProvider<FlowGraphLocalVariableId>
+        internal class Provider : IIdProvider<LocalFlowVariableId>
         {
             private OrdinalIdValueGenerator valueGenerator = new OrdinalIdValueGenerator();
 
-            public FlowGraphLocalVariableId GenerateNewId()
+            public LocalFlowVariableId GenerateNewId()
             {
                 int id = this.valueGenerator.GenerateNextIdValue();
-                return new FlowGraphLocalVariableId(id);
+                return new LocalFlowVariableId(id);
             }
         }
     }

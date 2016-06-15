@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
@@ -7,9 +7,9 @@ using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public class FlowGraphEdge : IIdReferenced<FlowGraphEdgeId>
+    public class FlowEdge : IIdReferenced<FlowEdgeId>
     {
-        internal FlowGraphEdge(FlowGraphEdgeId id, FlowGraphNode from, FlowGraphNode to, BoolHandle condition)
+        internal FlowEdge(FlowEdgeId id, FlowNode from, FlowNode to, BoolHandle condition)
         {
             Contract.Requires(id.IsValid);
             Contract.Requires(from != null);
@@ -25,11 +25,11 @@ namespace AskTheCode.ControlFlowGraphs
 
         public FlowGraph Graph { get; private set; }
 
-        public FlowGraphEdgeId Id { get; private set; }
+        public FlowEdgeId Id { get; private set; }
 
-        public FlowGraphNode From { get; private set; }
+        public FlowNode From { get; private set; }
 
-        public FlowGraphNode To { get; private set; }
+        public FlowNode To { get; private set; }
 
         public BoolHandle Condition { get; private set; }
     }

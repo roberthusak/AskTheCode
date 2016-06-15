@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AskTheCode.ControlFlowGraphs.Tests
 {
     [TestClass]
-    public class ControlFlowGraphBuilderTest
+    public class FlowGraphBuilderTest
     {
         [TestMethod]
         public void EmptyGraphCreatedProperly()
@@ -107,8 +107,8 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var builder = new FlowGraphBuilder(graphId);
 
             string name = "testBoolVar";
-            var variableId = new FlowGraphGlobalVariableId(1);
-            var variable = new FlowGraphGlobalVariable(variableId, Sort.Bool, name);
+            var variableId = new GlobalFlowVariableId(1);
+            var variable = new GlobalFlowVariable(variableId, Sort.Bool, name);
 
             ExpressionTestHelper.CheckExpression(variable, ExpressionKind.Variable, Sort.Bool, name, 0);
         }

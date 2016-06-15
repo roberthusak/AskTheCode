@@ -8,7 +8,7 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public struct Assignment
     {
-        public Assignment(FlowGraphVariable variable, Expression value)
+        public Assignment(FlowVariable variable, Expression value)
         {
             Contract.Requires<ArgumentNullException>(variable != null, nameof(variable));
             Contract.Requires<ArgumentNullException>(value != null, nameof(value));
@@ -18,7 +18,7 @@ namespace AskTheCode.ControlFlowGraphs
             this.Value = value;
         }
 
-        public FlowGraphVariable Variable { get; private set; }
+        public FlowVariable Variable { get; private set; }
 
         public Expression Value { get; private set; }
     }

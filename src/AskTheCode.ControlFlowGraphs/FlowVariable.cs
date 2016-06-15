@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public abstract class FlowGraphVariable : Variable
+    public abstract class FlowVariable : Variable
     {
-        internal FlowGraphVariable(Sort sort)
+        internal FlowVariable(Sort sort)
             : base(sort)
         {
         }

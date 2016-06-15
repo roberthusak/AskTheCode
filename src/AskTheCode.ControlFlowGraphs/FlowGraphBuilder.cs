@@ -11,9 +11,9 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public class FlowGraphBuilder
     {
-        private FlowGraphNodeId.Provider nodeIdProvider;
-        private FlowGraphEdgeId.Provider edgeIdProvider;
-        private FlowGraphLocalVariableId.Provider variableIdProvider;
+        private FlowNodeId.Provider nodeIdProvider;
+        private FlowEdgeId.Provider edgeIdProvider;
+        private LocalFlowVariableId.Provider variableIdProvider;
 
         public FlowGraphBuilder()
         {
@@ -30,9 +30,9 @@ namespace AskTheCode.ControlFlowGraphs
         {
             Contract.Requires<InvalidOperationException>(this.Graph == null);
 
-            this.nodeIdProvider = new FlowGraphNodeId.Provider();
-            this.edgeIdProvider = new FlowGraphEdgeId.Provider();
-            this.variableIdProvider = new FlowGraphLocalVariableId.Provider();
+            this.nodeIdProvider = new FlowNodeId.Provider();
+            this.edgeIdProvider = new FlowEdgeId.Provider();
+            this.variableIdProvider = new LocalFlowVariableId.Provider();
 
             this.Graph = new FlowGraph(newGraphId, this);
         }
@@ -49,68 +49,68 @@ namespace AskTheCode.ControlFlowGraphs
             return this.Graph.Freeze();
         }
 
-        public FlowGraphEnterNode AddEnterNode(IEnumerable<FlowGraphVariable> parameters = null)
+        public EnterFlowNode AddEnterNode(IEnumerable<FlowVariable> parameters = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new FlowGraphEnterNode(this.Graph, nodeId, parameters ?? Enumerable.Empty<FlowGraphVariable>());
+            var node = new EnterFlowNode(this.Graph, nodeId, parameters ?? Enumerable.Empty<FlowVariable>());
             this.Graph.MutableNodes.Add(node);
 
             return node;
         }
 
         // TODO: Add even more overloads (for example, consider directly using immutable array) and optimize their calls
-        public FlowGraphInnerNode AddInnerNode(FlowGraphVariable assignmentVariable, Expression assignmentValue)
+        public InnerFlowNode AddInnerNode(FlowVariable assignmentVariable, Expression assignmentValue)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
             return this.AddInnerNode(new[] { new Assignment(assignmentVariable, assignmentValue) });
         }
 
-        public FlowGraphInnerNode AddInnerNode(IEnumerable<Assignment> assignments = null)
+        public InnerFlowNode AddInnerNode(IEnumerable<Assignment> assignments = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new FlowGraphInnerNode(this.Graph, nodeId, assignments ?? Enumerable.Empty<Assignment>());
+            var node = new InnerFlowNode(this.Graph, nodeId, assignments ?? Enumerable.Empty<Assignment>());
             this.Graph.MutableNodes.Add(node);
 
             return node;
         }
 
-        public FlowGraphCallNode AddCallNode(
+        public CallFlowNode AddCallNode(
             ILocation location,
             IEnumerable<Expression> arguments = null,
-            IEnumerable<FlowGraphVariable> returnAssignments = null)
+            IEnumerable<FlowVariable> returnAssignments = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(location != null, nameof(location));
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new FlowGraphCallNode(
+            var node = new CallFlowNode(
                 this.Graph,
                 nodeId,
                 location,
                 arguments ?? Enumerable.Empty<Expression>(),
-                returnAssignments ?? Enumerable.Empty<FlowGraphVariable>());
+                returnAssignments ?? Enumerable.Empty<FlowVariable>());
             this.Graph.MutableNodes.Add(node);
 
             return node;
         }
 
-        public FlowGraphReturnNode AddReturnNode(IEnumerable<Expression> returnValues = null)
+        public ReturnFlowNode AddReturnNode(IEnumerable<Expression> returnValues = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new FlowGraphReturnNode(this.Graph, nodeId, returnValues ?? Enumerable.Empty<Expression>());
+            var node = new ReturnFlowNode(this.Graph, nodeId, returnValues ?? Enumerable.Empty<Expression>());
             this.Graph.MutableNodes.Add(node);
 
             return node;
         }
 
-        public FlowGraphThrowExceptionNode AddThrowExceptionNode(
+        public ThrowExceptionFlowNode AddThrowExceptionNode(
             ILocation constructorLocation,
             IEnumerable<Expression> arguments = null)
         {
@@ -118,7 +118,7 @@ namespace AskTheCode.ControlFlowGraphs
             Contract.Requires<ArgumentNullException>(constructorLocation != null, nameof(constructorLocation));
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new FlowGraphThrowExceptionNode(
+            var node = new ThrowExceptionFlowNode(
                 this.Graph,
                 nodeId,
                 constructorLocation,
@@ -128,12 +128,12 @@ namespace AskTheCode.ControlFlowGraphs
             return node;
         }
 
-        public FlowGraphEdge AddEdge(FlowGraphNode from, FlowGraphNode to)
+        public FlowEdge AddEdge(FlowNode from, FlowNode to)
         {
             return this.AddEdge(from, to, true);
         }
 
-        public FlowGraphEdge AddEdge(FlowGraphNode from, FlowGraphNode to, BoolHandle condition)
+        public FlowEdge AddEdge(FlowNode from, FlowNode to, BoolHandle condition)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(from != null, nameof(from));
@@ -142,13 +142,13 @@ namespace AskTheCode.ControlFlowGraphs
             Contract.Requires<ArgumentException>(to.Graph == this.Graph, nameof(to));
 
             var edgeId = this.edgeIdProvider.GenerateNewId();
-            var edge = new FlowGraphEdge(edgeId, from, to, condition);
+            var edge = new FlowEdge(edgeId, from, to, condition);
             this.Graph.MutableEdges.Add(edge);
 
             return edge;
         }
 
-        public FlowGraphLocalVariable AddLocalVariable(Sort sort, string displayName = null)
+        public LocalFlowVariable AddLocalVariable(Sort sort, string displayName = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(sort != null, nameof(sort));
@@ -156,9 +156,9 @@ namespace AskTheCode.ControlFlowGraphs
             return this.AddLocalVariableImpl(sort, displayName, null);
         }
 
-        public FlowGraphLocalVariable AddLocalVariable(
+        public LocalFlowVariable AddLocalVariable(
             Sort sort,
-            Func<FlowGraphLocalVariableId, string> displayNameCallback)
+            Func<LocalFlowVariableId, string> displayNameCallback)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(sort != null, nameof(sort));
@@ -172,10 +172,10 @@ namespace AskTheCode.ControlFlowGraphs
             this.Graph = null;
         }
 
-        private FlowGraphLocalVariable AddLocalVariableImpl(
+        private LocalFlowVariable AddLocalVariableImpl(
             Sort sort,
             string displayName = null,
-            Func<FlowGraphLocalVariableId, string> displayNameCallback = null)
+            Func<LocalFlowVariableId, string> displayNameCallback = null)
         {
             var variableId = this.variableIdProvider.GenerateNewId();
 
@@ -184,7 +184,7 @@ namespace AskTheCode.ControlFlowGraphs
                 displayName = displayNameCallback.Invoke(variableId);
             }
 
-            var variable = new FlowGraphLocalVariable(this.Graph, variableId, sort, displayName);
+            var variable = new LocalFlowVariable(this.Graph, variableId, sort, displayName);
             this.Graph.MutableLocalVariables.Add(variable);
 
             return variable;

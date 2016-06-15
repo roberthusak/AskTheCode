@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
@@ -7,11 +7,11 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public class FlowGraphGlobalVariable : FlowGraphVariable, IIdReferenced<FlowGraphGlobalVariableId>
+    public class GlobalFlowVariable : FlowVariable, IIdReferenced<GlobalFlowVariableId>
     {
         private readonly string displayName;
 
-        public FlowGraphGlobalVariable(FlowGraphGlobalVariableId id, Sort sort, string displayName = null)
+        public GlobalFlowVariable(GlobalFlowVariableId id, Sort sort, string displayName = null)
             : base(sort)
         {
             Contract.Requires(id.IsValid);
@@ -25,6 +25,6 @@ namespace AskTheCode.ControlFlowGraphs
             get { return this.displayName ?? $"var<{this.Sort.Name}>!global!{this.Id.Value}"; }
         }
 
-        public FlowGraphGlobalVariableId Id { get; private set; }
+        public GlobalFlowVariableId Id { get; private set; }
     }
 }

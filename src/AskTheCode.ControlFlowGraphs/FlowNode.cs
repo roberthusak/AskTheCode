@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
@@ -7,9 +7,9 @@ using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public abstract class FlowGraphNode : IIdReferenced<FlowGraphNodeId>, IFreezable<FlowGraphNode>
+    public abstract class FlowNode : IIdReferenced<FlowNodeId>, IFreezable<FlowNode>
     {
-        internal FlowGraphNode(FlowGraph graph, FlowGraphNodeId id)
+        internal FlowNode(FlowGraph graph, FlowNodeId id)
         {
             Contract.Requires(graph != null);
             Contract.Requires(id.IsValid);
@@ -33,19 +33,19 @@ namespace AskTheCode.ControlFlowGraphs
             get { return (this.MutableIngoingEdges == null); }
         }
 
-        public FlowGraphNodeId Id { get; private set; }
+        public FlowNodeId Id { get; private set; }
 
         public FlowGraph Graph { get; private set; }
 
-        public IReadOnlyList<FlowGraphNode> IngoingEdges { get; private set; }
+        public IReadOnlyList<FlowNode> IngoingEdges { get; private set; }
 
-        public IReadOnlyList<FlowGraphNode> OutgoingEdges { get; private set; }
+        public IReadOnlyList<FlowNode> OutgoingEdges { get; private set; }
 
-        internal List<FlowGraphNode> MutableIngoingEdges { get; private set; } = new List<FlowGraphNode>();
+        internal List<FlowNode> MutableIngoingEdges { get; private set; } = new List<FlowNode>();
 
-        internal List<FlowGraphNode> MutableOutgoingEdges { get; private set; } = new List<FlowGraphNode>();
+        internal List<FlowNode> MutableOutgoingEdges { get; private set; } = new List<FlowNode>();
 
-        public FrozenHandler<FlowGraphNode> Freeze()
+        public FrozenHandler<FlowNode> Freeze()
         {
             if (!this.IsFrozen)
             {
@@ -56,7 +56,7 @@ namespace AskTheCode.ControlFlowGraphs
                 this.MutableOutgoingEdges = null;
             }
 
-            return new FrozenHandler<FlowGraphNode>(this);
+            return new FrozenHandler<FlowNode>(this);
         }
     }
 }

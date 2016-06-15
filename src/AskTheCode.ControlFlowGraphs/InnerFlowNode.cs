@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
@@ -6,9 +6,9 @@ using System.Text;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public class FlowGraphInnerNode : FlowGraphNode
+    public class InnerFlowNode : FlowNode
     {
-        internal FlowGraphInnerNode(FlowGraph graph, FlowGraphNodeId id, IEnumerable<Assignment> assignments)
+        internal InnerFlowNode(FlowGraph graph, FlowNodeId id, IEnumerable<Assignment> assignments)
             : base(graph, id)
         {
             Contract.Requires(assignments != null);
