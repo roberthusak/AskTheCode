@@ -59,7 +59,7 @@ namespace ControlFlowGraphViewer
                 var innerNode = (FlowGraphInnerNode)flowNode;
                 label.Text = string.Join(
                     "\n",
-                    innerNode.Assignments.Select(assignment => $"{assignment.Variable} <- {assignment.Value}"));
+                    innerNode.Assignments.Select(assignment => $"{assignment.Variable} \u2190 {assignment.Value}"));
             }
             else if (flowNode is FlowGraphCallNode)
             {
@@ -70,7 +70,7 @@ namespace ControlFlowGraphViewer
                 {
                     labelBuild.Append('(');
                     labelBuild.Append(string.Join(", ", callNode.ReturnAssignments));
-                    labelBuild.Append(") <- ");
+                    labelBuild.Append(") \u2190 ");
                 }
 
                 labelBuild.Append(callNode.Location.ToString());
@@ -115,10 +115,6 @@ namespace ControlFlowGraphViewer
             }
 
             aglEdge.LabelText = flowEdge.Condition.ToString();
-            //aglEdge.Label = new Label(flowEdge.Condition.ToString())
-            //{
-            //    FontName = "Consolas"
-            //};
         }
     }
 }

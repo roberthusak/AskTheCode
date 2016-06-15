@@ -60,6 +60,14 @@ namespace AskTheCode.ControlFlowGraphs
             return node;
         }
 
+        // TODO: Add even more overloads (for example, consider directly using immutable array) and optimize their calls
+        public FlowGraphInnerNode AddInnerNode(FlowGraphVariable assignmentVariable, Expression assignmentValue)
+        {
+            Contract.Requires<InvalidOperationException>(this.Graph != null);
+
+            return this.AddInnerNode(new[] { new Assignment(assignmentVariable, assignmentValue) });
+        }
+
         public FlowGraphInnerNode AddInnerNode(IEnumerable<Assignment> assignments = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
@@ -118,6 +126,11 @@ namespace AskTheCode.ControlFlowGraphs
             this.Graph.MutableNodes.Add(node);
 
             return node;
+        }
+
+        public FlowGraphEdge AddEdge(FlowGraphNode from, FlowGraphNode to)
+        {
+            return this.AddEdge(from, to, true);
         }
 
         public FlowGraphEdge AddEdge(FlowGraphNode from, FlowGraphNode to, BoolHandle condition)

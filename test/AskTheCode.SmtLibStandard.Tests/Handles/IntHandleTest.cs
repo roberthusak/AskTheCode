@@ -22,6 +22,8 @@ namespace AskTheCode.SmtLibStandard.Handles.Tests
             this.c = (IntHandle)ExpressionFactory.NamedVariable(Sort.Int, "c");
         }
 
+        // TODO: Test the interpretations construction
+
         [TestMethod]
         public void NegateOperatorConstructedProperly()
         {

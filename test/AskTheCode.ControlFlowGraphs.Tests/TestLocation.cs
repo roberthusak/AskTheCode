@@ -10,14 +10,19 @@ namespace AskTheCode.ControlFlowGraphs.Tests
     {
         public TestLocation(int value)
         {
-            this.Value = value;
+            this.Name = $"TestLocation#{value}";
         }
 
-        public int Value { get; private set; }
+        public TestLocation(string name)
+        {
+            this.Name = name;
+        }
+
+        public string Name { get; private set; }
 
         public override string ToString()
         {
-            return $"TestLocation #{this.Value}";
+            return this.Name;
         }
     }
 }

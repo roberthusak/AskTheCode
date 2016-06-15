@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Text;
 using AskTheCode.SmtLibStandard;
 
@@ -9,6 +10,10 @@ namespace AskTheCode.ControlFlowGraphs
     {
         public Assignment(FlowGraphVariable variable, Expression value)
         {
+            Contract.Requires<ArgumentNullException>(variable != null, nameof(variable));
+            Contract.Requires<ArgumentNullException>(value != null, nameof(value));
+            Contract.Requires<ArgumentException>(value.Sort == variable.Sort, nameof(value));
+
             this.Variable = variable;
             this.Value = value;
         }

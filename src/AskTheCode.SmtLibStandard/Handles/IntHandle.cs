@@ -17,6 +17,11 @@ namespace AskTheCode.SmtLibStandard.Handles
             this.expression = intExpression;
         }
 
+        public IntHandle(long value)
+        {
+            this.expression = ExpressionFactory.IntInterpretation(value);
+        }
+
         public Expression Expression
         {
             get
@@ -54,6 +59,11 @@ namespace AskTheCode.SmtLibStandard.Handles
         public static implicit operator Expression(IntHandle handle)
         {
             return handle.Expression;
+        }
+
+        public static implicit operator IntHandle(long value)
+        {
+            return new IntHandle(value);
         }
 
         public static IntHandle operator -(IntHandle handle)

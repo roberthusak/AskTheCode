@@ -17,6 +17,7 @@ namespace AskTheCode.SmtLibStandard
         Xor,
         Implies,
 
+        // TODO: Consider renaming Negate to Inverse (to differentiate from Not)
         Negate,
         Multiply,
         DivideReal,
