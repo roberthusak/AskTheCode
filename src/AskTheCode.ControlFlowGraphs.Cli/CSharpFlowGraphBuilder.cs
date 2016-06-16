@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.SmtLibStandard;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,7 +39,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 if (this.ReadyQueue.Count > 0)
                 {
                     var node = this.ReadyQueue.Dequeue();
-                    Contract.Assert(node.PendingTask == null || node.PendingTask.IsCompleted);
+                    Contract.Assert(node.PendingTask == null);
                     Contract.Assert(node.Syntax.IsNode);
 
                     this.visitor.CurrentNode = node;
@@ -74,16 +75,60 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             public override Task VisitMethodDeclaration(MethodDeclarationSyntax methodSyntax)
             {
-                var paramsNode = this.EnqueueNode(methodSyntax.ParameterList);
-                var bodyNode = this.EnqueueNode(methodSyntax.Body);
-                paramsNode.AddEdge(bodyNode);
+                Contract.Requires(this.CurrentNode.OutgoingEdges.Count == 0);
+
+                var enter = this.EnqueueNode(methodSyntax.ParameterList);
+                var body = this.EnqueueNode(methodSyntax.Body);
+                enter.AddEdge(body);
 
                 if ((methodSyntax.ReturnType as PredefinedTypeSyntax).Keyword.Text == "void")
                 {
-                    var implicitEndNode = this.AddNode(methodSyntax.Body.CloseBraceToken);
-                    bodyNode.AddEdge(implicitEndNode);
+                    var implicitReturn = this.AddNode(methodSyntax.Body.CloseBraceToken);
+                    body.AddEdge(implicitReturn);
 
                     // TODO: Add also ReturnFlowNode here
+                }
+
+                this.RemoveNode(this.CurrentNode);
+
+                return Task.CompletedTask;
+            }
+
+            public override Task VisitIfStatement(IfStatementSyntax ifSyntax)
+            {
+                var outEdge = this.CurrentNode.OutgoingEdges.SingleOrDefault();
+                Contract.Assert(outEdge?.ValueCondition == null);
+
+                this.CurrentNode.OutgoingEdges.Clear();
+                var condition = this.ReenqueueCurrentNode(ifSyntax.Condition);
+                var body = this.EnqueueNode(ifSyntax.Statement);
+                condition.AddEdge(body, ExpressionFactory.True);
+
+                if (outEdge != null)
+                {
+                    body.AddEdge(outEdge);
+                }
+
+                if (ifSyntax.Else != null)
+                {
+                    var elseBody = this.EnqueueNode(ifSyntax.Else);
+                    condition.AddEdge(elseBody, ExpressionFactory.False);
+
+                    if (outEdge != null)
+                    {
+                        elseBody.AddEdge(outEdge);
+                    }
+                }
+                else
+                {
+                    if (outEdge == null)
+                    {
+                        // TODO: Add a message and put to resources
+                        //       (probably related to: "Not all code paths return a value")
+                        throw new InvalidOperationException();
+                    }
+
+                    condition.AddEdge(outEdge.To, ExpressionFactory.False);
                 }
 
                 return Task.CompletedTask;
@@ -103,6 +148,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 this.owner.ReadyQueue.Enqueue(node);
 
                 return node;
+            }
+
+            private NodeStub ReenqueueCurrentNode(SyntaxNode syntaxUpdate)
+            {
+                this.CurrentNode.Syntax = syntaxUpdate;
+                this.CurrentNode.PendingTask = null;
+
+                return this.CurrentNode;
             }
 
             private void RemoveNode(NodeStub node)

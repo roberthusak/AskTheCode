@@ -33,6 +33,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             return edge;
         }
 
+        public void AddEdge(EdgeStub edge)
+        {
+            this.OutgoingEdges.Add(edge);
+        }
+
         // TODO: Add proper hashing
     }
 }
