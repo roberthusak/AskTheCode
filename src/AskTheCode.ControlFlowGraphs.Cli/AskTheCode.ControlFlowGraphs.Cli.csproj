@@ -58,9 +58,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildEdge.cs" />
+    <Compile Include="BuildNode.cs" />
     <Compile Include="CSharpFlowGraphBuilder.cs" />
-    <Compile Include="EdgeStub.cs" />
-    <Compile Include="NodeStub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

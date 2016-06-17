@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,14 +7,14 @@ using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
-    internal class NodeStub
+    internal class BuildNode
     {
-        public NodeStub(SyntaxNodeOrToken syntax)
+        public BuildNode(SyntaxNodeOrToken syntax)
         {
             this.Syntax = syntax;
         }
 
-        public List<EdgeStub> OutgoingEdges { get; } = new List<EdgeStub>();
+        public List<BuildEdge> OutgoingEdges { get; } = new List<BuildEdge>();
 
         // TODO: Optimize the type if necessary (make 2 fields?)
         public SyntaxNodeOrToken Syntax { get; set; }
@@ -25,15 +25,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public Task PendingTask { get; set; }
 
-        public EdgeStub AddEdge(NodeStub to, Expression valueCondition = null)
+        public BuildEdge AddEdge(BuildNode to, Expression valueCondition = null)
         {
-            var edge = new EdgeStub(to, valueCondition);
+            var edge = new BuildEdge(to, valueCondition);
             this.OutgoingEdges.Add(edge);
 
             return edge;
         }
 
-        public void AddEdge(EdgeStub edge)
+        public void AddEdge(BuildEdge edge)
         {
             this.OutgoingEdges.Add(edge);
         }

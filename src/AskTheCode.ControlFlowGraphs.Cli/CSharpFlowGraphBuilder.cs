@@ -21,16 +21,16 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             this.visitor = new BuilderSyntaxVisitor(this);
 
-            var initialNode = new NodeStub(methodSyntax);
+            var initialNode = new BuildNode(methodSyntax);
             this.NodeStubs.Add(initialNode);
             this.ReadyQueue.Enqueue(initialNode);
         }
 
-        internal HashSet<NodeStub> NodeStubs { get; } = new HashSet<NodeStub>();
+        internal HashSet<BuildNode> NodeStubs { get; } = new HashSet<BuildNode>();
 
-        private Queue<NodeStub> ReadyQueue { get; } = new Queue<NodeStub>();
+        private Queue<BuildNode> ReadyQueue { get; } = new Queue<BuildNode>();
 
-        private HashSet<NodeStub> Pending { get; } = new HashSet<NodeStub>();
+        private HashSet<BuildNode> Pending { get; } = new HashSet<BuildNode>();
 
         public async Task BuildAsync()
         {
@@ -71,7 +71,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 this.owner = owner;
             }
 
-            public NodeStub CurrentNode { get; set; }
+            public BuildNode CurrentNode { get; set; }
 
             public override Task VisitMethodDeclaration(MethodDeclarationSyntax methodSyntax)
             {
@@ -134,15 +134,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return Task.CompletedTask;
             }
 
-            private NodeStub AddNode(SyntaxNodeOrToken syntax)
+            private BuildNode AddNode(SyntaxNodeOrToken syntax)
             {
-                var node = new NodeStub(syntax);
+                var node = new BuildNode(syntax);
                 this.owner.NodeStubs.Add(node);
 
                 return node;
             }
 
-            private NodeStub EnqueueNode(SyntaxNode syntax)
+            private BuildNode EnqueueNode(SyntaxNode syntax)
             {
                 var node = this.AddNode(syntax);
                 this.owner.ReadyQueue.Enqueue(node);
@@ -150,7 +150,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return node;
             }
 
-            private NodeStub ReenqueueCurrentNode(SyntaxNode syntaxUpdate)
+            private BuildNode ReenqueueCurrentNode(SyntaxNode syntaxUpdate)
             {
                 this.CurrentNode.Syntax = syntaxUpdate;
                 this.CurrentNode.PendingTask = null;
@@ -158,7 +158,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return this.CurrentNode;
             }
 
-            private void RemoveNode(NodeStub node)
+            private void RemoveNode(BuildNode node)
             {
                 this.owner.NodeStubs.Remove(node);
             }
