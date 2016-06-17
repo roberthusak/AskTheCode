@@ -22,11 +22,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.visitor = new BuilderSyntaxVisitor(this);
 
             var initialNode = new BuildNode(methodSyntax);
-            this.NodeStubs.Add(initialNode);
+            this.Nodes.Add(initialNode);
             this.ReadyQueue.Enqueue(initialNode);
         }
 
-        internal HashSet<BuildNode> NodeStubs { get; } = new HashSet<BuildNode>();
+        internal HashSet<BuildNode> Nodes { get; } = new HashSet<BuildNode>();
 
         private Queue<BuildNode> ReadyQueue { get; } = new Queue<BuildNode>();
 
@@ -73,6 +73,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             public BuildNode CurrentNode { get; set; }
 
+            public override Task DefaultVisit(SyntaxNode node)
+            {
+                return Task.CompletedTask;
+            }
+
             public override Task VisitMethodDeclaration(MethodDeclarationSyntax methodSyntax)
             {
                 Contract.Requires(this.CurrentNode.OutgoingEdges.Count == 0);
@@ -83,13 +88,42 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 if ((methodSyntax.ReturnType as PredefinedTypeSyntax).Keyword.Text == "void")
                 {
-                    var implicitReturn = this.AddNode(methodSyntax.Body.CloseBraceToken);
+                    var implicitReturn = this.AddFinalNode(methodSyntax.Body.CloseBraceToken);
                     body.AddEdge(implicitReturn);
 
                     // TODO: Add also ReturnFlowNode here
                 }
 
                 this.RemoveNode(this.CurrentNode);
+
+                return Task.CompletedTask;
+            }
+
+            public override Task VisitBlock(BlockSyntax blockSyntax)
+            {
+                var outEdge = this.CurrentNode.OutgoingEdges.SingleOrDefault();
+                Contract.Assert(outEdge?.ValueCondition == null);
+
+                // TODO: Consider merging with the following node in the case of empty block
+                //       (or leave it to the FlowGraph construction)
+                if (blockSyntax.Statements.Count > 0)
+                {
+                    this.CurrentNode.OutgoingEdges.Clear();
+                    var precedingStatement = this.ReenqueueCurrentNode(blockSyntax.Statements.First());
+
+                    for (int i = 1; i < blockSyntax.Statements.Count; i++)
+                    {
+                        var currentStatement = this.EnqueueNode(blockSyntax.Statements[i]);
+                        precedingStatement.AddEdge(currentStatement);
+
+                        precedingStatement = currentStatement;
+                    }
+
+                    if (outEdge != null)
+                    {
+                        precedingStatement.AddEdge(outEdge);
+                    }
+                }
 
                 return Task.CompletedTask;
             }
@@ -134,17 +168,18 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return Task.CompletedTask;
             }
 
-            private BuildNode AddNode(SyntaxNodeOrToken syntax)
+            private BuildNode AddFinalNode(SyntaxNodeOrToken syntax)
             {
                 var node = new BuildNode(syntax);
-                this.owner.NodeStubs.Add(node);
+                this.owner.Nodes.Add(node);
 
                 return node;
             }
 
             private BuildNode EnqueueNode(SyntaxNode syntax)
             {
-                var node = this.AddNode(syntax);
+                var node = new BuildNode(syntax);
+                this.owner.Nodes.Add(node);
                 this.owner.ReadyQueue.Enqueue(node);
 
                 return node;
@@ -154,13 +189,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             {
                 this.CurrentNode.Syntax = syntaxUpdate;
                 this.CurrentNode.PendingTask = null;
+                this.owner.ReadyQueue.Enqueue(this.CurrentNode);
 
                 return this.CurrentNode;
             }
 
             private void RemoveNode(BuildNode node)
             {
-                this.owner.NodeStubs.Remove(node);
+                this.owner.Nodes.Remove(node);
             }
         }
     }
