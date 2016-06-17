@@ -99,6 +99,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return Task.CompletedTask;
             }
 
+            public override Task VisitReturnStatement(ReturnStatementSyntax returnSyntax)
+            {
+                this.CurrentNode.OutgoingEdges.Clear();
+
+                // TODO: Handle also the return value computation
+                return Task.CompletedTask;
+            }
+
             public override Task VisitBlock(BlockSyntax blockSyntax)
             {
                 var outEdge = this.CurrentNode.OutgoingEdges.SingleOrDefault();
@@ -135,12 +143,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 this.CurrentNode.OutgoingEdges.Clear();
                 var condition = this.ReenqueueCurrentNode(ifSyntax.Condition);
-                var body = this.EnqueueNode(ifSyntax.Statement);
-                condition.AddEdge(body, ExpressionFactory.True);
+                var statement = this.EnqueueNode(ifSyntax.Statement);
+                condition.AddEdge(statement, ExpressionFactory.True);
 
                 if (outEdge != null)
                 {
-                    body.AddEdge(outEdge);
+                    statement.AddEdge(outEdge);
                 }
 
                 if (ifSyntax.Else != null)
@@ -163,6 +171,32 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     }
 
                     condition.AddEdge(outEdge.To, ExpressionFactory.False);
+                }
+
+                return Task.CompletedTask;
+            }
+
+            public override Task VisitElseClause(ElseClauseSyntax elseSyntax)
+            {
+                this.ReenqueueCurrentNode(elseSyntax.Statement);
+
+                return Task.CompletedTask;
+            }
+
+            public override Task VisitWhileStatement(WhileStatementSyntax whileSyntax)
+            {
+                var outEdge = this.CurrentNode.OutgoingEdges.SingleOrDefault();
+                Contract.Assert(outEdge?.ValueCondition == null);
+
+                this.CurrentNode.OutgoingEdges.Clear();
+                var condition = this.ReenqueueCurrentNode(whileSyntax.Condition);
+                var statement = this.EnqueueNode(whileSyntax.Statement);
+                condition.AddEdge(statement, ExpressionFactory.True);
+                statement.AddEdge(condition);
+
+                if (outEdge != null)
+                {
+                    this.CurrentNode.OutgoingEdges.Add(outEdge.WithValueCondition(ExpressionFactory.False));
                 }
 
                 return Task.CompletedTask;

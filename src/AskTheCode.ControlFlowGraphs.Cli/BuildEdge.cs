@@ -13,10 +13,21 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.ValueCondition = valueCondition;
         }
 
-        public BuildNode To { get; set; }
+        public BuildNode To { get; private set; }
 
-        public Expression ValueCondition { get; set; }
+        public Expression ValueCondition { get; private set; }
 
-        public FlowEdge Edge { get; set; }
+        // TODO: Set once semantic? Or remove completely and care about only in the second phase?
+        public FlowEdge FlowEdge { get; set; }
+
+        public BuildEdge WithTo(BuildNode to)
+        {
+            return new BuildEdge(to, this.ValueCondition);
+        }
+
+        public BuildEdge WithValueCondition(Expression valueCondition)
+        {
+            return new BuildEdge(this.To, valueCondition);
+        }
     }
 }

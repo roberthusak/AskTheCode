@@ -19,7 +19,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         // TODO: Optimize the type if necessary (make 2 fields?)
         public SyntaxNodeOrToken Syntax { get; set; }
 
-        public FlowNode Node { get; set; }
+        // TODO: Set once semantic? Or remove completely and care about only in the second phase?
+        public FlowNode FlowNode { get; set; }
 
         public Expression Value { get; set; }
 
