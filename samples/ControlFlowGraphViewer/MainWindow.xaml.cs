@@ -14,9 +14,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AskTheCode.ControlFlowGraphs;
+using AskTheCode.ControlFlowGraphs.Cli.Tests;
 using AskTheCode.ControlFlowGraphs.Tests;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.WpfGraphControl;
+using AskTheCode.ControlFlowGraphs.Cli;
 
 namespace ControlFlowGraphViewer
 {
@@ -25,20 +30,21 @@ namespace ControlFlowGraphViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private FlowToMsaglGraphConverter graphConverter;
+        private FlowToMsaglGraphConverter flowGraphConverter;
+        private CSharpBuildToMsaglGraphConverter csharpGraphConverter;
         private GraphViewer aglGraphViewer;
-        private MethodInfo[] constructionMethods;
+        private MethodInfo[] flowGeneratorMethods;
+        private MethodDeclarationSyntax[] csharpMethodSyntaxes;
 
         public MainWindow()
         {
             this.InitializeComponent();
-            this.Loaded += this.MainWindow_Loaded;
-            this.graphSelectionCombo.SelectionChanged += this.GraphSelectionCombo_SelectionChanged;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            this.graphConverter = new FlowToMsaglGraphConverter();
+            this.flowGraphConverter = new FlowToMsaglGraphConverter();
+            this.csharpGraphConverter = new CSharpBuildToMsaglGraphConverter();
 
             this.aglGraphViewer = new GraphViewer()
             {
@@ -46,7 +52,8 @@ namespace ControlFlowGraphViewer
             };
             this.aglGraphViewer.BindToPanel(this.graphViewerPanel);
 
-            this.constructionMethods =
+            // Symbolic CFGs
+            this.flowGeneratorMethods =
                 typeof(SampleFlowGraphGenerator)
                 .GetMethods(BindingFlags.Public | BindingFlags.Static)
                 .Where(
@@ -54,25 +61,79 @@ namespace ControlFlowGraphViewer
                     && !methodInfo.ContainsGenericParameters
                     && methodInfo.GetParameters().Length == 0)
                 .ToArray();
-            this.graphSelectionCombo.ItemsSource = this.constructionMethods;
+            this.graphSelectionCombo.ItemsSource = this.flowGeneratorMethods;
             this.graphSelectionCombo.SelectedIndex = 0;
+
+            // C# CFGs built from the syntax trees of the sample methods
+            var workspace = SampleCSharpWorkspaceProvider.MethodSampleClass();
+            var root = workspace.CurrentSolution.Projects.Single().Documents.Single().GetSyntaxRootAsync().Result;
+            this.csharpMethodSyntaxes = root.DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
+            this.methodSelectionCombo.ItemsSource = this.csharpMethodSyntaxes;
+        }
+
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox combo;
+            if (this.tabs.SelectedItem == this.flowGraphTab)
+            {
+                combo = this.graphSelectionCombo;
+            }
+            else if (this.tabs.SelectedItem == this.csharpMethodTab)
+            {
+                combo = this.methodSelectionCombo;
+            }
+            else
+            {
+                return;
+            }
+
+            // Select the first value if nothing is selected or reselect the current value
+            int previousIndex = combo.SelectedIndex;
+            if (previousIndex == -1)
+            {
+                combo.SelectedIndex = 0;
+            }
+            else
+            {
+                combo.SelectedIndex = -1;
+                combo.SelectedIndex = previousIndex;
+            }
         }
 
         private void GraphSelectionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var index = this.graphSelectionCombo.SelectedIndex;
+            int index = this.graphSelectionCombo.SelectedIndex;
             if (index == -1)
             {
                 return;
             }
 
-            var methodInfo = this.constructionMethods[index];
+            var methodInfo = this.flowGeneratorMethods[index];
             var flowGraph = (FlowGraph)methodInfo.Invoke(null, null);
 
-            var aglGraph = this.graphConverter.Convert(flowGraph);
+            var aglGraph = this.flowGraphConverter.Convert(flowGraph);
             aglGraph.Attr.LayerDirection = LayerDirection.TB;
-
             this.aglGraphViewer.Graph = aglGraph;
+
+            e.Handled = true;
+        }
+
+        private async void MethodSelectionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int index = this.methodSelectionCombo.SelectedIndex;
+            if (index == -1)
+            {
+                return;
+            }
+
+            var builder = new CSharpFlowGraphBuilder(this.csharpMethodSyntaxes[index]);
+            await builder.BuildAsync();
+
+            var aglGraph = this.csharpGraphConverter.Convert(builder);
+            aglGraph.Attr.LayerDirection = LayerDirection.TB;
+            this.aglGraphViewer.Graph = aglGraph;
+
+            e.Handled = true;
         }
     }
 }

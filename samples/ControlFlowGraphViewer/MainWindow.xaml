@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ControlFlowGraphViewer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800">
+        Title="MainWindow" Height="600" Width="800" Loaded="MainWindow_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -15,15 +15,25 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" Background="WhiteSmoke">
-            <Label>Select graph:</Label>
-            <ComboBox x:Name="graphSelectionCombo" Margin="2" DisplayMemberPath="Name" />
-        </StackPanel>
+        <TabControl x:Name="tabs" Grid.ColumnSpan="2"  BorderBrush="Gray" SelectionChanged="TabControl_SelectionChanged">
+            <TabItem x:Name="flowGraphTab" Header="Symbolic CFG">
+                <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
+                    <Label>Select graph:</Label>
+                    <ComboBox x:Name="graphSelectionCombo" Margin="2" DisplayMemberPath="Name" SelectionChanged="GraphSelectionCombo_SelectionChanged" />
+                </StackPanel>
+            </TabItem>
+            <TabItem x:Name="csharpMethodTab" Header="C# CFG Building">
+                <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
+                    <Label>Select method:</Label>
+                    <ComboBox x:Name="methodSelectionCombo" Margin="2" DisplayMemberPath="Identifier.Text" SelectionChanged="MethodSelectionCombo_SelectionChanged" />
+                </StackPanel>
+            </TabItem>
+        </TabControl>
         <DockPanel Grid.Column="1" Grid.Row="1">
             <StackPanel DockPanel.Dock="Right" Width="120" Background="WhiteSmoke">
                 <Label>TODO: Properties</Label>
             </StackPanel>
-            <Border BorderBrush="Gray" BorderThickness="0,1,1,0">
+            <Border BorderBrush="Gray" BorderThickness="0,0,1,0">
                 <!-- TODO: Implement properly working scrollbars (ScrollViewer doesn't work here) -->
                 <ScrollContentPresenter>
                     <ContentPresenter.Content>

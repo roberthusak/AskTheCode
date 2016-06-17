@@ -29,6 +29,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlFlowGraphViewer", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraphs.Cli", "src\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj", "{A1A0861D-1D52-4F19-9782-96443D7F37F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraphs.Cli.Tests", "test\AskTheCode.ControlFlowGraphs.Cli.Tests\AskTheCode.ControlFlowGraphs.Cli.Tests.csproj", "{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "inputs", "inputs", "{4299E8D1-EF4E-4F20-9EC6-8285436234ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp", "csharp", "{2CB9758F-B2A5-4686-A0EB-7666E4145A7A}"
+	ProjectSection(SolutionItems) = preProject
+		test\inputs\csharp\MethodSampleClass.cs = test\inputs\csharp\MethodSampleClass.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +84,10 @@ Global
 		{A1A0861D-1D52-4F19-9782-96443D7F37F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1A0861D-1D52-4F19-9782-96443D7F37F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1A0861D-1D52-4F19-9782-96443D7F37F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,5 +103,8 @@ Global
 		{CB0A9CAE-BEEB-4475-8CAF-EF9314ADFC01} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
 		{555E5794-603C-4F4F-8EF0-1DE8BBE8031C} = {EAEC332F-9604-4A3E-86B1-6CFF427B7A45}
 		{A1A0861D-1D52-4F19-9782-96443D7F37F6} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
+		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
+		{4299E8D1-EF4E-4F20-9EC6-8285436234ED} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
+		{2CB9758F-B2A5-4686-A0EB-7666E4145A7A} = {4299E8D1-EF4E-4F20-9EC6-8285436234ED}
 	EndGlobalSection
 EndGlobal
