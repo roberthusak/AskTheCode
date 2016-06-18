@@ -136,6 +136,7 @@
     <Compile Include="OrdinalId.cs" />
     <Compile Include="OrdinalIdValueGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SingleReadOnlyList.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AskTheCode.Common.ruleset" />
