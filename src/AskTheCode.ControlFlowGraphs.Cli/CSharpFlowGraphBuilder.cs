@@ -48,6 +48,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     {
                         node.PendingTask = task;
                         this.Pending.Add(node);
+
+                        // TODO: Consider creating a new visitor so that its CurrentNode is not changed when awaited    
                     }
                 }
                 else if (this.Pending.Count > 0)
@@ -185,8 +187,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             public override Task VisitWhileStatement(WhileStatementSyntax whileSyntax)
             {
-                var outEdge = this.CurrentNode.OutgoingEdges.SingleOrDefault();
-                Contract.Assert(outEdge?.ValueCondition == null);
+                // TODO: Consider putting this validation in a helper method and throwing an exception
+                var outEdge = this.CurrentNode.OutgoingEdges.Single();
+                Contract.Assert(outEdge.ValueCondition == null);
 
                 this.CurrentNode.OutgoingEdges.Clear();
                 var condition = this.ReenqueueCurrentNode(whileSyntax.Condition);
@@ -194,12 +197,143 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 condition.AddEdge(statement, ExpressionFactory.True);
                 statement.AddEdge(condition);
 
-                if (outEdge != null)
-                {
-                    this.CurrentNode.OutgoingEdges.Add(outEdge.WithValueCondition(ExpressionFactory.False));
-                }
+                this.CurrentNode.OutgoingEdges.Add(outEdge.WithValueCondition(ExpressionFactory.False));
 
                 return Task.CompletedTask;
+            }
+
+            public override Task VisitParenthesizedExpression(ParenthesizedExpressionSyntax syntax)
+            {
+                this.ReenqueueCurrentNode(syntax.Expression);
+
+                // TODO: Expression value processing
+                return Task.CompletedTask;
+            }
+
+            public override Task VisitBinaryExpression(BinaryExpressionSyntax syntax)
+            {
+                // TODO: Check whether are the operators not overloaded
+                //       (either implement it or show a warning)
+                // TODO: Expression value processing
+                switch (syntax.Kind())
+                {
+                    case SyntaxKind.LogicalOrExpression:
+                        return this.ProcessLogicalOrExpression(syntax);
+                    case SyntaxKind.LogicalAndExpression:
+                        return this.ProcessLogicalAndExpression(syntax);
+
+                    case SyntaxKind.BitwiseOrExpression:
+                        // TODO (beware the special case if used on bool)
+                        break;
+                    case SyntaxKind.BitwiseAndExpression:
+                        // TODO (beware the special case if used on bool)
+                        break;
+                    case SyntaxKind.ExclusiveOrExpression:
+                        // TODO (beware the special case if used on bool)
+                        break;
+
+                    case SyntaxKind.None:
+                    default:
+                        return Task.CompletedTask;
+                }
+
+                // TODO: Remove when there are no breaks in the switch statement
+                return Task.CompletedTask;
+            }
+
+            private Task ProcessLogicalAndExpression(BinaryExpressionSyntax andSyntax)
+            {
+                var left = this.ReenqueueCurrentNode(andSyntax.Left);
+                var right = this.EnqueueNode(andSyntax.Right);
+
+                BuildEdge outEdge, outTrueEdge, outFalseEdge;
+                if (this.TryGetSingleEdge(left, out outEdge))
+                {
+                    left.OutgoingEdges.Clear();
+                    left.AddEdge(outEdge.WithValueCondition(ExpressionFactory.False));
+                    right.AddEdge(outEdge);
+                }
+                else if (this.TryGetTwoBooleanEdges(left, out outTrueEdge, out outFalseEdge))
+                {
+                    left.OutgoingEdges.Remove(outTrueEdge);
+                    right.OutgoingEdges.Add(outTrueEdge);
+                    right.OutgoingEdges.Add(outFalseEdge);
+                }
+                else
+                {
+                    // TODO: Prevent this case in the switch statement if switched on boolean
+                    // TODO: Add a message and put to resources
+                    Contract.Assert(false);
+                }
+
+                left.AddEdge(right, ExpressionFactory.True);
+
+                return Task.CompletedTask;
+            }
+
+            private Task ProcessLogicalOrExpression(BinaryExpressionSyntax orSyntax)
+            {
+                var left = this.ReenqueueCurrentNode(orSyntax.Left);
+                var right = this.EnqueueNode(orSyntax.Right);
+
+                BuildEdge outEdge, outTrueEdge, outFalseEdge;
+                if (this.TryGetSingleEdge(left, out outEdge))
+                {
+                    left.OutgoingEdges.Clear();
+                    left.AddEdge(outEdge.WithValueCondition(ExpressionFactory.True));
+                    right.AddEdge(outEdge);
+                }
+                else if (this.TryGetTwoBooleanEdges(left, out outTrueEdge, out outFalseEdge))
+                {
+                    left.OutgoingEdges.Remove(outFalseEdge);
+                    right.OutgoingEdges.Add(outTrueEdge);
+                    right.OutgoingEdges.Add(outFalseEdge);
+                }
+                else
+                {
+                    // TODO: Prevent this case in the switch statement if switched on boolean
+                    // TODO: Add a message and put to resources
+                    Contract.Assert(false);
+                }
+
+                left.AddEdge(right, ExpressionFactory.False);
+
+                return Task.CompletedTask;
+            }
+
+            private bool TryGetSingleEdge(BuildNode node, out BuildEdge edge)
+            {
+                if (node.OutgoingEdges.Count == 1)
+                {
+                    edge = node.OutgoingEdges.Single();
+                    Contract.Assert(edge.ValueCondition == null);
+
+                    return true;
+                }
+                else
+                {
+                    edge = null;
+
+                    return false;
+                }
+            }
+
+            private bool TryGetTwoBooleanEdges(BuildNode node, out BuildEdge trueEdge, out BuildEdge falseEdge)
+            {
+                if (node.OutgoingEdges.Count == 2)
+                {
+                    trueEdge = node.OutgoingEdges.First(edge => edge.ValueCondition == ExpressionFactory.True);
+                    falseEdge = node.OutgoingEdges.First(edge => edge.ValueCondition == ExpressionFactory.False);
+
+                    return (trueEdge != null && falseEdge != null);
+                }
+                else
+                {
+                    trueEdge = null;
+                    falseEdge = null;
+
+                    return false;
+                }
             }
 
             private BuildNode AddFinalNode(SyntaxNodeOrToken syntax)

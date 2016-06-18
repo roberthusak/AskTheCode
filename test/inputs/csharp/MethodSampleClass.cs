@@ -24,6 +24,18 @@ public static class MethodSampleClass
         }
     }
 
+    public static int LogicExample(int a, int b, int c, bool condition)
+    {
+        if ((a == 0 || 10 / b > 3) && (c == 3 || (5 / b > 1 && condition)))
+        {
+            return a;
+        }
+        else
+        {
+            return b;
+        }
+    }
+
     public static int ComplexExample(int a, int b, bool c)
     {
         if (a == 0)
@@ -48,7 +60,7 @@ public static class MethodSampleClass
         return a;
     }
 
-    private static bool IsNiceNumber(int i)
+    public static bool IsNiceNumber(int i)
     {
         if (i % 2 == 0)
         {

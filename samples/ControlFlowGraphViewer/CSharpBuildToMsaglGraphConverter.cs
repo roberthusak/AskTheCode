@@ -51,7 +51,7 @@ namespace ControlFlowGraphViewer
         {
             var label = new Label();
 
-            label.Text = buildNode.Syntax.ToFullString();
+            label.Text = buildNode.Syntax.ToString();
 
             aglNode.Label = label;
         }
