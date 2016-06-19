@@ -13,7 +13,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
     public class IntegerModelFactory : ITypeModelFactory
     {
-        private static readonly ImmutableArray<Sort> SortRequirements = ImmutableArray.Create(Sort.Bool);
+        private static readonly ImmutableArray<Sort> SortRequirements = ImmutableArray.Create(Sort.Int);
 
         public bool IsTypeSupported(ITypeSymbol type)
         {
@@ -52,7 +52,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
         }
 
         // TODO: Somehow handle the different sizes and signed/unsigned variants using modulo etc.
-        public void ModelOperation(IOperationModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments)
+        public void ModelOperation(IModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments)
         {
             Contract.Requires(context != null);
             Contract.Requires(method != null);
@@ -64,7 +64,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             Contract.Assert(arguments.Count() == 2);
             var left = (IntegerModel)arguments.First();
             var right = (IntegerModel)arguments.ElementAt(1);
-            context.SetValue(left.Value + right.Value);
+            var result = left.Value + right.Value;
+            var resultModel = new IntegerModel(this, method.ReturnType, result);
+            context.SetResultValue(resultModel);
         }
     }
 }

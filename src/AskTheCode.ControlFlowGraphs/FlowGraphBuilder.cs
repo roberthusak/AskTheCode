@@ -56,6 +56,7 @@ namespace AskTheCode.ControlFlowGraphs
             var nodeId = this.nodeIdProvider.GenerateNewId();
             var node = new EnterFlowNode(this.Graph, nodeId, parameters ?? Enumerable.Empty<FlowVariable>());
             this.Graph.MutableNodes.Add(node);
+            Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
             return node;
         }
@@ -75,6 +76,7 @@ namespace AskTheCode.ControlFlowGraphs
             var nodeId = this.nodeIdProvider.GenerateNewId();
             var node = new InnerFlowNode(this.Graph, nodeId, assignments ?? Enumerable.Empty<Assignment>());
             this.Graph.MutableNodes.Add(node);
+            Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
             return node;
         }
@@ -95,6 +97,7 @@ namespace AskTheCode.ControlFlowGraphs
                 arguments ?? Enumerable.Empty<Expression>(),
                 returnAssignments ?? Enumerable.Empty<FlowVariable>());
             this.Graph.MutableNodes.Add(node);
+            Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
             return node;
         }
@@ -106,6 +109,7 @@ namespace AskTheCode.ControlFlowGraphs
             var nodeId = this.nodeIdProvider.GenerateNewId();
             var node = new ReturnFlowNode(this.Graph, nodeId, returnValues ?? Enumerable.Empty<Expression>());
             this.Graph.MutableNodes.Add(node);
+            Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
             return node;
         }
@@ -124,6 +128,7 @@ namespace AskTheCode.ControlFlowGraphs
                 constructorLocation,
                 arguments ?? Enumerable.Empty<Expression>());
             this.Graph.MutableNodes.Add(node);
+            Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
             return node;
         }
@@ -144,6 +149,7 @@ namespace AskTheCode.ControlFlowGraphs
             var edgeId = this.edgeIdProvider.GenerateNewId();
             var edge = new FlowEdge(edgeId, from, to, condition);
             this.Graph.MutableEdges.Add(edge);
+            Contract.Assert(edgeId.Value == this.Graph.MutableEdges.IndexOf(edge));
 
             return edge;
         }
@@ -186,6 +192,7 @@ namespace AskTheCode.ControlFlowGraphs
 
             var variable = new LocalFlowVariable(this.Graph, variableId, sort, displayName);
             this.Graph.MutableLocalVariables.Add(variable);
+            Contract.Assert(variableId.Value == this.Graph.MutableLocalVariables.IndexOf(variable));
 
             return variable;
         }

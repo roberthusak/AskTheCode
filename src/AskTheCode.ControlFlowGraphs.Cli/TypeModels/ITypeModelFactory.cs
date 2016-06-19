@@ -17,12 +17,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 
         ITypeModel GetVariableModel(ITypeSymbol type, IEnumerable<Expression> expressions);
 
-        void ModelOperation(IOperationModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments);
+        void ModelOperation(IModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments);
 
         // TODO: Incorporate the usage of global variables
     }
 
-    public static class TypeModelFactoryExtension
+    public static class TypeModelFactoryExtensions
     {
         public static bool AreSortsMatching(this ITypeModelFactory self, ITypeSymbol type, IEnumerable<Expression> expressions)
         {
@@ -41,7 +41,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             int i = 0;
             foreach (var expression in expressions)
             {
-                Contract.Requires(expression != null);
+                Contract.Assert(expression != null);
 
                 if (expression.Sort != requirements[i])
                 {

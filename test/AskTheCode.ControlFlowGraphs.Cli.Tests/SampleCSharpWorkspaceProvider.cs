@@ -18,6 +18,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
             var projectInfo = ProjectInfo.Create(projectId, versionStamp, projName, projName, LanguageNames.CSharp);
             var newProject = workspace.AddProject(projectInfo);
 
+            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+            newProject = newProject.AddMetadataReference(mscorlib);
+            workspace.TryApplyChanges(newProject.Solution);
+
             string sourceContents = File.ReadAllText("inputs\\MethodSampleClass.cs");
             workspace.AddDocument(newProject.Id, "MethodSampleClass.cs", SourceText.From(sourceContents));
 

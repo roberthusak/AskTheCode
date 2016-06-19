@@ -51,7 +51,28 @@ namespace ControlFlowGraphViewer
         {
             var label = new Label();
 
-            label.Text = buildNode.Syntax.ToString();
+            var text = new StringBuilder(buildNode.Syntax.ToString());
+            if (buildNode.VariableModel != null || buildNode.ValueModel != null)
+            {
+                text.AppendLine();
+                text.Append("[ ");
+
+                if (buildNode.VariableModel != null)
+                {
+                    text.Append($"({string.Join(", ", buildNode.VariableModel.AssignmentLeft)}) ");
+                }
+
+                text.Append(" \u2190 ");
+
+                if (buildNode.ValueModel != null)
+                {
+                    text.Append($"({string.Join(", ", buildNode.ValueModel.AssignmentRight)}) ");
+                }
+
+                text.Append(" ]");
+            }
+
+            label.Text = text.ToString();
 
             aglNode.Label = label;
         }

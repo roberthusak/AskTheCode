@@ -23,7 +23,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             this.Value = value;
         }
 
-        public IReadOnlyList<Variable> AssignmentLeftSide
+        public IReadOnlyList<Variable> AssignmentLeft
         {
             get
             {
@@ -33,7 +33,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             }
         }
 
-        public IReadOnlyList<Expression> AssignmentRightSide
+        public IReadOnlyList<Expression> AssignmentRight
         {
             get
             {

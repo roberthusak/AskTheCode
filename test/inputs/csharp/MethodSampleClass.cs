@@ -24,6 +24,17 @@ public static class MethodSampleClass
         }
     }
 
+    public static int IntAddNested(int a, int b, int c)
+    {
+        a = b + c + c;
+        int d = b;
+        b = c + IntAdd(a, b);
+        a = b = c + IntAdd(a, b);
+        d = d + d;
+
+        return d;
+    }
+
     public static int LogicExample(int a, int b, int c, bool condition)
     {
         if ((a == 0 || 10 / b > 3) && (c == 3 || (5 / b > 1 && condition)))

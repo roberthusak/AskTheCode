@@ -37,7 +37,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             return new BooleanModel(this, type, (BoolHandle)expressions.Single());
         }
 
-        public void ModelOperation(IOperationModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments)
+        public void ModelOperation(IModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments)
         {
             // TODO
         }

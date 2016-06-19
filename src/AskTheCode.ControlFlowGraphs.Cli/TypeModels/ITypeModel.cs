@@ -15,9 +15,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
         /// </summary>
         bool IsLValue { get; }
 
-        IReadOnlyList<Variable> AssignmentLeftSide { get; }
+        IReadOnlyList<Variable> AssignmentLeft { get; }
 
-        IReadOnlyList<Expression> AssignmentRightSide { get; }
+        IReadOnlyList<Expression> AssignmentRight { get; }
 
         ITypeSymbol Type { get; }
 

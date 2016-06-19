@@ -33,7 +33,10 @@ namespace ControlFlowGraphViewer
         private FlowToMsaglGraphConverter flowGraphConverter;
         private CSharpBuildToMsaglGraphConverter csharpGraphConverter;
         private GraphViewer aglGraphViewer;
+
         private MethodInfo[] flowGeneratorMethods;
+
+        private SemanticModel csharpSemanticModel;
         private MethodDeclarationSyntax[] csharpMethodSyntaxes;
 
         public MainWindow()
@@ -41,7 +44,7 @@ namespace ControlFlowGraphViewer
             this.InitializeComponent();
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             this.flowGraphConverter = new FlowToMsaglGraphConverter();
             this.csharpGraphConverter = new CSharpBuildToMsaglGraphConverter();
@@ -66,9 +69,12 @@ namespace ControlFlowGraphViewer
 
             // C# CFGs built from the syntax trees of the sample methods
             var workspace = SampleCSharpWorkspaceProvider.MethodSampleClass();
-            var root = workspace.CurrentSolution.Projects.Single().Documents.Single().GetSyntaxRootAsync().Result;
+            var document = workspace.CurrentSolution.Projects.Single().Documents.Single();
+            var root = await document.GetSyntaxRootAsync();
+
             this.csharpMethodSyntaxes = root.DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
             this.methodSelectionCombo.ItemsSource = this.csharpMethodSyntaxes;
+            this.csharpSemanticModel = await document.GetSemanticModelAsync();
         }
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -126,7 +132,8 @@ namespace ControlFlowGraphViewer
                 return;
             }
 
-            var builder = new CSharpFlowGraphBuilder(this.csharpMethodSyntaxes[index]);
+            var methodSyntax = this.csharpMethodSyntaxes[index];
+            var builder = new CSharpFlowGraphBuilder(this.csharpSemanticModel, methodSyntax);
             await builder.BuildAsync();
 
             var aglGraph = this.csharpGraphConverter.Convert(builder);

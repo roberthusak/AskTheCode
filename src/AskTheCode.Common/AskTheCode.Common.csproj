@@ -129,6 +129,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataHelper.cs" />
     <Compile Include="IFreezable.cs" />
     <Compile Include="IId.cs" />
     <Compile Include="IOrdinalId.cs" />
