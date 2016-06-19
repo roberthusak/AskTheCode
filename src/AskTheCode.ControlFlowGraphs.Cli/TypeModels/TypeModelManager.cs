@@ -12,16 +12,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
     // TODO: Add working with global variables
     internal class TypeModelManager
     {
-        private BooleanModelFactory booleanFactory = new BooleanModelFactory();
         private IntegerModelFactory integerFactory = new IntegerModelFactory();
 
         public ITypeModelFactory TryGetFactory(ITypeSymbol type)
         {
             Contract.Requires(type != null);
 
-            if (this.booleanFactory.IsTypeSupported(type))
+            if (BooleanModelFactory.Instance.IsTypeSupported(type))
             {
-                return this.booleanFactory;
+                return BooleanModelFactory.Instance;
             }
             else if (this.integerFactory.IsTypeSupported(type))
             {

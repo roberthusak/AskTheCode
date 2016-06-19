@@ -36,6 +36,55 @@ public static class MethodSampleClass
         return d;
     }
 
+    public static int IntOperationsExample(int a, int b, int c)
+    {
+        int d = a + b;
+        d = a - c;
+        d = a / c;
+        d = a % c;
+        d = a * c;
+
+        d = a * b + c / 2;
+        d = a * (b + c) / 2;
+        return d;
+    }
+
+    public static bool BoolOperationsExample(bool a, bool b, bool c)
+    {
+        int d = (a && b);
+        d = (a & b);
+        d = (a || b);
+        d = (a | b);
+        d = (a == b);
+        d = (a != b);
+        d = !c;
+
+        d = a & b | c;
+        d = a && b || c;
+        d = a && (b || c);
+
+        return a;
+    }
+
+    public static bool IntBoolOperationsExample(int a, int b, bool c)
+    {
+        bool d = (a == b);
+        d = (a != b);
+        d = (a > b);
+        d = (a < b);
+        d = (a >= b);
+        d = (a <= b);
+
+        d = ((a > b) || c);
+
+        if ((a > b) && (a != b || c))
+        {
+            return c;
+        }
+
+        return !c;
+    }
+
     public static int LogicExample(int a, int b, int c, bool condition)
     {
         if ((a == 0 || 10 / b > 3) && (c == 3 || (5 / b > 1 && condition)))

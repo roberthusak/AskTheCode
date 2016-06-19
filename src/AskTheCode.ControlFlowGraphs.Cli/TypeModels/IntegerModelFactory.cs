@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
+using AskTheCode.Common;
 using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
@@ -57,16 +58,122 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             Contract.Requires(context != null);
             Contract.Requires(method != null);
             Contract.Requires(arguments != null);
+            Contract.Requires(arguments.Count() == method.Parameters.Length);
 
-            // TODO: distinguish the particular operator
+            if (method.MethodKind != MethodKind.BuiltinOperator
+                || method.Parameters.Length == 0
+                || (!BooleanModelFactory.Instance.IsTypeSupported(method.ReturnType)
+                    && !this.IsTypeSupported(method.ReturnType)))
+            {
+                // This might be the case of conversions to other types, static methods etc.
+                return;
+            }
 
-            // Assume + for now
-            Contract.Assert(arguments.Count() == 2);
-            var left = (IntegerModel)arguments.First();
-            var right = (IntegerModel)arguments.ElementAt(1);
-            var result = left.Value + right.Value;
-            var resultModel = new IntegerModel(this, method.ReturnType, result);
-            context.SetResultValue(resultModel);
+            IntHandle intResult;
+            BoolHandle boolResult;
+            this.GetOperationResult(context, method, arguments, out intResult, out boolResult);
+
+            ITypeModel resultModel = null;
+
+            if (intResult.Expression != null)
+            {
+                Contract.Assert(this.IsTypeSupported(method.ReturnType));
+                resultModel = new IntegerModel(this, method.ReturnType, intResult);
+            }
+            else if (boolResult.Expression != null)
+            {
+                Contract.Assert(BooleanModelFactory.Instance.IsTypeSupported(method.ReturnType));
+
+                // TODO: Properly manage the references to the other factories instead of using singletons for all types
+                resultModel = BooleanModelFactory.Instance.GetVariableModel(
+                    method.ReturnType,
+                    new SingleReadOnlyList<Expression>(boolResult.Expression));
+            }
+
+            if (resultModel != null)
+            {
+                context.SetResultValue(resultModel);
+            }
+        }
+
+        private void GetOperationResult(
+            IModellingContext context,
+            IMethodSymbol method,
+            IEnumerable<ITypeModel> arguments,
+            out IntHandle intResult,
+            out BoolHandle boolResult)
+        {
+            var first = ((IntegerModel)arguments.First()).Value;
+
+            if (method.Parameters.Length == 1)
+            {
+                if (method.Name == "op_UnaryNegation")
+                {
+                    intResult = -first;
+                }
+                else if (method.Name == "op_UnaryPlus")
+                {
+                    intResult = first;
+                }
+            }
+            else
+            {
+                Contract.Assert(method.Parameters.Length == 2);
+                var second = ((IntegerModel)arguments.ElementAt(1)).Value;
+
+                if (BooleanModelFactory.Instance.IsTypeSupported(method.ReturnType))
+                {
+                    switch (method.Name)
+                    {
+                        case "op_Equality":
+                            boolResult = (first == second);
+                            break;
+                        case "op_Inequality":
+                            boolResult = (first != second);
+                            break;
+                        case "op_GreaterThan":
+                            boolResult = (first > second);
+                            break;
+                        case "op_LessThan":
+                            boolResult = (first < second);
+                            break;
+                        case "op_GreaterThanOrEqual":
+                            boolResult = (first >= second);
+                            break;
+                        case "op_LessThanOrEqual":
+                            boolResult = (first <= second);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    Contract.Assert(this.IsTypeSupported(method.ReturnType));
+
+                    switch (method.Name)
+                    {
+                        case "op_Addition":
+                            intResult = first + second;
+                            break;
+                        case "op_Subtraction":
+                            intResult = first - second;
+                            break;
+                        case "op_Division":
+                            // TODO: Set the exception if the right is zero
+                            intResult = first / second;
+                            break;
+                        case "op_Modulus":
+                            intResult = first % second;
+                            break;
+                        case "op_Multiply":
+                            intResult = first * second;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
         }
     }
 }
