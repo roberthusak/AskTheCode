@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.SmtLibStandard;
 using Microsoft.CodeAnalysis;
-using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {

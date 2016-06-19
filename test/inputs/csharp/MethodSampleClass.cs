@@ -31,7 +31,8 @@ public static class MethodSampleClass
         b = c + IntAdd(a, b);
         a = b = c + IntAdd(a, b);
         d = d + d;
-
+        int e = b, f;
+        e = d;
         return d;
     }
 

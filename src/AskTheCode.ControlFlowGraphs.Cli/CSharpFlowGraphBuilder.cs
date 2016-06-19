@@ -90,7 +90,16 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         private ITypeModel TryGetDefinedVariableModel(SyntaxNode syntax)
         {
-            var symbol = this.semanticModel.GetSymbolInfo(syntax).Symbol;
+            ISymbol symbol;
+            if (syntax.Kind() == SyntaxKind.VariableDeclarator)
+            {
+                symbol = this.semanticModel.GetDeclaredSymbol(syntax);
+            }
+            else
+            {
+                symbol = this.semanticModel.GetSymbolInfo(syntax).Symbol;
+            }
+
             if (symbol == null)
             {
                 return null;
@@ -139,6 +148,24 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.DefinedVariableModels.Add(symbol, createdModel);
 
             return createdModel;
+        }
+
+        private ITypeModel TryCreateTemporaryVariableModel(SyntaxNode syntax)
+        {
+            // TODO: Consider working also with the ConvertedType somehow
+            var type = this.semanticModel.GetTypeInfo(syntax).Type;
+            if (type == null)
+            {
+                return null;
+            }
+
+            var factory = this.modelManager.TryGetFactory(type);
+            if (factory == null)
+            {
+                return null;
+            }
+
+            return this.CreateTemporaryVariableModel(factory, type);
         }
 
         private ITypeModel CreateTemporaryVariableModel(ITypeModelFactory factory, ITypeSymbol type)
@@ -239,29 +266,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             public override Task VisitBlock(BlockSyntax blockSyntax)
             {
-                var outEdge = this.CurrentNode.OutgoingEdges.SingleOrDefault();
-                Contract.Assert(outEdge?.ValueCondition == null);
-
                 // TODO: Consider merging with the following node in the case of empty block
                 //       (or leave it to the FlowGraph construction)
-                if (blockSyntax.Statements.Count > 0)
-                {
-                    this.CurrentNode.OutgoingEdges.Clear();
-                    var precedingStatement = this.ReenqueueCurrentNode(blockSyntax.Statements.First());
-
-                    for (int i = 1; i < blockSyntax.Statements.Count; i++)
-                    {
-                        var currentStatement = this.EnqueueNode(blockSyntax.Statements[i]);
-                        precedingStatement.AddEdge(currentStatement);
-
-                        precedingStatement = currentStatement;
-                    }
-
-                    if (outEdge != null)
-                    {
-                        precedingStatement.AddEdge(outEdge);
-                    }
-                }
+                this.ProcessSequentially(blockSyntax.Statements);
 
                 return Task.CompletedTask;
             }
@@ -303,6 +310,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     condition.AddEdge(outEdge.To, ExpressionFactory.False);
                 }
 
+                // TODO: Handle in a more sophisticated way, not causing "if (boolVar)" to create a helper variable
+                if (condition.VariableModel == null)
+                {
+                    condition.VariableModel = this.owner.TryCreateTemporaryVariableModel(ifSyntax.Condition);
+                }
+
                 return Task.CompletedTask;
             }
 
@@ -323,12 +336,65 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 this.CurrentNode.OutgoingEdges.Add(outEdge.WithValueCondition(ExpressionFactory.False));
 
+                // TODO: Handle in a more sophisticated way, not causing "if (variable)" to create a helper variable
+                if (condition.VariableModel == null)
+                {
+                    condition.VariableModel = this.owner.TryCreateTemporaryVariableModel(whileSyntax.Condition);
+                }
+
                 return Task.CompletedTask;
             }
 
-            public override Task VisitExpressionStatement(ExpressionStatementSyntax node)
+            public override Task VisitExpressionStatement(ExpressionStatementSyntax syntax)
             {
-                return this.Visit(node.Expression);
+                return this.Visit(syntax.Expression);
+            }
+
+            public override Task VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax syntax)
+            {
+                return this.Visit(syntax.Declaration);
+            }
+
+            public override Task VisitVariableDeclaration(VariableDeclarationSyntax syntax)
+            {
+                this.ProcessSequentially(syntax.Variables);
+
+                return Task.CompletedTask;
+            }
+
+            public override Task VisitEqualsValueClause(EqualsValueClauseSyntax syntax)
+            {
+                return this.Visit(syntax.Value);
+            }
+
+            public override Task VisitIdentifierName(IdentifierNameSyntax nameSyntax)
+            {
+                var valueModel = this.owner.TryGetDefinedVariableModel(nameSyntax);
+                if (valueModel != null)
+                {
+                    Contract.Assert(this.CurrentNode.ValueModel == null);
+                    this.CurrentNode.ValueModel = valueModel;
+                }
+
+                return Task.CompletedTask;
+            }
+
+            public override Task VisitVariableDeclarator(VariableDeclaratorSyntax declaratorSyntax)
+            {
+                var variableModel = this.owner.TryGetDefinedVariableModel(declaratorSyntax);
+                if (variableModel == null)
+                {
+                    return Task.CompletedTask;
+                }
+
+                if (declaratorSyntax.Initializer != null)
+                {
+                    Contract.Assert(this.CurrentNode.VariableModel == null);
+                    this.CurrentNode.VariableModel = variableModel;
+                    this.ReenqueueCurrentNode(declaratorSyntax.Initializer);
+                }
+
+                return Task.CompletedTask;
             }
 
             public override Task VisitAssignmentExpression(AssignmentExpressionSyntax assignmentSyntax)
@@ -346,12 +412,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 }
                 else
                 {
-                    // This is the case of nested assignments
+                    // Nested assignments - from the view of the inner one
                     var innerAssignment = this.ReenqueueCurrentNode(assignmentSyntax.Right);
                     var outerAssignment = this.AddFinalNode(assignmentSyntax);
                     innerAssignment.SwapEdges(outerAssignment);
                     innerAssignment.AddEdge(outerAssignment);
                     innerAssignment.SwapVariableModel(outerAssignment);
+
+                    outerAssignment.ValueModel = leftModel;
                     innerAssignment.VariableModel = leftModel;
                 }
 
@@ -373,6 +441,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 // TODO: Expression value processing
                 switch (expressionSyntax.Kind())
                 {
+                    // TODO: Handle the data flow in those expressions
                     case SyntaxKind.LogicalOrExpression:
                         return this.ProcessLogicalOrExpression(expressionSyntax);
                     case SyntaxKind.LogicalAndExpression:
@@ -390,7 +459,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     return Task.CompletedTask;
                 }
 
-                var factory = this.owner.modelManager.TryGetFactory(expressionSymbol.ReturnType);
+                var factory = this.owner.modelManager.TryGetFactory(expressionSymbol.ContainingType);
                 if (factory == null)
                 {
                     return Task.CompletedTask;
@@ -418,6 +487,31 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 }
 
                 return Task.CompletedTask;
+            }
+
+            private void ProcessSequentially<TSyntax>(IReadOnlyList<TSyntax> syntaxes)
+                where TSyntax : SyntaxNode
+            {
+                if (syntaxes.Count > 0)
+                {
+                    var precedingStatement = this.ReenqueueCurrentNode(syntaxes.First());
+
+                    if (syntaxes.Count > 1)
+                    {
+                        var outEdges = precedingStatement.OutgoingEdges.ToArray();
+                        precedingStatement.OutgoingEdges.Clear();
+
+                        for (int i = 1; i < syntaxes.Count; i++)
+                        {
+                            var currentStatement = this.EnqueueNode(syntaxes[i]);
+                            precedingStatement.AddEdge(currentStatement);
+
+                            precedingStatement = currentStatement;
+                        }
+
+                        precedingStatement.OutgoingEdges.AddRange(outEdges);
+                    }
+                }
             }
 
             private ITypeModel ProcessArgument(
