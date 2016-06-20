@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
@@ -48,8 +49,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             set { DataHelper.SetOnceAssert(ref this.valueModel, value); }
         }
 
-        public Task PendingTask { get; set; }
-
         public BuildEdge AddEdge(BuildNode to, Expression valueCondition = null)
         {
             var edge = new BuildEdge(to, valueCondition);
@@ -71,6 +70,55 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public void SwapEdges(BuildNode other)
         {
             DataHelper.Swap(ref this.outgoingEdges, ref other.outgoingEdges);
+        }
+
+        public BuildEdge GetSingleEdge()
+        {
+            if (this.OutgoingEdges.Count != 1)
+            {
+                // TODO: Add a message and put to resources
+                throw new InvalidOperationException();
+            }
+
+            var edge = this.OutgoingEdges.Single();
+            Contract.Assert(edge.ValueCondition == null);
+
+            return edge;
+        }
+
+        public bool TryGetSingleEdge(out BuildEdge edge)
+        {
+            if (this.OutgoingEdges.Count == 1)
+            {
+                edge = this.OutgoingEdges.Single();
+                Contract.Assert(edge.ValueCondition == null);
+
+                return true;
+            }
+            else
+            {
+                edge = null;
+
+                return false;
+            }
+        }
+
+        public bool TryGetTwoBooleanEdges(out BuildEdge trueEdge, out BuildEdge falseEdge)
+        {
+            if (this.OutgoingEdges.Count == 2)
+            {
+                trueEdge = this.OutgoingEdges.First(edge => edge.ValueCondition == ExpressionFactory.True);
+                falseEdge = this.OutgoingEdges.First(edge => edge.ValueCondition == ExpressionFactory.False);
+
+                return (trueEdge != null && falseEdge != null);
+            }
+            else
+            {
+                trueEdge = null;
+                falseEdge = null;
+
+                return false;
+            }
         }
 
         // TODO: Add proper hashing

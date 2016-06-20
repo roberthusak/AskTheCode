@@ -12,11 +12,11 @@ namespace ControlFlowGraphViewer
 {
     internal class CSharpBuildToMsaglGraphConverter
     {
-        public Graph Convert(CSharpFlowGraphBuilder builder)
+        public Graph Convert(BuildGraph buildGraph)
         {
             var aglGraph = new Graph();
 
-            foreach (var buildNode in builder.Nodes)
+            foreach (var buildNode in buildGraph.Nodes)
             {
                 string id = this.GetNodeId(buildNode);
 
@@ -25,7 +25,7 @@ namespace ControlFlowGraphViewer
             }
 
             // Add the edges once all the nodes are in the graph
-            foreach (var buildNode in builder.Nodes)
+            foreach (var buildNode in buildGraph.Nodes)
             {
                 string idFrom = this.GetNodeId(buildNode);
 
@@ -59,14 +59,14 @@ namespace ControlFlowGraphViewer
 
                 if (buildNode.VariableModel != null)
                 {
-                    text.Append($"({string.Join(", ", buildNode.VariableModel.AssignmentLeft)}) ");
+                    text.Append($"({string.Join(", ", buildNode.VariableModel.AssignmentLeft)})");
                 }
 
                 text.Append(" \u2190 ");
 
                 if (buildNode.ValueModel != null)
                 {
-                    text.Append($"({string.Join(", ", buildNode.ValueModel.AssignmentRight)}) ");
+                    text.Append($"({string.Join(", ", buildNode.ValueModel.AssignmentRight)})");
                 }
 
                 text.Append(" ]");

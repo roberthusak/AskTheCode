@@ -14,14 +14,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AskTheCode.ControlFlowGraphs;
+using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.Tests;
+using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.ControlFlowGraphs.Tests;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.WpfGraphControl;
-using AskTheCode.ControlFlowGraphs.Cli;
 
 namespace ControlFlowGraphViewer
 {
@@ -38,6 +39,8 @@ namespace ControlFlowGraphViewer
 
         private SemanticModel csharpSemanticModel;
         private MethodDeclarationSyntax[] csharpMethodSyntaxes;
+        private TypeModelManager cliModelManager;
+        private GraphDepth csharpGraphDepth;
 
         public MainWindow()
         {
@@ -75,6 +78,8 @@ namespace ControlFlowGraphViewer
             this.csharpMethodSyntaxes = root.DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
             this.methodSelectionCombo.ItemsSource = this.csharpMethodSyntaxes;
             this.csharpSemanticModel = await document.GetSemanticModelAsync();
+            this.cliModelManager = new TypeModelManager();
+            this.csharpGraphDepth = GraphDepth.Statement;
         }
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -126,6 +131,21 @@ namespace ControlFlowGraphViewer
 
         private async void MethodSelectionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            await this.BuildCSharpFlowGraph();
+            e.Handled = true;
+        }
+
+        private async void CSharpDepthRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            string value = ((RadioButton)sender).Content.ToString();
+            this.csharpGraphDepth = (GraphDepth)Enum.Parse(typeof(GraphDepth), value);
+
+            await this.BuildCSharpFlowGraph();
+            e.Handled = true;
+        }
+
+        private async Task BuildCSharpFlowGraph()
+        {
             int index = this.methodSelectionCombo.SelectedIndex;
             if (index == -1)
             {
@@ -133,14 +153,12 @@ namespace ControlFlowGraphViewer
             }
 
             var methodSyntax = this.csharpMethodSyntaxes[index];
-            var builder = new CSharpFlowGraphBuilder(this.csharpSemanticModel, methodSyntax);
-            await builder.BuildAsync();
+            var builder = new CSharpFlowGraphBuilder(this.cliModelManager, this.csharpSemanticModel, methodSyntax);
+            await builder.BuildAsync(this.csharpGraphDepth);
 
-            var aglGraph = this.csharpGraphConverter.Convert(builder);
+            var aglGraph = this.csharpGraphConverter.Convert(builder.Graph);
             aglGraph.Attr.LayerDirection = LayerDirection.TB;
             this.aglGraphViewer.Graph = aglGraph;
-
-            e.Handled = true;
         }
     }
 }

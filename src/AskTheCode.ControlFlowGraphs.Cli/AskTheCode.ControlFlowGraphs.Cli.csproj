@@ -146,11 +146,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildEdge.cs" />
+    <Compile Include="BuilderVisitor.cs" />
+    <Compile Include="BuildGraph.cs" />
     <Compile Include="BuildNode.cs" />
     <Compile Include="BuildVariable.cs" />
     <Compile Include="BuildVariableId.cs" />
     <Compile Include="CSharpFlowGraphBuilder.cs" />
+    <Compile Include="ExpressionDepthBuilderVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StatementDepthBuilderVisitor.cs" />
     <Compile Include="TypeModels\BooleanModel.cs" />
     <Compile Include="TypeModels\BooleanModelFactory.cs" />
     <Compile Include="TypeModels\IModellingContext.cs" />
@@ -159,6 +163,7 @@
     <Compile Include="TypeModels\ITypeModel.cs" />
     <Compile Include="TypeModels\ITypeModelFactory.cs" />
     <Compile Include="TypeModels\TypeModelManager.cs" />
+    <Compile Include="ValueDepthBuilderVisitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AskTheCode.ControlFlowGraphs.Cli.ruleset" />

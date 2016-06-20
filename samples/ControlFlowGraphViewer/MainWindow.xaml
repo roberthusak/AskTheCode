@@ -19,13 +19,19 @@
             <TabItem x:Name="flowGraphTab" Header="Symbolic CFG">
                 <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
                     <Label>Select graph:</Label>
-                    <ComboBox x:Name="graphSelectionCombo" Margin="2" DisplayMemberPath="Name" SelectionChanged="GraphSelectionCombo_SelectionChanged" />
+                    <ComboBox x:Name="graphSelectionCombo" DisplayMemberPath="Name" Margin="2" SelectionChanged="GraphSelectionCombo_SelectionChanged" />
                 </StackPanel>
             </TabItem>
             <TabItem x:Name="csharpMethodTab" Header="C# CFG Building">
                 <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
                     <Label>Select method:</Label>
-                    <ComboBox x:Name="methodSelectionCombo" Margin="2" DisplayMemberPath="Identifier.Text" SelectionChanged="MethodSelectionCombo_SelectionChanged" />
+                    <ComboBox x:Name="methodSelectionCombo" DisplayMemberPath="Identifier.Text" Margin="2" SelectionChanged="MethodSelectionCombo_SelectionChanged" />
+                    <Label>Select depth:</Label>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center"  >
+                        <RadioButton GroupName="csharpDepth" Content="Statement" IsChecked="True" Checked="CSharpDepthRadioButton_Checked" />
+                        <RadioButton GroupName="csharpDepth" Content="Expression" Margin="5,0,0,0" Checked="CSharpDepthRadioButton_Checked" />
+                        <RadioButton GroupName="csharpDepth" Content="Value" Margin="5,0,0,0" Checked="CSharpDepthRadioButton_Checked" />
+                    </StackPanel>
                 </StackPanel>
             </TabItem>
         </TabControl>
