@@ -14,11 +14,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
     internal class BuildNode
     {
         private List<BuildEdge> outgoingEdges = new List<BuildEdge>();
-        private FlowNode flowNode;
+        private SyntaxNode syntax;
+        private SyntaxNodeOrToken? labelOverride;
         private ITypeModel variableModel;
         private ITypeModel valueModel;
 
-        public BuildNode(SyntaxNodeOrToken syntax)
+        public BuildNode(SyntaxNode syntax)
         {
             this.Syntax = syntax;
         }
@@ -29,12 +30,21 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         }
 
         // TODO: Optimize the type if necessary (make 2 fields?)
-        public SyntaxNodeOrToken Syntax { get; set; }
-
-        public FlowNode FlowNode
+        public SyntaxNode Syntax
         {
-            get { return this.flowNode; }
-            set { DataHelper.SetOnceAssert(ref this.flowNode, value); }
+            get { return this.syntax; }
+            set { this.syntax = value; }
+        }
+
+        public SyntaxNodeOrToken? LabelOverride
+        {
+            get { return this.labelOverride; }
+            set { this.labelOverride = value; }
+        }
+
+        public SyntaxNodeOrToken Label
+        {
+            get { return (this.LabelOverride != null) ? this.LabelOverride.Value : this.Syntax; }
         }
 
         public ITypeModel VariableModel
@@ -49,6 +59,40 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             set { DataHelper.SetOnceAssert(ref this.valueModel, value); }
         }
 
+        public void SwapOutgoingEdges(BuildNode other)
+        {
+            DataHelper.Swap(ref this.outgoingEdges, ref other.outgoingEdges);
+        }
+
+        public void SwapSyntax(BuildNode other)
+        {
+            DataHelper.Swap(ref this.syntax, ref other.syntax);
+        }
+
+        public void SwapLabelOverride(BuildNode other)
+        {
+            DataHelper.Swap(ref this.labelOverride, ref other.labelOverride);
+        }
+
+        public void SwapVariableModel(BuildNode other)
+        {
+            DataHelper.Swap(ref this.variableModel, ref other.variableModel);
+        }
+
+        public void SwapValueModel(BuildNode other)
+        {
+            DataHelper.Swap(ref this.valueModel, ref other.valueModel);
+        }
+
+        public void SwapContents(BuildNode other)
+        {
+            this.SwapOutgoingEdges(other);
+            this.SwapSyntax(other);
+            this.SwapLabelOverride(other);
+            this.SwapVariableModel(other);
+            this.SwapValueModel(other);
+        }
+
         public BuildEdge AddEdge(BuildNode to, Expression valueCondition = null)
         {
             var edge = new BuildEdge(to, valueCondition);
@@ -60,16 +104,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public void AddEdge(BuildEdge edge)
         {
             this.OutgoingEdges.Add(edge);
-        }
-
-        public void SwapVariableModel(BuildNode other)
-        {
-            DataHelper.Swap(ref this.variableModel, ref other.variableModel);
-        }
-
-        public void SwapEdges(BuildNode other)
-        {
-            DataHelper.Swap(ref this.outgoingEdges, ref other.outgoingEdges);
         }
 
         public BuildEdge GetSingleEdge()

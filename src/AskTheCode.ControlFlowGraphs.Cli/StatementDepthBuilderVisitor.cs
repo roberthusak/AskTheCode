@@ -18,11 +18,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
         }
 
-        public override void DefaultVisit(SyntaxNode node)
-        {
-            return;
-        }
-
         public sealed override void VisitMethodDeclaration(MethodDeclarationSyntax methodSyntax)
         {
             Contract.Requires(this.Context.CurrentNode.OutgoingEdges.Count == 0);
@@ -46,8 +41,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             this.Context.CurrentNode.OutgoingEdges.Clear();
 
-            // TODO: Handle also the return value computation
-            return;
+            if (returnSyntax.Expression != null)
+            {
+                this.Context.ReenqueueCurrentNode(returnSyntax.Expression);
+                this.Context.CurrentNode.LabelOverride = returnSyntax;
+            }
         }
 
         public sealed override void VisitBlock(BlockSyntax blockSyntax)
@@ -96,17 +94,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 condition.AddEdge(outEdge.To, ExpressionFactory.False);
             }
 
-            // TODO: Handle in a more sophisticated way, not causing "if (boolVar)" to create a helper variable
-            if (condition.VariableModel == null)
-            {
-                condition.VariableModel = this.Context.TryCreateTemporaryVariableModel(ifSyntax.Condition);
-            }
-
             return;
         }
 
         public sealed override void VisitElseClause(ElseClauseSyntax elseSyntax)
         {
+            this.Context.CurrentNode.Syntax = elseSyntax.Statement;
             this.Visit(elseSyntax.Statement);
         }
 
@@ -121,12 +114,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             statement.AddEdge(condition);
 
             this.Context.CurrentNode.OutgoingEdges.Add(outEdge.WithValueCondition(ExpressionFactory.False));
-
-            // TODO: Handle in a more sophisticated way, not causing "if (variable)" to create a helper variable
-            if (condition.VariableModel == null)
-            {
-                condition.VariableModel = this.Context.TryCreateTemporaryVariableModel(whileSyntax.Condition);
-            }
 
             return;
         }

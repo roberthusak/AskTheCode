@@ -44,14 +44,14 @@ namespace ControlFlowGraphViewer
         private string GetNodeId(BuildNode buildNode)
         {
             // Every node in the graph must be on a different position in the code
-            return buildNode.Syntax.FullSpan.ToString();
+            return buildNode.Label.FullSpan.ToString();
         }
 
         private void DecorateNode(Node aglNode, BuildNode buildNode)
         {
             var label = new Label();
 
-            var text = new StringBuilder(buildNode.Syntax.ToString());
+            var text = new StringBuilder(buildNode.Label.ToString());
             if (buildNode.VariableModel != null || buildNode.ValueModel != null)
             {
                 text.AppendLine();

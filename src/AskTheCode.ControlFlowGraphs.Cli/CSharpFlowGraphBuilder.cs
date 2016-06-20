@@ -55,10 +55,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 {
                     var node = this.readyQueue.Dequeue();
                     Contract.Assert(context.PendingTask == null);
-                    Contract.Assert(node.Syntax.IsNode);
 
                     context.CurrentNode = node;
-                    visitor.Visit(node.Syntax.AsNode());
+                    visitor.Visit(node.Syntax);
 
                     if (context.PendingTask != null)
                     {
@@ -215,9 +214,22 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return new BuilderModellingContext(this.builder, this.CurrentNode);
             }
 
-            public BuildNode AddFinalNode(SyntaxNodeOrToken syntax)
+            public BuildNode AddFinalNode(SyntaxNodeOrToken label)
             {
-                var node = new BuildNode(syntax);
+                BuildNode node;
+                if (label.IsNode)
+                {
+                    node = new BuildNode(label.AsNode());
+                }
+                else
+                {
+                    Contract.Assert(label.IsToken);
+                    node = new BuildNode(null)
+                    {
+                        LabelOverride = label
+                    };
+                }
+
                 this.Graph.Nodes.Add(node);
 
                 return node;
