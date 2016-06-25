@@ -8,6 +8,8 @@ using AskTheCode.SmtLibStandard;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using AskTheCode.SmtLibStandard.Handles;
+using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
@@ -20,11 +22,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public sealed override void VisitExpressionStatement(ExpressionStatementSyntax syntax)
         {
+            this.Context.CurrentNode.Syntax = syntax.Expression;
             this.Visit(syntax.Expression);
         }
 
         public sealed override void VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax syntax)
         {
+            this.Context.CurrentNode.Syntax = syntax.Declaration;
             this.Visit(syntax.Declaration);
         }
 
@@ -61,6 +65,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 Contract.Assert(this.Context.CurrentNode.VariableModel == null);
                 this.Context.CurrentNode.VariableModel = variableModel;
                 this.Context.ReenqueueCurrentNode(declaratorSyntax.Initializer);
+                this.Context.CurrentNode.LabelOverride = declaratorSyntax;
             }
         }
 
@@ -72,40 +77,37 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return;
             }
 
+            // TODO: Handle also operations such as +=
+
             if (this.Context.CurrentNode.VariableModel == null)
             {
                 this.Context.CurrentNode.VariableModel = leftModel;
+                this.Context.CurrentNode.LabelOverride = assignmentSyntax;
                 this.Context.ReenqueueCurrentNode(assignmentSyntax.Right);
             }
             else
             {
                 // Nested assignments - from the view of the inner one
-                var innerAssignment = this.Context.ReenqueueCurrentNode(assignmentSyntax.Right);
-                var outerAssignment = this.Context.AddFinalNode(assignmentSyntax);
-                innerAssignment.SwapEdges(outerAssignment);
-                innerAssignment.AddEdge(outerAssignment);
-                innerAssignment.SwapVariableModel(outerAssignment);
+                var innerAssignment = this.Context.PrependCurrentNode(assignmentSyntax.Right);
 
-                outerAssignment.ValueModel = leftModel;
+
+                this.Context.CurrentNode.ValueModel = leftModel;
                 innerAssignment.VariableModel = leftModel;
             }
         }
 
         public sealed override void VisitParenthesizedExpression(ParenthesizedExpressionSyntax syntax)
         {
-            this.Context.ReenqueueCurrentNode(syntax.Expression);
-
-            // TODO: Expression value processing
+            this.Context.CurrentNode.Syntax = syntax.Expression;
+            this.Visit(syntax.Expression);
         }
 
         public sealed override void VisitBinaryExpression(BinaryExpressionSyntax expressionSyntax)
         {
             // TODO: Check whether are the operators not overloaded
             //       (either implement it or show a warning)
-            // TODO: Expression value processing
             switch (expressionSyntax.Kind())
             {
-                // TODO: Handle the data flow in those expressions
                 case SyntaxKind.LogicalOrExpression:
                     this.ProcessLogicalOrExpression(expressionSyntax);
                     return;
@@ -116,10 +118,17 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 case SyntaxKind.None:
                     return;
                 default:
-                    break;
+                    this.ProcessOperation(expressionSyntax);
+                    return;
             }
 
-            var expressionSymbol = this.Context.SemanticModel.GetSymbolInfo(expressionSyntax).Symbol as IMethodSymbol;
+        }
+
+        private void ProcessOperation(BinaryExpressionSyntax expressionSyntax)
+        {
+            var expressionSymbol =
+                            this.Context.SemanticModel.GetSymbolInfo(expressionSyntax).Symbol as IMethodSymbol;
+
             if (expressionSymbol == null)
             {
                 return;
@@ -131,32 +140,23 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return;
             }
 
-            var outEdges = this.Context.CurrentNode.OutgoingEdges.ToArray();
-            this.Context.CurrentNode.OutgoingEdges.Clear();
-
-            ITypeModel leftModel = this.ProcessArgument(
-                expressionSyntax,
+            var leftModel = this.ProcessArgument(
                 expressionSyntax.Left,
                 expressionSymbol.Parameters[0].Type);
 
-            ITypeModel rightModel = this.ProcessArgument(
-                expressionSyntax,
+            var rightModel = this.ProcessArgument(
                 expressionSyntax.Right,
                 expressionSymbol.Parameters[1].Type);
 
-            this.Context.CurrentNode.OutgoingEdges.AddRange(outEdges);
 
             if (leftModel != null && rightModel != null)
             {
                 var modelContext = this.Context.GetModellingContext();
                 factory.ModelOperation(modelContext, expressionSymbol, new[] { leftModel, rightModel });
             }
-
-            return;
         }
 
         private ITypeModel ProcessArgument(
-            ExpressionSyntax expressionSyntax,
             ExpressionSyntax argument,
             ITypeSymbol argumentType)
         {
@@ -168,14 +168,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 {
                     argumentModel = this.Context.CreateTemporaryVariableModel(argumentFactory, argumentType);
 
-                    var argumentComputation = this.Context.ReenqueueCurrentNode(argument);
-                    this.Context.CurrentNode = this.Context.AddFinalNode(expressionSyntax);
-                    argumentComputation.AddEdge(this.Context.CurrentNode);
-
-                    if (argumentComputation.VariableModel != null)
-                    {
-                        argumentComputation.SwapVariableModel(this.Context.CurrentNode);
-                    }
+                    var argumentComputation = this.Context.PrependCurrentNode(argument);
 
                     argumentComputation.VariableModel = argumentModel;
                 }
@@ -188,6 +181,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             var left = this.Context.ReenqueueCurrentNode(andSyntax.Left);
             var right = this.Context.EnqueueNode(andSyntax.Right);
+            right.VariableModel = left.VariableModel;
+
+            left.LabelOverride = null;
 
             BuildEdge outEdge, outTrueEdge, outFalseEdge;
             if (left.TryGetSingleEdge(out outEdge))
@@ -218,6 +214,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             var left = this.Context.ReenqueueCurrentNode(orSyntax.Left);
             var right = this.Context.EnqueueNode(orSyntax.Right);
+            right.VariableModel = left.VariableModel;
+
+            left.LabelOverride = null;
 
             BuildEdge outEdge, outTrueEdge, outFalseEdge;
             if (left.TryGetSingleEdge(out outEdge))

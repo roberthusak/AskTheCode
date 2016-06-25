@@ -94,6 +94,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 condition.AddEdge(outEdge.To, ExpressionFactory.False);
             }
 
+            // TODO: Handle in a more sophisticated way, not causing "if (boolVar)" to create a helper variable
+            if (condition.VariableModel == null)
+            {
+                condition.VariableModel = this.Context.TryCreateTemporaryVariableModel(ifSyntax.Condition);
+            }
+
             return;
         }
 
@@ -114,6 +120,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             statement.AddEdge(condition);
 
             this.Context.CurrentNode.OutgoingEdges.Add(outEdge.WithValueCondition(ExpressionFactory.False));
+
+            // TODO: Handle in a more sophisticated way, not causing "while (boolVar)" to create a helper variable
+            if (condition.VariableModel == null)
+            {
+                condition.VariableModel = this.Context.TryCreateTemporaryVariableModel(whileSyntax.Condition);
+            }
 
             return;
         }

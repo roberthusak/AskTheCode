@@ -244,6 +244,21 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return node;
             }
 
+            public BuildNode PrependCurrentNode(SyntaxNode prependedSyntax)
+            {
+                // The syntaxes will be swaped subsequently
+                var prependedCurrent = this.ReenqueueCurrentNode(this.CurrentNode.Syntax);
+                var newCurrent = this.AddFinalNode(prependedSyntax);
+
+                // Swaping contents will change the outgoing edges, i.a.
+                newCurrent.SwapContents(prependedCurrent);
+                prependedCurrent.AddEdge(newCurrent);
+
+                this.CurrentNode = newCurrent;
+
+                return prependedCurrent;
+            }
+
             public BuildNode ReenqueueCurrentNode(SyntaxNode syntaxUpdate)
             {
                 this.CurrentNode.Syntax = syntaxUpdate;

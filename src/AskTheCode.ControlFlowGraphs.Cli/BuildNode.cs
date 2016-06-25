@@ -50,7 +50,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public ITypeModel VariableModel
         {
             get { return this.variableModel; }
-            set { DataHelper.SetOnceAssert(ref this.variableModel, value); }
+            set { this.SetVariableModelImpl(value); }
         }
 
         public ITypeModel ValueModel
@@ -153,6 +153,18 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 return false;
             }
+        }
+
+        private void SetVariableModelImpl(ITypeModel value)
+        {
+            // TODO: Analyze the possibility of overwriting a temporary variable that is being used somewhere else
+            Contract.Assert(
+                this.variableModel == null
+                || Contract.ForAll(
+                    value.AssignmentLeft,
+                    variable => ((BuildVariable)variable).Origin == VariableOrigin.Temporary));
+
+            this.variableModel = value;
         }
 
         // TODO: Add proper hashing

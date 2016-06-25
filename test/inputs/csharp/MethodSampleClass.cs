@@ -33,7 +33,8 @@ public static class MethodSampleClass
         d = d + d;
         int e = b, f;
         e = d;
-        return d;
+
+        return IntAdd(a, b) + c;
     }
 
     public static int IntOperationsExample(int a, int b, int c)
