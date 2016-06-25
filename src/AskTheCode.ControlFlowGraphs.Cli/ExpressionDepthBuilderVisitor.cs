@@ -44,7 +44,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public sealed override void VisitIdentifierName(IdentifierNameSyntax nameSyntax)
         {
-            var valueModel = this.Context.TryGetDefinedVariableModel(nameSyntax);
+            var valueModel = this.Context.TryGetModel(nameSyntax);
             if (valueModel != null)
             {
                 Contract.Assert(this.Context.CurrentNode.ValueModel == null);
@@ -54,7 +54,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public sealed override void VisitVariableDeclarator(VariableDeclaratorSyntax declaratorSyntax)
         {
-            var variableModel = this.Context.TryGetDefinedVariableModel(declaratorSyntax);
+            var variableModel = this.Context.TryGetModel(declaratorSyntax);
             if (variableModel == null)
             {
                 return;
@@ -71,7 +71,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public sealed override void VisitAssignmentExpression(AssignmentExpressionSyntax assignmentSyntax)
         {
-            var leftModel = this.Context.TryGetDefinedVariableModel(assignmentSyntax.Left);
+            var leftModel = this.Context.TryGetModel(assignmentSyntax.Left);
             if (leftModel == null)
             {
                 return;
@@ -148,7 +148,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 expressionSyntax.Right,
                 expressionSymbol.Parameters[1].Type);
 
-
             if (leftModel != null && rightModel != null)
             {
                 var modelContext = this.Context.GetModellingContext();
@@ -160,7 +159,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             ExpressionSyntax argument,
             ITypeSymbol argumentType)
         {
-            var argumentModel = this.Context.TryGetDefinedVariableModel(argument);
+            var argumentModel = this.Context.TryGetModel(argument);
             if (argumentModel == null)
             {
                 var argumentFactory = this.Context.ModelManager.TryGetFactory(argumentType);

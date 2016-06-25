@@ -157,11 +157,14 @@
     <Compile Include="StatementDepthBuilderVisitor.cs" />
     <Compile Include="TypeModels\BooleanModel.cs" />
     <Compile Include="TypeModels\BooleanModelFactory.cs" />
+    <Compile Include="TypeModels\BooleanValueModel.cs" />
     <Compile Include="TypeModels\IModellingContext.cs" />
     <Compile Include="TypeModels\IntegerModel.cs" />
     <Compile Include="TypeModels\IntegerModelFactory.cs" />
+    <Compile Include="TypeModels\IntegerValueModel.cs" />
     <Compile Include="TypeModels\ITypeModel.cs" />
     <Compile Include="TypeModels\ITypeModelFactory.cs" />
+    <Compile Include="TypeModels\IValueModel.cs" />
     <Compile Include="TypeModels\TypeModelManager.cs" />
     <Compile Include="ValueDepthBuilderVisitor.cs" />
   </ItemGroup>

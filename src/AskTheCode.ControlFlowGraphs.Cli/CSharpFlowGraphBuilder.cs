@@ -124,16 +124,26 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 get { return this.builder.Graph; }
             }
 
-            public ITypeModel TryGetDefinedVariableModel(SyntaxNode syntax)
+            public ITypeModel TryGetModel(SyntaxNode syntax)
             {
                 ISymbol symbol;
-                if (syntax.Kind() == SyntaxKind.VariableDeclarator)
+                switch (syntax.Kind())
                 {
-                    symbol = this.SemanticModel.GetDeclaredSymbol(syntax);
-                }
-                else
-                {
-                    symbol = this.SemanticModel.GetSymbolInfo(syntax).Symbol;
+                    case SyntaxKind.TrueLiteralExpression:
+                    case SyntaxKind.FalseLiteralExpression:
+                    case SyntaxKind.NumericLiteralExpression:
+                    case SyntaxKind.UnaryMinusExpression:
+                    case SyntaxKind.UnaryPlusExpression:
+                    case SyntaxKind.CharacterLiteralExpression:
+                    case SyntaxKind.StringLiteralExpression:
+                        return this.TryGetValueModel(syntax);
+
+                    case SyntaxKind.VariableDeclarator:
+                        symbol = this.SemanticModel.GetDeclaredSymbol(syntax);
+                        break;
+                    default:
+                        symbol = this.SemanticModel.GetSymbolInfo(syntax).Symbol;
+                        break;
                 }
 
                 if (symbol == null)
@@ -142,6 +152,29 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 }
 
                 return this.TryGetDefinedVariableModel(symbol);
+            }
+
+            public IValueModel TryGetValueModel(SyntaxNode syntax)
+            {
+                var maybeValue = this.SemanticModel.GetConstantValue(syntax);
+                if (!maybeValue.HasValue)
+                {
+                    return null;
+                }
+
+                var type = this.SemanticModel.GetTypeInfo(syntax).Type;
+                if (type == null)
+                {
+                    return null;
+                }
+
+                var factory = this.ModelManager.TryGetFactory(type);
+                if (factory == null)
+                {
+                    return null;
+                }
+
+                return factory.GetLiteralValueModel(type, maybeValue.Value);
             }
 
             // TODO: Consider using the FlowVariable directly
@@ -284,7 +317,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     .Select(sort => this.Graph.AddVariable(sort, symbol, origin))
                     .ToArray();
 
-                return factory.GetVariableModel(type, variables);
+                return factory.GetExpressionModel(type, variables);
             }
         }
 

@@ -15,10 +15,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public BuildNode To { get; private set; }
 
+        // TODO: Replace by IValueModel when the BooleanModelFactory.True and False are made public
         public Expression ValueCondition { get; private set; }
-
-        // TODO: Set once semantic? Or remove completely and care about only in the second phase?
-        public FlowEdge FlowEdge { get; set; }
 
         public BuildEdge WithTo(BuildNode to)
         {

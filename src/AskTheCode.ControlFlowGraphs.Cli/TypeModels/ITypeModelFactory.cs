@@ -15,9 +15,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 
         IReadOnlyList<Sort> GetExpressionSortRequirements(ITypeSymbol type);
 
-        ITypeModel GetVariableModel(ITypeSymbol type, IEnumerable<Expression> expressions);
+        ITypeModel GetExpressionModel(ITypeSymbol type, IEnumerable<Expression> expressions);
+
+        IValueModel GetValueModel(ITypeSymbol type, IEnumerable<Interpretation> values);
 
         void ModelOperation(IModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments);
+
+        IValueModel GetLiteralValueModel(ITypeSymbol type, object literalValue);
 
         // TODO: Incorporate the usage of global variables
     }

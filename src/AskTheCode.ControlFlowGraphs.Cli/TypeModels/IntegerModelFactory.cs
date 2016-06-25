@@ -5,9 +5,9 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.Common;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
-using AskTheCode.Common;
 using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
@@ -45,11 +45,27 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             return SortRequirements;
         }
 
-        public ITypeModel GetVariableModel(ITypeSymbol type, IEnumerable<Expression> expressions)
+        public ITypeModel GetExpressionModel(ITypeSymbol type, IEnumerable<Expression> expressions)
         {
             Contract.Requires(this.AreSortsMatching(type, expressions));
 
             return new IntegerModel(this, type, (IntHandle)expressions.Single());
+        }
+
+        public IValueModel GetValueModel(ITypeSymbol type, IEnumerable<Interpretation> values)
+        {
+            Contract.Requires(this.AreSortsMatching(type, values));
+
+            return new IntegerValueModel(this, type, (IntHandle)values.Single());
+        }
+
+        public IValueModel GetLiteralValueModel(ITypeSymbol type, object literalValue)
+        {
+            // TODO: Make it work more universally (also for ulong etc.)
+            long value = Convert.ToInt64(literalValue);
+            var interpretation = ExpressionFactory.IntInterpretation(value);
+
+            return this.GetValueModel(type, interpretation.ToSingular());
         }
 
         // TODO: Somehow handle the different sizes and signed/unsigned variants using modulo etc.
@@ -85,9 +101,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
                 Contract.Assert(BooleanModelFactory.Instance.IsTypeSupported(method.ReturnType));
 
                 // TODO: Properly manage the references to the other factories instead of using singletons for all types
-                resultModel = BooleanModelFactory.Instance.GetVariableModel(
+                resultModel = BooleanModelFactory.Instance.GetExpressionModel(
                     method.ReturnType,
-                    new SingleReadOnlyList<Expression>(boolResult.Expression));
+                    boolResult.Expression.ToSingular());
             }
 
             if (resultModel != null)

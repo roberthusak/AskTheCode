@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.Common
 {
-    public struct SingleReadOnlyList<T> : IReadOnlyList<T>
+    public struct Singular<T> : IReadOnlyList<T>
     {
         public readonly T Value;
 
-        public SingleReadOnlyList(T value)
+        public Singular(T value)
         {
             this.Value = value;
         }
@@ -42,6 +42,19 @@ namespace AskTheCode.Common
         IEnumerator IEnumerable.GetEnumerator()
         {
             yield return this.Value;
+        }
+    }
+
+    public static class Singular
+    {
+        public static Singular<T> Create<T>(T value)
+        {
+            return new Singular<T>(value);
+        }
+
+        public static Singular<T> ToSingular<T>(this T value)
+        {
+            return new Singular<T>(value);
         }
     }
 }

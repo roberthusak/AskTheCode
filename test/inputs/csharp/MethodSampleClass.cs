@@ -92,9 +92,13 @@ public static class MethodSampleClass
         {
             return a;
         }
-        else
+        else if (condition == false)
         {
             return b;
+        }
+        else
+        {
+            return c;
         }
     }
 

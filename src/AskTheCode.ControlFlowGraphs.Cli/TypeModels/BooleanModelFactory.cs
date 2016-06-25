@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using Microsoft.CodeAnalysis;
+using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
@@ -20,6 +21,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
         }
 
         public static BooleanModelFactory Instance { get; } = new BooleanModelFactory();
+
+        // TODO: Pre-create upon the initialization (thread safely) instead of caching and publish
+        //       (we need to obtain ITypeSymbol for Boolean to do that)
+        private static BooleanValueModel True { get; set; }
+
+        private static BooleanValueModel False { get; set; }
 
         public bool IsTypeSupported(ITypeSymbol type)
         {
@@ -36,11 +43,52 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             return SortRequirements;
         }
 
-        public ITypeModel GetVariableModel(ITypeSymbol type, IEnumerable<Expression> expressions)
+        public ITypeModel GetExpressionModel(ITypeSymbol type, IEnumerable<Expression> expressions)
         {
             Contract.Requires(this.AreSortsMatching(type, expressions));
 
             return new BooleanModel(this, type, (BoolHandle)expressions.Single());
+        }
+
+        public IValueModel GetValueModel(ITypeSymbol type, IEnumerable<Interpretation> values)
+        {
+            Contract.Requires(this.AreSortsMatching(type, values));
+
+            var value = values.Single();
+            if (value == ExpressionFactory.True)
+            {
+                if (True == null)
+                {
+                    True = new BooleanValueModel(this, type, (BoolHandle)value);
+                }
+
+                return True;
+            }
+            else
+            {
+                Contract.Assert(value == ExpressionFactory.False);
+
+                if (False == null)
+                {
+                    False = new BooleanValueModel(this, type, (BoolHandle)value);
+                }
+
+                return False;
+            }
+        }
+
+        public IValueModel GetLiteralValueModel(ITypeSymbol type, object literalValue)
+        {
+            if ((literalValue as bool?) == true)
+            {
+                return this.GetValueModel(type, ExpressionFactory.True.ToSingular());
+            }
+            else
+            {
+                Contract.Assert((literalValue as bool?) == false);
+
+                return this.GetValueModel(type, ExpressionFactory.False.ToSingular());
+            }
         }
 
         public void ModelOperation(IModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments)

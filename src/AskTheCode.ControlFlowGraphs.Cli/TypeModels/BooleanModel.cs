@@ -30,7 +30,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             {
                 Contract.Requires<InvalidAssignmentModelException>(this.IsLValue);
 
-                return new SingleReadOnlyList<Variable>((Variable)this.Value.Expression);
+                return ((Variable)this.Value.Expression).ToSingular();
             }
         }
 
@@ -38,7 +38,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
         {
             get
             {
-                return new SingleReadOnlyList<Expression>(this.Value.Expression);
+                return this.Value.Expression.ToSingular();
             }
         }
 
