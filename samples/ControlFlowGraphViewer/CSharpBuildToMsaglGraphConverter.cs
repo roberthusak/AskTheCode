@@ -12,7 +12,7 @@ namespace ControlFlowGraphViewer
 {
     internal class CSharpBuildToMsaglGraphConverter
     {
-        public Graph Convert(BuildGraph buildGraph)
+        public Graph Convert(BuildGraph buildGraph, GraphDepth depth)
         {
             var aglGraph = new Graph();
 
@@ -21,7 +21,7 @@ namespace ControlFlowGraphViewer
                 string id = this.GetNodeId(buildNode);
 
                 var aglNode = aglGraph.AddNode(id);
-                this.DecorateNode(aglNode, buildNode);
+                this.DecorateNode(aglNode, buildNode, depth);
             }
 
             // Add the edges once all the nodes are in the graph
@@ -47,12 +47,13 @@ namespace ControlFlowGraphViewer
             return buildNode.Label.FullSpan.ToString();
         }
 
-        private void DecorateNode(Node aglNode, BuildNode buildNode)
+        private void DecorateNode(Node aglNode, BuildNode buildNode, GraphDepth depth)
         {
             var label = new Label();
 
             var text = new StringBuilder(buildNode.Label.ToString());
-            if (buildNode.VariableModel != null || buildNode.ValueModel != null)
+
+            if (depth == GraphDepth.Value && (buildNode.VariableModel != null || buildNode.ValueModel != null))
             {
                 text.AppendLine();
                 text.Append("[ ");

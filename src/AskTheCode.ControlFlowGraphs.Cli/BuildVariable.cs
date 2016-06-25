@@ -37,11 +37,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             {
                 if (this.Symbol == null)
                 {
-                    return $"tmp<{this.Sort.Name}>!{this.Id.Value}";
+                    return $"tmp!{this.Id.Value}";
                 }
                 else
                 {
-                    return $"{this.Symbol.Name}<{this.Sort.Name}>!{this.Id.Value}";
+                    return this.Symbol.Name;
                 }
             }
         }

@@ -156,7 +156,7 @@ namespace ControlFlowGraphViewer
             var builder = new CSharpFlowGraphBuilder(this.cliModelManager, this.csharpSemanticModel, methodSyntax);
             await builder.BuildAsync(this.csharpGraphDepth);
 
-            var aglGraph = this.csharpGraphConverter.Convert(builder.Graph);
+            var aglGraph = this.csharpGraphConverter.Convert(builder.Graph, this.csharpGraphDepth);
             aglGraph.Attr.LayerDirection = LayerDirection.TB;
             this.aglGraphViewer.Graph = aglGraph;
         }
