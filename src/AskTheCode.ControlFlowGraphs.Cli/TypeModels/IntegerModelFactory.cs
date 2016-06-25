@@ -82,6 +82,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
                     && !this.IsTypeSupported(method.ReturnType)))
             {
                 // This might be the case of conversions to other types, static methods etc.
+                context.SetUnsupported();
                 return;
             }
 
@@ -109,6 +110,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             if (resultModel != null)
             {
                 context.SetResultValue(resultModel);
+            }
+            else
+            {
+                context.SetUnsupported();
             }
         }
 

@@ -151,6 +151,7 @@
     <Compile Include="BuildNode.cs" />
     <Compile Include="BuildVariable.cs" />
     <Compile Include="BuildVariableId.cs" />
+    <Compile Include="CallData.cs" />
     <Compile Include="CSharpFlowGraphBuilder.cs" />
     <Compile Include="ExpressionDepthBuilderVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

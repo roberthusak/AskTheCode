@@ -18,6 +18,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private SyntaxNodeOrToken? labelOverride;
         private ITypeModel variableModel;
         private ITypeModel valueModel;
+        private CallData callData;
 
         public BuildNode(SyntaxNode syntax)
         {
@@ -59,6 +60,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             set { DataHelper.SetOnceAssert(ref this.valueModel, value); }
         }
 
+        public CallData CallData
+        {
+            get { return this.callData; }
+            set { DataHelper.SetOnceAssert(ref this.callData, value); }
+        }
+
         public void SwapOutgoingEdges(BuildNode other)
         {
             DataHelper.Swap(ref this.outgoingEdges, ref other.outgoingEdges);
@@ -84,6 +91,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             DataHelper.Swap(ref this.valueModel, ref other.valueModel);
         }
 
+        public void SwapCallData(BuildNode other)
+        {
+            DataHelper.Swap(ref this.callData, ref other.callData);
+        }
+
         public void SwapContents(BuildNode other)
         {
             this.SwapOutgoingEdges(other);
@@ -91,6 +103,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.SwapLabelOverride(other);
             this.SwapVariableModel(other);
             this.SwapValueModel(other);
+            this.SwapCallData(other);
         }
 
         public BuildEdge AddEdge(BuildNode to, Expression valueCondition = null)

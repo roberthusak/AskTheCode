@@ -34,12 +34,14 @@ public static class MethodSampleClass
         int e = b, f;
         e = d;
 
-        return IntAdd(a, b) + c;
+        return IntAdd(a + c, b) + c;
     }
 
     public static int IntOperationsExample(int a, int b, int c)
     {
         int d = a + b;
+        d = -a;
+        d = -(a + c);
         d = a - c;
         d = a / c;
         d = a % c;
@@ -106,7 +108,7 @@ public static class MethodSampleClass
     {
         if (a == 0)
         {
-            return -1;
+            return -b;
         }
 
         if (IsNiceNumber(a) && a / b > 2 && b != -1)

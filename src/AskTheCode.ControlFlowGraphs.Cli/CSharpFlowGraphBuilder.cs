@@ -335,6 +335,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 this.node = node;
             }
 
+            public bool IsUnsupported { get; private set; }
+
+            public void SetUnsupported()
+            {
+                this.IsUnsupported = true;
+            }
+
             public void AddAssignment(Variable variable, Expression value)
             {
                 throw new NotImplementedException();

@@ -6,6 +6,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
     public interface IModellingContext
     {
+        bool IsUnsupported { get; }
+
+        void SetUnsupported();
+
         void AddExceptionThrow(BoolHandle condition, Type exceptionType);
 
         void AddAssignment(Variable variable, Expression value);

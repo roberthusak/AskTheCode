@@ -69,6 +69,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
         }
 
+        // TODO: Handle also operations such as +=
         public sealed override void VisitAssignmentExpression(AssignmentExpressionSyntax assignmentSyntax)
         {
             var leftModel = this.Context.TryGetModel(assignmentSyntax.Left);
@@ -76,8 +77,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             {
                 return;
             }
-
-            // TODO: Handle also operations such as +=
 
             if (this.Context.CurrentNode.VariableModel == null)
             {
@@ -90,7 +89,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 // Nested assignments - from the view of the inner one
                 var innerAssignment = this.Context.PrependCurrentNode(assignmentSyntax.Right);
 
-
                 this.Context.CurrentNode.ValueModel = leftModel;
                 innerAssignment.VariableModel = leftModel;
             }
@@ -100,6 +98,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             this.Context.CurrentNode.Syntax = syntax.Expression;
             this.Visit(syntax.Expression);
+        }
+
+        // TODO: Handle ++ operators in a proper way
+        public sealed override void VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax expressionSyntax)
+        {
+            this.ProcessOperation(expressionSyntax, expressionSyntax.Operand);
         }
 
         public sealed override void VisitBinaryExpression(BinaryExpressionSyntax expressionSyntax)
@@ -118,59 +122,78 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 case SyntaxKind.None:
                     return;
                 default:
-                    this.ProcessOperation(expressionSyntax);
+                    this.ProcessOperation(expressionSyntax, expressionSyntax.Left, expressionSyntax.Right);
                     return;
             }
-
         }
 
-        private void ProcessOperation(BinaryExpressionSyntax expressionSyntax)
+        public override void VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax)
         {
-            var expressionSymbol =
-                            this.Context.SemanticModel.GetSymbolInfo(expressionSyntax).Symbol as IMethodSymbol;
+            var arguments = invocationSyntax.ArgumentList.Arguments.Select(arg => arg.Expression).ToArray();
+            this.ProcessOperation(invocationSyntax, arguments);
+        }
+
+        private void ProcessOperation(ExpressionSyntax expressionSyntax, params ExpressionSyntax[] arguments)
+        {
+            var expressionSymbol = this.Context.SemanticModel.GetSymbolInfo(expressionSyntax).Symbol as IMethodSymbol;
 
             if (expressionSymbol == null)
             {
                 return;
             }
 
-            var factory = this.Context.ModelManager.TryGetFactory(expressionSymbol.ContainingType);
-            if (factory == null)
+            var argumentModels = new List<ITypeModel>();
+            foreach (var argument in arguments)
             {
-                return;
+                var model = this.ProcessArgument(argument);
+                argumentModels.Add(model);
             }
 
-            var leftModel = this.ProcessArgument(
-                expressionSyntax.Left,
-                expressionSymbol.Parameters[0].Type);
+            bool modelled = false;
 
-            var rightModel = this.ProcessArgument(
-                expressionSyntax.Right,
-                expressionSymbol.Parameters[1].Type);
-
-            if (leftModel != null && rightModel != null)
+            if (argumentModels.All(model => model != null))
             {
-                var modelContext = this.Context.GetModellingContext();
-                factory.ModelOperation(modelContext, expressionSymbol, new[] { leftModel, rightModel });
+                var factory = this.Context.ModelManager.TryGetFactory(expressionSymbol.ContainingType);
+
+                if (factory != null)
+                {
+                    var modelContext = this.Context.GetModellingContext();
+                    factory.ModelOperation(modelContext, expressionSymbol, argumentModels);
+
+                    modelled = !modelContext.IsUnsupported;
+                }
+            }
+
+            if (!modelled)
+            {
+                this.Context.CurrentNode.CallData = new CallData(
+                    CallDataKind.MethodCall,
+                    expressionSymbol,
+                    argumentModels);
             }
         }
 
-        private ITypeModel ProcessArgument(
-            ExpressionSyntax argument,
-            ITypeSymbol argumentType)
+        private ITypeModel ProcessArgument(ExpressionSyntax argument)
         {
             var argumentModel = this.Context.TryGetModel(argument);
             if (argumentModel == null)
             {
-                var argumentFactory = this.Context.ModelManager.TryGetFactory(argumentType);
-                if (argumentFactory != null)
+                var argumentType = this.Context.SemanticModel.GetTypeInfo(argument).Type;
+                if (argumentType == null)
                 {
-                    argumentModel = this.Context.CreateTemporaryVariableModel(argumentFactory, argumentType);
-
-                    var argumentComputation = this.Context.PrependCurrentNode(argument);
-
-                    argumentComputation.VariableModel = argumentModel;
+                    return null;
                 }
+
+                var argumentFactory = this.Context.ModelManager.TryGetFactory(argumentType);
+                if (argumentFactory == null)
+                {
+                    return null;
+                }
+
+                argumentModel = this.Context.CreateTemporaryVariableModel(argumentFactory, argumentType);
+
+                var argumentComputation = this.Context.PrependCurrentNode(argument);
+                argumentComputation.VariableModel = argumentModel;
             }
 
             return argumentModel;

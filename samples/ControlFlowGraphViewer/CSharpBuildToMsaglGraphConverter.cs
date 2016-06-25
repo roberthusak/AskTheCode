@@ -7,6 +7,7 @@ using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.SmtLibStandard;
 using Microsoft.Msagl.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace ControlFlowGraphViewer
 {
@@ -68,6 +69,16 @@ namespace ControlFlowGraphViewer
                 if (buildNode.ValueModel != null)
                 {
                     text.Append($"({string.Join(", ", buildNode.ValueModel.AssignmentRight)})");
+                }
+
+                if (buildNode.CallData != null)
+                {
+                    Contract.Assert(buildNode.ValueModel == null);
+
+                    var method = buildNode.CallData.Method;
+                    var arguments = buildNode.CallData.Arguments.SelectMany(arg => arg.AssignmentRight);
+                    string argumentsText = string.Join(", ", arguments);
+                    text.Append($"{method.ContainingType}.{method.Name}({argumentsText})");
                 }
 
                 text.Append(" ]");

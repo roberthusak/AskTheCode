@@ -103,6 +103,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
                 || !this.IsTypeSupported(method.ReturnType))
             {
                 // This might be the case of static methods etc.
+                context.SetUnsupported();
                 return;
             }
 
@@ -114,6 +115,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
                 var resultModel = new BooleanModel(this, method.ReturnType, boolResult);
 
                 context.SetResultValue(resultModel);
+            }
+            else
+            {
+                context.SetUnsupported();
             }
         }
 
