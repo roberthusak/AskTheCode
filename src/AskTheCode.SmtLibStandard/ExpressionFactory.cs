@@ -234,6 +234,19 @@ namespace AskTheCode.SmtLibStandard
             return TernaryFunction(ExpressionKind.IfThenElse, valueTrue.Sort, condition, valueTrue, valueFalse);
         }
 
+        /// <remarks>
+        /// Kind and sort validation is up to the caller.
+        /// </remarks>
+        internal static Function Function(ExpressionKind kind, Sort sort, Expression[] operands)
+        {
+            Contract.Requires(sort != null);
+            Contract.Requires(operands != null);
+
+            // TODO: Change to four different kinds (unary, binary etc.) if desirable
+            // TODO: Implement proper operators merging (now it is defensively disabled)
+            return ArbitraryFunction(kind, sort, operands, true);
+        }
+
         [ContractAbbreviator]
         private static void CheckBoolArbitraryFunctionArguments(Expression[] operands)
         {
