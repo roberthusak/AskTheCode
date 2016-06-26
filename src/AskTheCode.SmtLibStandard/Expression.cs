@@ -38,6 +38,10 @@ namespace AskTheCode.SmtLibStandard
             }
         }
 
+        public abstract void Accept(ExpressionVisitor visitor);
+
+        public abstract TResult Accept<TResult>(ExpressionVisitor<TResult> visitor);
+
         public void Validate()
         {
             this.ValidateThis();
@@ -62,7 +66,7 @@ namespace AskTheCode.SmtLibStandard
             }
         }
 
-        protected abstract Expression GetChild(int index);
+        protected internal abstract Expression GetChild(int index);
 
         protected abstract void ValidateThis();
     }

@@ -11,7 +11,17 @@ namespace AskTheCode.SmtLibStandard
         {
         }
 
-        protected sealed override Expression GetChild(int index)
+        public override void Accept(ExpressionVisitor visitor)
+        {
+            visitor.VisitVariable(this);
+        }
+
+        public override TResult Accept<TResult>(ExpressionVisitor<TResult> visitor)
+        {
+            return visitor.VisitVariable(this);
+        }
+
+        protected internal sealed override Expression GetChild(int index)
         {
             throw new InvalidOperationException();
         }

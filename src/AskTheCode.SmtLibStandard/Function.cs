@@ -78,7 +78,17 @@ namespace AskTheCode.SmtLibStandard
             }
         }
 
-        protected override Expression GetChild(int index)
+        public override void Accept(ExpressionVisitor visitor)
+        {
+            visitor.VisitFunction(this);
+        }
+
+        public override TResult Accept<TResult>(ExpressionVisitor<TResult> visitor)
+        {
+            return visitor.VisitFunction(this);
+        }
+
+        protected internal override Expression GetChild(int index)
         {
             return this.children[index];
         }

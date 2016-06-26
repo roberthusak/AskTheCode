@@ -23,7 +23,17 @@ namespace AskTheCode.SmtLibStandard
 
         public object Value { get; private set; }
 
-        protected override Expression GetChild(int index)
+        public override void Accept(ExpressionVisitor visitor)
+        {
+            visitor.VisitInterpretation(this);
+        }
+
+        public override TResult Accept<TResult>(ExpressionVisitor<TResult> visitor)
+        {
+            return visitor.VisitInterpretation(this);
+        }
+
+        protected internal override Expression GetChild(int index)
         {
             throw new InvalidOperationException();
         }

@@ -144,6 +144,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExpressionRewriter.cs" />
+    <Compile Include="ExpressionVisitor.cs" />
+    <Compile Include="ExpressionVisitor[TResult].cs" />
+    <Compile Include="ExpressionWalker.cs" />
     <Compile Include="Handles\IHandle.cs" />
     <Compile Include="IModel.cs" />
     <Compile Include="INameProvider.cs" />
