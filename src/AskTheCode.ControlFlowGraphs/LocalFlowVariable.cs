@@ -24,7 +24,7 @@ namespace AskTheCode.ControlFlowGraphs
 
         public override string DisplayName
         {
-            get { return this.displayName ?? $"var<{this.Sort.Name}>!{this.Graph.Id.Value}!{this.Id.Value}"; }
+            get { return this.displayName ?? $"var!{this.Graph.Id.Value}!{this.Id.Value}"; }
         }
 
         public FlowGraph Graph { get; private set; }

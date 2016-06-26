@@ -18,19 +18,22 @@
         <TabControl x:Name="tabs" Grid.ColumnSpan="2"  BorderBrush="Gray" SelectionChanged="TabControl_SelectionChanged">
             <TabItem x:Name="flowGraphTab" Header="Symbolic CFG">
                 <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
-                    <Label>Select graph:</Label>
+                    <Label Content="Graph:"/>
                     <ComboBox x:Name="graphSelectionCombo" DisplayMemberPath="Name" Margin="2" SelectionChanged="GraphSelectionCombo_SelectionChanged" />
                 </StackPanel>
             </TabItem>
             <TabItem x:Name="csharpMethodTab" Header="C# CFG Building">
                 <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
-                    <Label>Select method:</Label>
+                    <Label>Method:</Label>
                     <ComboBox x:Name="methodSelectionCombo" DisplayMemberPath="Identifier.Text" Margin="2" SelectionChanged="MethodSelectionCombo_SelectionChanged" />
-                    <Label>Select depth:</Label>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center"  >
-                        <RadioButton GroupName="csharpDepth" Content="Statement" IsChecked="True" Checked="CSharpDepthRadioButton_Checked" />
-                        <RadioButton GroupName="csharpDepth" Content="Expression" Margin="5,0,0,0" Checked="CSharpDepthRadioButton_Checked" />
-                        <RadioButton GroupName="csharpDepth" Content="Value" Margin="5,0,0,0" Checked="CSharpDepthRadioButton_Checked" />
+                    <!--<Label>Intermediate</Label>-->
+                    <CheckBox x:Name="intermediateCheckBox" IsChecked="True" Content="Intermediate" Margin="2" VerticalAlignment="Center"
+                              Checked="IntermediateCheckBox_Changed" Unchecked="IntermediateCheckBox_Changed" />
+                    <StackPanel Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=intermediateCheckBox}">
+                        <Label>Depth:</Label>
+                        <RadioButton GroupName="csharpDepth" Content="Statement" IsChecked="True" VerticalAlignment="Center" Checked="CSharpDepthRadioButton_Checked" />
+                        <RadioButton GroupName="csharpDepth" Content="Expression" VerticalAlignment="Center" Margin="5,0,0,0" Checked="CSharpDepthRadioButton_Checked" />
+                        <RadioButton GroupName="csharpDepth" Content="Value" VerticalAlignment="Center" Margin="5,0,0,0" Checked="CSharpDepthRadioButton_Checked" />
                     </StackPanel>
                 </StackPanel>
             </TabItem>

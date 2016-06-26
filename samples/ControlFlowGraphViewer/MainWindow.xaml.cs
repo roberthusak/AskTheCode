@@ -40,6 +40,7 @@ namespace ControlFlowGraphViewer
         private SemanticModel csharpSemanticModel;
         private MethodDeclarationSyntax[] csharpMethodSyntaxes;
         private TypeModelManager cliModelManager;
+        private bool csharpIntermediate = true;
         private GraphDepth csharpGraphDepth;
 
         public MainWindow()
@@ -144,6 +145,12 @@ namespace ControlFlowGraphViewer
             e.Handled = true;
         }
 
+        private async void IntermediateCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            this.csharpIntermediate = (this.intermediateCheckBox.IsChecked == true);
+            await this.BuildCSharpFlowGraph();
+        }
+
         private async Task BuildCSharpFlowGraph()
         {
             int index = this.methodSelectionCombo.SelectedIndex;
@@ -154,11 +161,26 @@ namespace ControlFlowGraphViewer
 
             var methodSyntax = this.csharpMethodSyntaxes[index];
             var builder = new CSharpFlowGraphBuilder(this.cliModelManager, this.csharpSemanticModel, methodSyntax);
-            await builder.BuildAsync(this.csharpGraphDepth);
 
-            var aglGraph = this.csharpGraphConverter.Convert(builder.Graph, this.csharpGraphDepth);
-            aglGraph.Attr.LayerDirection = LayerDirection.TB;
-            this.aglGraphViewer.Graph = aglGraph;
+            if (this.csharpIntermediate)
+            {
+                var buildGraph = await builder.BuildAsync(this.csharpGraphDepth);
+
+                var aglGraph = this.csharpGraphConverter.Convert(buildGraph, this.csharpGraphDepth);
+                aglGraph.Attr.LayerDirection = LayerDirection.TB;
+                this.aglGraphViewer.Graph = aglGraph;
+            }
+            else
+            {
+                var buildGraph = await builder.BuildAsync(GraphDepth.Value);
+
+                var flowGraphTranslator = new FlowGraphTranslator(buildGraph, new FlowGraphId(0));
+                var flowGraph = flowGraphTranslator.Translate();
+
+                var aglGraph = this.flowGraphConverter.Convert(flowGraph);
+                aglGraph.Attr.LayerDirection = LayerDirection.TB;
+                this.aglGraphViewer.Graph = aglGraph;
+            }
         }
     }
 }

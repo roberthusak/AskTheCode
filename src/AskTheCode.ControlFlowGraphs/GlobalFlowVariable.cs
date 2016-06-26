@@ -22,7 +22,7 @@ namespace AskTheCode.ControlFlowGraphs
 
         public override string DisplayName
         {
-            get { return this.displayName ?? $"var<{this.Sort.Name}>!global!{this.Id.Value}"; }
+            get { return this.displayName ?? $"var!global!{this.Id.Value}"; }
         }
 
         public GlobalFlowVariableId Id { get; private set; }

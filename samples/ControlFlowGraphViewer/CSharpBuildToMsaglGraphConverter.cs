@@ -71,12 +71,12 @@ namespace ControlFlowGraphViewer
                     text.Append($"({string.Join(", ", buildNode.ValueModel.AssignmentRight)})");
                 }
 
-                if (buildNode.CallData != null)
+                if (buildNode.BorderData != null)
                 {
                     Contract.Assert(buildNode.ValueModel == null);
 
-                    var method = buildNode.CallData.Method;
-                    var arguments = buildNode.CallData.Arguments.SelectMany(arg => arg.AssignmentRight);
+                    var method = buildNode.BorderData.Method;
+                    var arguments = buildNode.BorderData.Arguments.SelectMany(arg => arg.AssignmentRight);
                     string argumentsText = string.Join(", ", arguments);
                     text.Append($"{method.ContainingType}.{method.Name}({argumentsText})");
                 }
