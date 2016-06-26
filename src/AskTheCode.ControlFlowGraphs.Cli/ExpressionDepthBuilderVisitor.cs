@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
+using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.SmtLibStandard;
+using AskTheCode.SmtLibStandard.Handles;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using AskTheCode.SmtLibStandard.Handles;
-using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
@@ -18,6 +18,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public ExpressionDepthBuilderVisitor(CSharpFlowGraphBuilder.BuildingContext context)
             : base(context)
         {
+        }
+
+        public sealed override void VisitTypeParameterList(TypeParameterListSyntax parametersNode)
+        {
+            foreach (var parameter in parametersNode.Parameters)
+            {
+                this.Context.TryGetModel(parameter);
+            }
         }
 
         public sealed override void VisitExpressionStatement(ExpressionStatementSyntax syntax)
@@ -127,7 +135,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
         }
 
-        public override void VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax)
+        public sealed override void VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax)
         {
             var arguments = invocationSyntax.ArgumentList.Arguments.Select(arg => arg.Expression).ToArray();
             this.ProcessOperation(invocationSyntax, arguments);
@@ -166,8 +174,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             if (!modelled)
             {
-                this.Context.CurrentNode.CallData = new CallData(
-                    CallDataKind.MethodCall,
+                this.Context.CurrentNode.BorderData = new BorderData(
+                    BorderDataKind.MethodCall,
                     expressionSymbol,
                     argumentModels);
             }

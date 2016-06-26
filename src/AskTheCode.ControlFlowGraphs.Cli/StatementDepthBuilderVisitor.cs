@@ -29,6 +29,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             if ((methodSyntax.ReturnType as PredefinedTypeSyntax).Keyword.Text == "void")
             {
                 var implicitReturn = this.Context.AddFinalNode(methodSyntax.Body.CloseBraceToken);
+                implicitReturn.BorderData = new BorderData(BorderDataKind.Return, null, null);
                 body.AddEdge(implicitReturn);
 
                 // TODO: Add also ReturnFlowNode here
@@ -40,6 +41,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public sealed override void VisitReturnStatement(ReturnStatementSyntax returnSyntax)
         {
             this.Context.CurrentNode.OutgoingEdges.Clear();
+            this.Context.CurrentNode.BorderData = new BorderData(BorderDataKind.Return, null, null);
 
             if (returnSyntax.Expression != null)
             {

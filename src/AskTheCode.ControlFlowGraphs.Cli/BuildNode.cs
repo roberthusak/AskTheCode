@@ -11,19 +11,22 @@ using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
-    internal class BuildNode
+    internal class BuildNode : IIdReferenced<BuildNodeId>
     {
         private List<BuildEdge> outgoingEdges = new List<BuildEdge>();
         private SyntaxNode syntax;
         private SyntaxNodeOrToken? labelOverride;
         private ITypeModel variableModel;
         private ITypeModel valueModel;
-        private CallData callData;
+        private BorderData callData;
 
-        public BuildNode(SyntaxNode syntax)
+        public BuildNode(BuildNodeId id, SyntaxNode syntax)
         {
+            this.Id = id;
             this.Syntax = syntax;
         }
+
+        public BuildNodeId Id { get; private set; }
 
         public List<BuildEdge> OutgoingEdges
         {
@@ -60,7 +63,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             set { DataHelper.SetOnceAssert(ref this.valueModel, value); }
         }
 
-        public CallData CallData
+        public BorderData BorderData
         {
             get { return this.callData; }
             set { DataHelper.SetOnceAssert(ref this.callData, value); }

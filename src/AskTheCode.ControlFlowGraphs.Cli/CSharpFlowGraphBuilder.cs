@@ -24,6 +24,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
     {
         private readonly TypeModelManager modelManager;
         private readonly SemanticModel semanticModel;
+        private readonly MethodDeclarationSyntax methodSyntax;
 
         private readonly Queue<BuildNode> readyQueue = new Queue<BuildNode>();
         private readonly HashSet<BuildingContext> pending = new HashSet<BuildingContext>();
@@ -33,20 +34,24 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             SemanticModel semanticModel,
             MethodDeclarationSyntax methodSyntax)
         {
+            Contract.Requires<ArgumentNullException>(modelManager != null, nameof(modelManager));
+            Contract.Requires<ArgumentNullException>(semanticModel != null, nameof(semanticModel));
             Contract.Requires<ArgumentNullException>(methodSyntax != null, nameof(methodSyntax));
 
             this.modelManager = modelManager;
             this.semanticModel = semanticModel;
-
-            this.Graph = new BuildGraph(methodSyntax);
-            this.readyQueue.Enqueue(this.Graph.EnterNode);
+            this.methodSyntax = methodSyntax;
         }
 
-        public BuildGraph Graph { get; private set; }
-
-        public async Task BuildAsync(GraphDepth depth = GraphDepth.Value)
+        public async Task<BuildGraph> BuildAsync(GraphDepth depth = GraphDepth.Value)
         {
-            var context = new BuildingContext(this);
+            this.readyQueue.Clear();
+            this.pending.Clear();
+
+            var graph = new BuildGraph(this.methodSyntax);
+            this.readyQueue.Enqueue(graph.EnterNode);
+
+            var context = new BuildingContext(this, graph);
             var visitor = CreateVisitor(context, depth);
 
             while (this.readyQueue.Count > 0 || this.pending.Count > 0)
@@ -64,7 +69,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                         this.pending.Add(context);
 
                         // Create new visitor and context so that CurrentNode is not changed when awaited
-                        context = new BuildingContext(this);
+                        context = new BuildingContext(this, graph);
                         visitor = CreateVisitor(context, depth);
                     }
                 }
@@ -78,6 +83,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 // TODO: Handle the exceptions thrown in the tasks, if necessary
             }
+
+            return graph;
         }
 
         private static BuilderVisitor CreateVisitor(BuildingContext context, GraphDepth depth)
@@ -95,14 +102,18 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
         }
 
-        // TODO: Extract to interface and make private
+        // TODO: Extract to interface (+ extension methods) and make private
         public class BuildingContext
         {
             private CSharpFlowGraphBuilder builder;
 
-            public BuildingContext(CSharpFlowGraphBuilder builder)
+            public BuildingContext(CSharpFlowGraphBuilder builder, BuildGraph graph)
             {
+                Contract.Requires(builder != null);
+                Contract.Requires(graph != null);
+
                 this.builder = builder;
+                this.Graph = graph;
             }
 
             public BuildNode CurrentNode { get; set; }
@@ -119,10 +130,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 get { return this.builder.modelManager; }
             }
 
-            private BuildGraph Graph
-            {
-                get { return this.builder.Graph; }
-            }
+            protected BuildGraph Graph { get; private set; }
 
             public ITypeModel TryGetModel(SyntaxNode syntax)
             {
@@ -138,6 +146,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     case SyntaxKind.StringLiteralExpression:
                         return this.TryGetValueModel(syntax);
 
+                    case SyntaxKind.Parameter:
                     case SyntaxKind.VariableDeclarator:
                         symbol = this.SemanticModel.GetDeclaredSymbol(syntax);
                         break;
@@ -252,26 +261,21 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 BuildNode node;
                 if (label.IsNode)
                 {
-                    node = new BuildNode(label.AsNode());
+                    node = this.Graph.AddNode(label.AsNode());
                 }
                 else
                 {
                     Contract.Assert(label.IsToken);
-                    node = new BuildNode(null)
-                    {
-                        LabelOverride = label
-                    };
+                    node = this.Graph.AddNode(null);
+                    node.LabelOverride = label;
                 }
-
-                this.Graph.Nodes.Add(node);
 
                 return node;
             }
 
             public BuildNode EnqueueNode(SyntaxNode syntax)
             {
-                var node = new BuildNode(syntax);
-                this.Graph.Nodes.Add(node);
+                var node = this.Graph.AddNode(syntax);
                 this.builder.readyQueue.Enqueue(node);
 
                 return node;

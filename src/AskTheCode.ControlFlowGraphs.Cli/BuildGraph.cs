@@ -11,14 +11,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
+    // TODO: Consider making freezable
     internal class BuildGraph
     {
+        private BuildNodeId.Provider nodeIdProvider = new BuildNodeId.Provider();
         private BuildVariableId.Provider variableIdProvider = new BuildVariableId.Provider();
 
         public BuildGraph(MethodDeclarationSyntax methodSyntax)
         {
-            this.EnterNode = new BuildNode(methodSyntax);
-            this.Nodes.Add(this.EnterNode);
+            this.EnterNode = this.AddNode(methodSyntax);
         }
 
         public BuildNode EnterNode { get; private set; }
@@ -28,6 +29,16 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public List<BuildVariable> Variables { get; } = new List<BuildVariable>();
 
         public Dictionary<ISymbol, ITypeModel> DefinedVariableModels { get; } = new Dictionary<ISymbol, ITypeModel>();
+
+        public BuildNode AddNode(SyntaxNode syntax)
+        {
+            var nodeId = this.nodeIdProvider.GenerateNewId();
+            var node = new BuildNode(nodeId, syntax);
+            this.Nodes.Add(node);
+            Contract.Assert(nodeId.Value == this.Nodes.IndexOf(node));
+
+            return node;
+        }
 
         public BuildVariable AddVariable(Sort sort, ISymbol symbol, VariableOrigin origin)
         {
