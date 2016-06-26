@@ -10,6 +10,8 @@ namespace AskTheCode.Common
         where TId : IId<TId>
         where TReferenced : IIdReferenced<TId>
     {
+        Func<TValue> DefaultValueFactory { get; set; }
+
         TValue this[TId id] { get; set; }
 
         TValue this[TReferenced referenced] { get; set; }

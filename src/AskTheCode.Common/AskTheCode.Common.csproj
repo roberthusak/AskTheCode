@@ -136,6 +136,7 @@
     <Compile Include="IOverlay.cs" />
     <Compile Include="OrdinalId.cs" />
     <Compile Include="OrdinalIdValueGenerator.cs" />
+    <Compile Include="OrdinalOverlay.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Singular.cs" />
   </ItemGroup>
