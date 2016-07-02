@@ -6,6 +6,7 @@ using System.Text;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.PathExploration.Heuristics;
+using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.PathExploration
 {
@@ -16,13 +17,14 @@ namespace AskTheCode.PathExploration
         private IFinalNodeRecognizer finalNodeRecognizer;
         private Action<ExplorationResult> resultCallback;
 
-        private SmtContextHandler smtContextHandler = new SmtContextHandler();
+        private SmtContextHandler smtContextHandler;
 
         private FlowGraphsNodeOverlay<List<ExplorationNode>> nodesOnLocations =
             new FlowGraphsNodeOverlay<List<ExplorationNode>>(() => new List<ExplorationNode>());
 
         internal Explorer(
             ExplorationContext explorationContext,
+            IContextFactory smtContextFactory,
             StartingNodeInfo startingNode,
             IFinalNodeRecognizer finalNodeRecognizer,
             Action<ExplorationResult> resultCallback)
@@ -35,12 +37,16 @@ namespace AskTheCode.PathExploration
             this.finalNodeRecognizer = finalNodeRecognizer;
             this.resultCallback = resultCallback;
 
+            this.smtContextHandler = new SmtContextHandler(smtContextFactory);
+
             var rootPath = new Path(
                 ImmutableArray<Path>.Empty,
                 0,
                 this.startingNode.Node,
                 ImmutableArray<FlowEdge>.Empty);
-            var rootNode = new ExplorationNode(rootPath, this.smtContextHandler.CreateSolver(rootPath));
+            var rootNode = new ExplorationNode(
+                rootPath,
+                this.smtContextHandler.CreateEmptySolver(rootPath, this.startingNode));
             this.AddNode(rootNode);
         }
 
@@ -152,7 +158,7 @@ namespace AskTheCode.PathExploration
                         if (resultKind != ExplorationResultKind.Reachable || this.finalNodeRecognizer.IsFinalNode(branchedNode.Path.Node))
                         {
                             this.RemoveNode(branchedNode);
-                            var result = branchedNode.SolverHandler.GetFullResult();
+                            var result = branchedNode.SolverHandler.LastResult;
                             this.resultCallback(result);
                         }
                     }

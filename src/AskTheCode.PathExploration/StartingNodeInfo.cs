@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
 
@@ -9,6 +10,8 @@ namespace AskTheCode.PathExploration
     {
         public StartingNodeInfo(FlowNode node, int? assignmentIndex)
         {
+            Contract.Requires(node != null);
+
             this.Node = node;
             this.AssignmentIndex = assignmentIndex;
         }

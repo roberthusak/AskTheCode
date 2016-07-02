@@ -23,5 +23,10 @@ namespace AskTheCode.PathExploration
         public FlowNode Node { get; private set; }
 
         public ImmutableArray<FlowEdge> LeadingEdges { get; private set; }
+
+        public bool IsRoot
+        {
+            get { return this.Depth == 0; }
+        }
     }
 }

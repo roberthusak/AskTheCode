@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.PathExploration.Heuristics;
+using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.PathExploration
 {
@@ -13,16 +14,21 @@ namespace AskTheCode.PathExploration
 
         public ExplorationContext(
             IFlowGraphProvider flowGraphProvider,
+            IContextFactory smtContextFactory,
             StartingNodeInfo startingNode,
             ExplorationOptions options)
         {
             this.FlowGraphProvider = flowGraphProvider;
+            this.SmtContextFactory = smtContextFactory;
             this.StartingNode = startingNode;
             this.Options = options;
         }
 
-        public ExplorationContext(IFlowGraphProvider flowGraphProvider, StartingNodeInfo startingNode)
-            : this(flowGraphProvider, startingNode, ExplorationOptions.Default)
+        public ExplorationContext(
+            IFlowGraphProvider flowGraphProvider,
+            IContextFactory smtContextFactory,
+            StartingNodeInfo startingNode)
+            : this(flowGraphProvider, smtContextFactory, startingNode, ExplorationOptions.Default)
         {
         }
 
@@ -34,6 +40,8 @@ namespace AskTheCode.PathExploration
         }
 
         internal IFlowGraphProvider FlowGraphProvider { get; private set; }
+
+        internal IContextFactory SmtContextFactory { get; private set; }
 
         internal IHeuristicFactory<IExplorationHeuristic> ExplorationHeuristicFactory { get; private set; }
 
@@ -64,6 +72,7 @@ namespace AskTheCode.PathExploration
         {
             var explorer = new Explorer(
                 this,
+                this.SmtContextFactory,
                 this.StartingNode,
                 this.Options.FinalNodeRecognizer,
                 this.ExplorerResultCallback);
