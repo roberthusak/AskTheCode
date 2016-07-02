@@ -1,13 +1,13 @@
-﻿using AskTheCode.SmtLibStandard.Handles;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.SmtLibStandard
 {
     public interface IModel
     {
-        Interpretation GetInterpretation(Variable variable);
+        Interpretation GetInterpretation(SymbolName variableName);
 
         //Interpretation<bool> GetInterpretation(BoolHandle handle);
 

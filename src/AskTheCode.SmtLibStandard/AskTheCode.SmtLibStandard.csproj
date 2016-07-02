@@ -149,8 +149,12 @@
     <Compile Include="ExpressionVisitor[TResult].cs" />
     <Compile Include="ExpressionWalker.cs" />
     <Compile Include="Handles\IHandle.cs" />
+    <Compile Include="IContext.cs" />
+    <Compile Include="IContextFactory.cs" />
     <Compile Include="IModel.cs" />
     <Compile Include="INameProvider.cs" />
+    <Compile Include="ISolver.cs" />
+    <Compile Include="IUnsatisfiableCoreElement.cs" />
     <Compile Include="Sort.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="Interpretation.cs" />
@@ -169,7 +173,6 @@
     <Compile Include="Handles\ArrayHandle[TKeyHandle, TValueHandle].cs" />
     <Compile Include="Handles\SequenceHandle[THandle].cs" />
     <Compile Include="Handles\StringHandle.cs" />
-    <Compile Include="ISolverContext.cs" />
     <Compile Include="IAssertionStackLevel.cs" />
     <Compile Include="SolverResult.cs" />
     <Compile Include="SymbolName.cs" />
