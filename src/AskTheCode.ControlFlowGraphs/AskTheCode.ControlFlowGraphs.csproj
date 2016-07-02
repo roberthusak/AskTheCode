@@ -150,6 +150,7 @@
     <Compile Include="LocalFlowVariable.cs" />
     <Compile Include="LocalFlowVariableId.cs" />
     <Compile Include="Overlays\FlowEdgeOverlay.cs" />
+    <Compile Include="Overlays\FlowGraphsVariableOverlay.cs" />
     <Compile Include="Overlays\LocalFlowVariableOverlay.cs" />
     <Compile Include="Overlays\GlobalFlowVariableOverlay.cs" />
     <Compile Include="Overlays\FlowGraphsNodeOverlay.cs" />
