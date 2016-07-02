@@ -151,6 +151,9 @@ namespace AskTheCode.ControlFlowGraphs
             this.Graph.MutableEdges.Add(edge);
             Contract.Assert(edgeId.Value == this.Graph.MutableEdges.IndexOf(edge));
 
+            edge.From.MutableOutgoingEdges.Add(edge);
+            edge.To.MutableIngoingEdges.Add(edge);
+
             return edge;
         }
 

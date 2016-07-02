@@ -37,13 +37,13 @@ namespace AskTheCode.ControlFlowGraphs
 
         public FlowGraph Graph { get; private set; }
 
-        public IReadOnlyList<FlowNode> IngoingEdges { get; private set; }
+        public IReadOnlyList<FlowEdge> IngoingEdges { get; private set; }
 
-        public IReadOnlyList<FlowNode> OutgoingEdges { get; private set; }
+        public IReadOnlyList<FlowEdge> OutgoingEdges { get; private set; }
 
-        internal List<FlowNode> MutableIngoingEdges { get; private set; } = new List<FlowNode>();
+        internal List<FlowEdge> MutableIngoingEdges { get; private set; } = new List<FlowEdge>();
 
-        internal List<FlowNode> MutableOutgoingEdges { get; private set; } = new List<FlowNode>();
+        internal List<FlowEdge> MutableOutgoingEdges { get; private set; } = new List<FlowEdge>();
 
         public FrozenHandler<FlowNode> Freeze()
         {
