@@ -38,6 +38,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp", "csharp", "{2CB975
 		test\inputs\csharp\MethodSampleClass.cs = test\inputs\csharp\MethodSampleClass.cs
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.PathExploration", "src\AskTheCode.PathExploration\AskTheCode.PathExploration.csproj", "{3E566315-AD9D-4794-86F1-3353792E66FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,10 @@ Global
 		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E566315-AD9D-4794-86F1-3353792E66FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E566315-AD9D-4794-86F1-3353792E66FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E566315-AD9D-4794-86F1-3353792E66FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E566315-AD9D-4794-86F1-3353792E66FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,5 +112,6 @@ Global
 		{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
 		{4299E8D1-EF4E-4F20-9EC6-8285436234ED} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
 		{2CB9758F-B2A5-4686-A0EB-7666E4145A7A} = {4299E8D1-EF4E-4F20-9EC6-8285436234ED}
+		{3E566315-AD9D-4794-86F1-3353792E66FF} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 	EndGlobalSection
 EndGlobal
