@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.SmtLibStandard
 {
     public interface ISolver
     {
         IContext Context { get; }
-
-        IEnumerable<IAssertionStackLevel> Stack { get; }
 
         bool AreDeclarationsGlobal { get; }
 
@@ -20,14 +19,14 @@ namespace AskTheCode.SmtLibStandard
 
         ISolver Clone();
 
-        void AddAssertion(Expression assertion);
+        void AddAssertion(BoolHandle assertion);
 
-        void AddAssertion<TVariable>(INameProvider<TVariable> varNameProvider, Expression assertion)
+        void AddAssertion<TVariable>(INameProvider<TVariable> varNameProvider, BoolHandle assertion)
             where TVariable : Variable;
 
-        void AddAssertions(IEnumerable<Expression> assertions);
+        void AddAssertions(IEnumerable<BoolHandle> assertions);
 
-        void AddAssertions<TVariable>(INameProvider<TVariable> varNameProvider, IEnumerable<Expression> assertions)
+        void AddAssertions<TVariable>(INameProvider<TVariable> varNameProvider, IEnumerable<BoolHandle> assertions)
             where TVariable : Variable;
 
         void Push();

@@ -173,7 +173,6 @@
     <Compile Include="Handles\ArrayHandle[TKeyHandle, TValueHandle].cs" />
     <Compile Include="Handles\SequenceHandle[THandle].cs" />
     <Compile Include="Handles\StringHandle.cs" />
-    <Compile Include="IAssertionStackLevel.cs" />
     <Compile Include="SolverResult.cs" />
     <Compile Include="SymbolName.cs" />
     <Compile Include="NamedVariable.cs" />
