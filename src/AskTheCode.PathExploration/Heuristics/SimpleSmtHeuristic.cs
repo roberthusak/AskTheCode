@@ -16,7 +16,7 @@ namespace AskTheCode.PathExploration.Heuristics
         {
             foreach (var node in branchedNodes)
             {
-                yield return false;
+                yield return true;
             }
         }
 

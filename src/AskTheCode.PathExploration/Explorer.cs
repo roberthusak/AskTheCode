@@ -71,7 +71,7 @@ namespace AskTheCode.PathExploration
                 this.RemoveNode(currentNode);
 
                 IReadOnlyList<FlowEdge> edges;
-                if (currentNode.Path.Node is InnerFlowNode)
+                if (!(currentNode.Path.Node is EnterFlowNode || currentNode.Path.Node is CallFlowNode))
                 {
                     edges = currentNode.Path.Node.IngoingEdges;
                 }

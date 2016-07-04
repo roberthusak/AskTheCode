@@ -26,7 +26,7 @@ namespace AskTheCode.PathExploration.Heuristics
 
         public ExplorationNode PickNextNode()
         {
-            return this.explorer.Nodes.First();
+            return this.explorer.Nodes.FirstOrDefault();
         }
     }
 }

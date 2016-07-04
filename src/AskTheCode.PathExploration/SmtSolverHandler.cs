@@ -7,6 +7,7 @@ using System.Text;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.SmtLibStandard;
+using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.PathExploration
 {
@@ -62,7 +63,7 @@ namespace AskTheCode.PathExploration
             cloned.LastResultKind = this.LastResultKind;
 
             // TODO: Clone the variable versions! (we need to make the overlay cloneable/enumerable)
-            return cloned;
+            throw new NotImplementedException();
         }
 
         public ExplorationResultKind Solve(Path path)
@@ -139,6 +140,9 @@ namespace AskTheCode.PathExploration
                     break;
             }
 
+            // Force to recreate it next time
+            this.lastResult = null;
+
             return this.LastResultKind.Value;
         }
 
@@ -185,6 +189,7 @@ namespace AskTheCode.PathExploration
             var smtModel = this.smtSolver.Model;
             var pathNodes = new List<FlowNode>();
 
+            // TODO: Include root
             for (var path = this.Path; !path.IsRoot; path = path.Preceeding.Single())
             {
                 pathNodes.Add(path.Node);
@@ -248,15 +253,18 @@ namespace AskTheCode.PathExploration
         // TODO: Handle also border nodes and interprocedural value flow
         private void AssertEdgeCondition(FlowEdge edge)
         {
-            this.smtSolver.AddAssertion(this.nameProvider, edge.Condition);
+            if (edge.Condition.Expression != ExpressionFactory.True)
+            {
+                this.smtSolver.AddAssertion(this.nameProvider, edge.Condition);
+            }
         }
 
         private void AssertAssignments(IEnumerable<Assignment> assignments)
         {
             foreach (var assignment in assignments)
             {
-                var equal = ExpressionFactory.Equal(assignment.Variable, assignment.Value);
-                this.smtSolver.AddAssertion(equal);
+                var equal = (BoolHandle)ExpressionFactory.Equal(assignment.Variable, assignment.Value);
+                this.smtSolver.AddAssertion(this.nameProvider, equal);
                 this.variableVersions[assignment.Variable]++;
             }
         }
@@ -268,6 +276,17 @@ namespace AskTheCode.PathExploration
             public VersionedNameProvider(SmtSolverHandler owner)
             {
                 this.owner = owner;
+            }
+
+            public SymbolName GetName(Variable variable)
+            {
+                var flowVariable = variable as FlowVariable;
+                if (flowVariable == null)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                return this.GetName(flowVariable);
             }
 
             public SymbolName GetName(FlowVariable variable)
