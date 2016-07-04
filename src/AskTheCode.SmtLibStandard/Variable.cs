@@ -21,7 +21,7 @@ namespace AskTheCode.SmtLibStandard
             return visitor.VisitVariable(this);
         }
 
-        protected internal sealed override Expression GetChild(int index)
+        public sealed override Expression GetChild(int index)
         {
             throw new InvalidOperationException();
         }

@@ -88,7 +88,7 @@ namespace AskTheCode.SmtLibStandard
             return visitor.VisitFunction(this);
         }
 
-        protected internal override Expression GetChild(int index)
+        public override Expression GetChild(int index)
         {
             return this.children[index];
         }

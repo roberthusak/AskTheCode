@@ -26,7 +26,6 @@ namespace AskTheCode.SmtLibStandard
 
         public abstract string DisplayName { get; }
 
-        // TODO: Consider publishing them as an array (immutable, if possible) or at least provide indexing
         public IEnumerable<Expression> Children
         {
             get
@@ -66,7 +65,7 @@ namespace AskTheCode.SmtLibStandard
             }
         }
 
-        protected internal abstract Expression GetChild(int index);
+        public abstract Expression GetChild(int index);
 
         protected abstract void ValidateThis();
     }

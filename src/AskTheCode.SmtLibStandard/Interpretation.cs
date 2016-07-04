@@ -33,7 +33,7 @@ namespace AskTheCode.SmtLibStandard
             return visitor.VisitInterpretation(this);
         }
 
-        protected internal override Expression GetChild(int index)
+        public override Expression GetChild(int index)
         {
             throw new InvalidOperationException();
         }
