@@ -123,6 +123,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CSharpBuildToMsaglGraphConverter.cs" />
+    <Compile Include="DummyFlowGraphProvider.cs" />
     <Compile Include="FlowToMsaglGraphConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -173,6 +174,14 @@
     <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj">
       <Project>{c39b0a93-11c6-4cf1-b0b8-31bd15d6a7f5}</Project>
       <Name>AskTheCode.ControlFlowGraphs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\AskTheCode.PathExploration\AskTheCode.PathExploration.csproj">
+      <Project>{3e566315-ad9d-4794-86f1-3353792e66ff}</Project>
+      <Name>AskTheCode.PathExploration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\AskTheCode.SmtLibStandard.Z3\AskTheCode.SmtLibStandard.Z3.csproj">
+      <Project>{dccaf6a8-0f39-415b-b5e6-76658f314ee2}</Project>
+      <Name>AskTheCode.SmtLibStandard.Z3</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj">
       <Project>{2a814f35-9b19-4487-9e85-c9d1a2ffc955}</Project>

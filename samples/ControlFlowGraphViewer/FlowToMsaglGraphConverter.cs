@@ -17,19 +17,24 @@ namespace ControlFlowGraphViewer
 
             foreach (var flowNode in flowGraph.Nodes)
             {
-                var aglNode = aglGraph.AddNode(flowNode.Id.Value.ToString());
+                var aglNode = aglGraph.AddNode(this.GetNodeId(flowNode));
                 this.DecorateNode(aglNode, flowNode);
             }
 
             foreach (var flowEdge in flowGraph.Edges)
             {
                 var aglEdge = aglGraph.AddEdge(
-                    flowEdge.From.Id.Value.ToString(),
-                    flowEdge.To.Id.Value.ToString());
+                    this.GetNodeId(flowEdge.From),
+                    this.GetNodeId(flowEdge.To));
                 this.DecorateEdge(aglEdge, flowEdge);
             }
 
             return aglGraph;
+        }
+
+        private string GetNodeId(FlowNode flowNode)
+        {
+            return flowNode.Id.Value.ToString();
         }
 
         private void DecorateNode(Node aglNode, FlowNode flowNode)

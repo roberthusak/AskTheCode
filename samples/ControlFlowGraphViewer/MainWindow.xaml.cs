@@ -23,6 +23,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.WpfGraphControl;
+using AskTheCode.PathExploration;
+using AskTheCode.SmtLibStandard.Z3;
 
 namespace ControlFlowGraphViewer
 {
@@ -43,6 +45,9 @@ namespace ControlFlowGraphViewer
         private bool csharpIntermediate = true;
         private GraphDepth csharpGraphDepth;
 
+        private FlowGraph currentFlowGraph;
+        private FlowNode currentFlowNode;
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -58,6 +63,7 @@ namespace ControlFlowGraphViewer
                 LayoutEditingEnabled = false
             };
             this.aglGraphViewer.BindToPanel(this.graphViewerPanel);
+            this.aglGraphViewer.MouseDown += this.AglGraphViewer_MouseDown;
 
             // Symbolic CFGs
             this.flowGeneratorMethods =
@@ -81,6 +87,33 @@ namespace ControlFlowGraphViewer
             this.csharpSemanticModel = await document.GetSemanticModelAsync();
             this.cliModelManager = new TypeModelManager();
             this.csharpGraphDepth = GraphDepth.Statement;
+        }
+
+        private void AglGraphViewer_MouseDown(object sender, MsaglMouseEventArgs e)
+        {
+            if (this.currentFlowGraph == null)
+            {
+                return;
+            }
+
+            var viewerNode = this.aglGraphViewer.ObjectUnderMouseCursor as IViewerNode;
+            if (viewerNode != null)
+            {
+                viewerNode.MarkedForDragging = true;
+
+                int id = int.Parse(viewerNode.Node.Id);
+                this.currentFlowNode = this.currentFlowGraph.Nodes[id];
+
+                this.nodeIdLabel.Content = id.ToString();
+                this.exploreButton.IsEnabled = true;
+
+                foreach (var node in this.aglGraphViewer.Graph.Nodes)
+                {
+                    node.Attr.LineWidth = 1;
+                }
+
+                viewerNode.Node.Attr.LineWidth = 3;
+            }
         }
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -127,6 +160,8 @@ namespace ControlFlowGraphViewer
             aglGraph.Attr.LayerDirection = LayerDirection.TB;
             this.aglGraphViewer.Graph = aglGraph;
 
+            this.ResetCurrentFlowGraphInformation(flowGraph);
+
             e.Handled = true;
         }
 
@@ -148,6 +183,7 @@ namespace ControlFlowGraphViewer
         private async void IntermediateCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             this.csharpIntermediate = (this.intermediateCheckBox.IsChecked == true);
+
             await this.BuildCSharpFlowGraph();
         }
 
@@ -169,6 +205,8 @@ namespace ControlFlowGraphViewer
                 var aglGraph = this.csharpGraphConverter.Convert(buildGraph, this.csharpGraphDepth);
                 aglGraph.Attr.LayerDirection = LayerDirection.TB;
                 this.aglGraphViewer.Graph = aglGraph;
+
+                this.ResetCurrentFlowGraphInformation();
             }
             else
             {
@@ -180,7 +218,38 @@ namespace ControlFlowGraphViewer
                 var aglGraph = this.flowGraphConverter.Convert(flowGraph);
                 aglGraph.Attr.LayerDirection = LayerDirection.TB;
                 this.aglGraphViewer.Graph = aglGraph;
+
+                this.ResetCurrentFlowGraphInformation(flowGraph);
             }
+        }
+
+        private void ResetCurrentFlowGraphInformation(FlowGraph flowGraph = null)
+        {
+            this.currentFlowGraph = flowGraph;
+            this.currentFlowNode = null;
+
+            if (this.tabs.SelectedItem != this.csharpMethodTab || this.intermediateCheckBox.IsChecked == false)
+            {
+                this.propertiesPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.propertiesPanel.Visibility = Visibility.Collapsed;
+            }
+
+            this.graphIdLabel.Content = this.currentFlowGraph?.Id.Value.ToString() ?? string.Empty;
+            this.nodeIdLabel.Content = string.Empty;
+            this.exploreButton.IsEnabled = false;
+        }
+
+        private void ExploreButton_Click(object sender, RoutedEventArgs e)
+        {
+            var startNode = new StartingNodeInfo(this.currentFlowNode, null);
+            var graphProvider = new DummyFlowGraphProvider();
+            var z3Factory = new ContextFactory();
+
+            var explorationContext = new ExplorationContext(graphProvider, z3Factory, startNode);
+            explorationContext.Explore();
         }
     }
 }

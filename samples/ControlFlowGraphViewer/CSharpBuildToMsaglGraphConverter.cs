@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,7 +8,6 @@ using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.SmtLibStandard;
 using Microsoft.Msagl.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace ControlFlowGraphViewer
 {
@@ -44,8 +44,7 @@ namespace ControlFlowGraphViewer
 
         private string GetNodeId(BuildNode buildNode)
         {
-            // Every node in the graph must be on a different position in the code
-            return buildNode.Label.FullSpan.ToString();
+            return buildNode.Id.Value.ToString();
         }
 
         private void DecorateNode(Node aglNode, BuildNode buildNode, GraphDepth depth)

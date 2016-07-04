@@ -39,8 +39,16 @@
             </TabItem>
         </TabControl>
         <DockPanel Grid.Column="1" Grid.Row="1">
-            <StackPanel DockPanel.Dock="Right" Width="120" Background="WhiteSmoke">
-                <Label>TODO: Properties</Label>
+            <StackPanel x:Name="propertiesPanel" DockPanel.Dock="Right" Width="120" Background="WhiteSmoke">
+                <StackPanel Orientation="Horizontal">
+                    <Label>Graph ID:</Label>
+                    <Label x:Name="graphIdLabel" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label>Node ID:</Label>
+                    <Label x:Name="nodeIdLabel" />
+                </StackPanel>
+                <Button x:Name="exploreButton" Content="Explore!" Margin="4" Click="ExploreButton_Click" />
             </StackPanel>
             <Border BorderBrush="Gray" BorderThickness="0,0,1,0">
                 <!-- TODO: Implement properly working scrollbars (ScrollViewer doesn't work here) -->
