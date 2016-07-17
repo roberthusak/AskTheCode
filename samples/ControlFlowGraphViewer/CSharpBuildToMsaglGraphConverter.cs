@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
+using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.SmtLibStandard;
 using Microsoft.Msagl.Drawing;
 
@@ -53,31 +54,74 @@ namespace ControlFlowGraphViewer
 
             var text = new StringBuilder(buildNode.Label.ToString());
 
-            if (depth == GraphDepth.Value && (buildNode.VariableModel != null || buildNode.ValueModel != null))
+            if (depth == GraphDepth.Value
+                && (buildNode.VariableModel != null || buildNode.ValueModel != null || buildNode.BorderData != null))
             {
                 text.AppendLine();
                 text.Append("[ ");
 
                 if (buildNode.VariableModel != null)
                 {
-                    text.Append($"({string.Join(", ", buildNode.VariableModel.AssignmentLeft)})");
+                    if (buildNode.VariableModel.AssignmentLeft.Count == 1)
+                    {
+                        text.Append(buildNode.VariableModel.AssignmentLeft.Single());
+                    }
+                    else
+                    {
+                        text.Append($"({string.Join(", ", buildNode.VariableModel.AssignmentLeft)})");
+                    }
                 }
 
-                text.Append(" \u2190 ");
-
-                if (buildNode.ValueModel != null)
+                var borderKind = buildNode.BorderData?.Kind;
+                if (borderKind == null || borderKind == BorderDataKind.MethodCall)
                 {
-                    text.Append($"({string.Join(", ", buildNode.ValueModel.AssignmentRight)})");
+                    text.Append(" \u2190 ");
                 }
 
                 if (buildNode.BorderData != null)
                 {
-                    Contract.Assert(buildNode.ValueModel == null);
+                    switch (buildNode.BorderData.Kind)
+                    {
+                        case BorderDataKind.Return:
+                            text.Append("return");
+                            if (buildNode.ValueModel != null)
+                            {
+                                text.Append(' ');
+                            }
 
-                    var method = buildNode.BorderData.Method;
-                    var arguments = buildNode.BorderData.Arguments.SelectMany(arg => arg.AssignmentRight);
-                    string argumentsText = string.Join(", ", arguments);
-                    text.Append($"{method.ContainingType}.{method.Name}({argumentsText})");
+                            break;
+
+                        case BorderDataKind.MethodCall:
+                            Contract.Assert(buildNode.ValueModel == null);
+
+                            var method = buildNode.BorderData.Method;
+                            string argumentsText = FormatTypeModelList(buildNode.BorderData.Arguments);
+                            text.Append($"{method.ContainingType}.{method.Name}({argumentsText})");
+                            break;
+
+                        case BorderDataKind.ExceptionThrow:
+                        default:
+                            Contract.Assert(buildNode.BorderData.Kind == BorderDataKind.ExceptionThrow);
+                            Contract.Assert(buildNode.ValueModel == null);
+
+                            var exceptionConstructor = buildNode.BorderData.Method;
+                            string constructorArgumentsText = FormatTypeModelList(buildNode.BorderData.Arguments);
+                            text.Append(
+                                $"throw {exceptionConstructor.ContainingType.Name}({constructorArgumentsText})");
+                            break;
+                    }
+                }
+
+                if (buildNode.ValueModel != null)
+                {
+                    if (buildNode.ValueModel.AssignmentRight.Count == 1)
+                    {
+                        text.Append(buildNode.ValueModel.AssignmentRight.Single());
+                    }
+                    else
+                    {
+                        text.Append($"({string.Join(", ", buildNode.ValueModel.AssignmentRight)})");
+                    }
                 }
 
                 text.Append(" ]");
@@ -86,6 +130,12 @@ namespace ControlFlowGraphViewer
             label.Text = text.ToString();
 
             aglNode.Label = label;
+        }
+
+        private string FormatTypeModelList(IEnumerable<ITypeModel> typeModels)
+        {
+            var arguments = typeModels.SelectMany(arg => arg.AssignmentRight);
+            return string.Join(", ", arguments);
         }
 
         private void DecorateEdge(Edge aglEdge, BuildEdge buildEdge)
