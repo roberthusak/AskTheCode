@@ -53,6 +53,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             var flowEnterNode = this.builder.AddEnterNode(flowParameters);
             buildToFlowNodesMap[this.BuildGraph.EnterNode] = flowEnterNode;
+            visitedNodes[this.BuildGraph.EnterNode] = true;
 
             Contract.Assert(this.BuildGraph.EnterNode.OutgoingEdges.Count == 1);
             var firstNonEnterNode = this.BuildGraph.EnterNode.OutgoingEdges.Single().To;
@@ -93,7 +94,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 foreach (var edge in lastBuildNode.OutgoingEdges)
                 {
-                    if (buildToFlowNodesMap[edge.To] == null)
+                    if (!visitedNodes[edge.To])
                     {
                         nodeQueue.Enqueue(edge.To);
                         visitedNodes[edge.To] = true;
@@ -214,12 +215,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 var nodeAssignments = this.TranslateAssignments(curNode.VariableModel, curNode.ValueModel);
                 assignments.AddRange(nodeAssignments);
 
-                if (curNode.OutgoingEdges.Count > 1)
+                if (curNode.OutgoingEdges.Count != 1)
                 {
                     break;
                 }
 
-                Contract.Assert(curNode.OutgoingEdges.Count == 1);
                 var nextNode = curNode.OutgoingEdges.Single().To;
 
                 if (nextNode.BorderData != null || this.ingoingEdges[nextNode].Count > 1)

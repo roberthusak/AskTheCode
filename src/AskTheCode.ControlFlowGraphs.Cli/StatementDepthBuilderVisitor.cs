@@ -26,6 +26,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             var body = this.Context.EnqueueNode(methodSyntax.Body);
             enter.AddEdge(body);
 
+            foreach (var parameterSyntax in methodSyntax.ParameterList.Parameters)
+            {
+                this.Context.TryGetModel(parameterSyntax);
+            }
+
             if ((methodSyntax.ReturnType as PredefinedTypeSyntax).Keyword.Text == "void")
             {
                 var implicitReturn = this.Context.AddFinalNode(methodSyntax.Body.CloseBraceToken);
