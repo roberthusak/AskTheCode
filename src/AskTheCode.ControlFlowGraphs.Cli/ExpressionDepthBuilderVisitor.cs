@@ -108,6 +108,17 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.Visit(syntax.Expression);
         }
 
+        public sealed override void VisitLiteralExpression(LiteralExpressionSyntax literalSyntax)
+        {
+            Contract.Requires(this.Context.CurrentNode.ValueModel == null);
+
+            var valueModel = this.Context.TryGetValueModel(literalSyntax);
+            if (valueModel != null)
+            {
+                this.Context.CurrentNode.ValueModel = valueModel;
+            }
+        }
+
         // TODO: Handle ++ operators in a proper way
         public sealed override void VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax expressionSyntax)
         {
