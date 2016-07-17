@@ -22,9 +22,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
     {
         public BorderData(BorderDataKind kind, IMethodSymbol method, IEnumerable<ITypeModel> arguments)
         {
-            Contract.Requires<ArgumentNullException>(kind == BorderDataKind.Return || method != null, nameof(method));
             Contract.Requires<ArgumentNullException>(
-                kind == BorderDataKind.Return || arguments != null, nameof(arguments));
+                kind != BorderDataKind.MethodCall || method != null,
+                nameof(method));
+            Contract.Requires<ArgumentNullException>(
+                kind != BorderDataKind.MethodCall || arguments != null,
+                nameof(arguments));
 
             this.Kind = kind;
             this.Method = method;

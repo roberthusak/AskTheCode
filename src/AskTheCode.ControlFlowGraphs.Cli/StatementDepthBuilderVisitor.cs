@@ -50,6 +50,25 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
         }
 
+        // TODO: Handle also exception constructors with arguments
+        public override void VisitThrowStatement(ThrowStatementSyntax throwSyntax)
+        {
+            this.Context.CurrentNode.OutgoingEdges.Clear();
+
+            var constructorSyntax = throwSyntax.Expression as ObjectCreationExpressionSyntax;
+            if (constructorSyntax != null && constructorSyntax.ArgumentList.Arguments.Count == 0)
+            {
+                var constructorSymbol =
+                    this.Context.SemanticModel.GetSymbolInfo(constructorSyntax).Symbol as IMethodSymbol;
+                Contract.Assert(constructorSymbol != null);
+
+                this.Context.CurrentNode.BorderData = new BorderData(
+                    BorderDataKind.ExceptionThrow,
+                    constructorSymbol,
+                    Enumerable.Empty<ITypeModel>());
+            }
+        }
+
         public sealed override void VisitBlock(BlockSyntax blockSyntax)
         {
             // TODO: Consider merging with the following node in the case of empty block
