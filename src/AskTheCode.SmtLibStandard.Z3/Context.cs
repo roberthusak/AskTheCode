@@ -25,7 +25,7 @@ namespace AskTheCode.SmtLibStandard.Z3
         // TODO: Take the boolean options into account
         public ISolver CreateSolver(bool areDeclarationsGlobal, bool isUnsatisfiableCoreProduced)
         {
-            var z3solver = this.context.MkSimpleSolver();
+            var z3solver = this.context.MkSolver();
             return new Solver(this, z3solver);
         }
     }
