@@ -1,0 +1,74 @@
+﻿<Window x:Class="StandaloneGui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StandaloneGui"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="600" Width="800" WindowState="Maximized" Loaded="Window_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        
+        <Border x:Name="codeWindow" Padding="5,5,0,5" BorderBrush="Black" BorderThickness="1,1,1,0">
+            <TextBox x:Name="code" IsReadOnly="True" IsReadOnlyCaretVisible="True" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     BorderThickness="0" FontFamily="Consolas" FontSize="14">
+                <TextBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Display Control Flow Graph" Click="DisplayCfg_Click" />
+                    </ContextMenu>
+                </TextBox.ContextMenu>
+            </TextBox>
+        </Border>
+        
+        <Border x:Name="cfgWindow" Padding="5" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,0">
+
+        </Border>
+        
+        <Border x:Name="exploreWindow" Padding="5,0,5,5" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Call graph:" Padding="0,5,5,5" />
+                <Button Grid.Column="1" Content="Display in large window" Margin="5" />
+                <local:MsaglGraphPresenter Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,5,0" />
+                <Button Grid.Row="2" Content="Explore" Margin="0,5,0,0" />
+
+                <Label Grid.Column="2" Content="Related paths:" Padding="0,5,5,5" />
+                <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,5,0" />
+
+                <Label Grid.Column="3" Content="Path control flow:" Padding="0,5,5,5" />
+                <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="0,0,5,0" />
+
+                <Label Grid.Column="4" Grid.ColumnSpan="2" Content="Method control flow:" Padding="0,5,5,5" />
+                <Button Grid.Column="6" Content="Show control flow graph" Margin="5" />
+                <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Statement" Width="2*" />
+                        <DataGridTextColumn Header="Value" Width="*" />
+                        <DataGridTextColumn Header="Type" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

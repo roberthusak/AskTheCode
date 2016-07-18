@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Vsix", "src\AskTheCode.Vsix\AskTheCode.Vsix.csproj", "{B5DC00A9-F9A3-4577-8E59-195162DA79C4}"
 EndProject
@@ -41,6 +41,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.PathExploration", "src\AskTheCode.PathExploration\AskTheCode.PathExploration.csproj", "{3E566315-AD9D-4794-86F1-3353792E66FF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard.Z3", "src\AskTheCode.SmtLibStandard.Z3\AskTheCode.SmtLibStandard.Z3.csproj", "{DCCAF6A8-0F39-415B-B5E6-76658F314EE2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandaloneGui", "samples\StandaloneGui\StandaloneGui.csproj", "{148CBCE1-1398-4867-B263-E7E357623970}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,6 +102,10 @@ Global
 		{DCCAF6A8-0F39-415B-B5E6-76658F314EE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCCAF6A8-0F39-415B-B5E6-76658F314EE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCCAF6A8-0F39-415B-B5E6-76658F314EE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{148CBCE1-1398-4867-B263-E7E357623970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{148CBCE1-1398-4867-B263-E7E357623970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{148CBCE1-1398-4867-B263-E7E357623970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{148CBCE1-1398-4867-B263-E7E357623970}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -120,5 +126,6 @@ Global
 		{2CB9758F-B2A5-4686-A0EB-7666E4145A7A} = {4299E8D1-EF4E-4F20-9EC6-8285436234ED}
 		{3E566315-AD9D-4794-86F1-3353792E66FF} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 		{DCCAF6A8-0F39-415B-B5E6-76658F314EE2} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
+		{148CBCE1-1398-4867-B263-E7E357623970} = {EAEC332F-9604-4A3E-86B1-6CFF427B7A45}
 	EndGlobalSection
 EndGlobal
