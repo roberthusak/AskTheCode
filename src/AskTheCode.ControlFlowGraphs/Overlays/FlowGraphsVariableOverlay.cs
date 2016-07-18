@@ -9,7 +9,9 @@ namespace AskTheCode.ControlFlowGraphs.Overlays
 {
     public class FlowGraphsVariableOverlay<T> :
         IOverlay<GlobalFlowVariableId, GlobalFlowVariable, T>,
-        IOverlay<FlowGraphId, FlowGraph, LocalFlowVariableOverlay<T>>
+        IOverlay<FlowGraphId, FlowGraph, LocalFlowVariableOverlay<T>>,
+        IReadOnlyOverlay<GlobalFlowVariableId, GlobalFlowVariable, T>,
+        IReadOnlyOverlay<FlowGraphId, FlowGraph, LocalFlowVariableOverlay<T>>
     {
         private GlobalFlowVariableOverlay<T> globalVariableOverlay;
         private FlowGraphOverlay<LocalFlowVariableOverlay<T>> localVariableOverlay;

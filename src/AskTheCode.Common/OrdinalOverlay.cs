@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.Common
 {
-    public class OrdinalOverlay<TId, TReferenced, TValue> : IOverlay<TId, TReferenced, TValue>
+    public class OrdinalOverlay<TId, TReferenced, TValue> :
+        IOverlay<TId, TReferenced, TValue>,
+        IReadOnlyOverlay<TId, TReferenced, TValue>
         where TId : IOrdinalId<TId>
         where TReferenced : IIdReferenced<TId>
     {
