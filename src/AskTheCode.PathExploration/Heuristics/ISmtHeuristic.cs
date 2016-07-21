@@ -8,10 +8,10 @@ namespace AskTheCode.PathExploration.Heuristics
 {
     public interface ISmtHeuristic : IHeuristic
     {
-        bool DoSolve(ExplorationNode node);
+        bool DoSolve(ExplorationState node);
 
-        IEnumerable<bool> DoReuse(SmtSolverHandler solverHandler, IReadOnlyList<ExplorationNode> branchedNodes);
+        IEnumerable<bool> DoReuse(SmtSolverHandler solverHandler, IReadOnlyList<ExplorationState> branchedNodes);
 
-        SmtSolverHandler SelectMergedSolverHandler(ExplorationNode current, ExplorationNode existing);
+        SmtSolverHandler SelectMergedSolverHandler(ExplorationState current, ExplorationState existing);
     }
 }

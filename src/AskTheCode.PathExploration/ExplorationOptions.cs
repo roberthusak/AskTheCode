@@ -10,7 +10,7 @@ namespace AskTheCode.PathExploration
         {
             Default = new ExplorationOptions()
             {
-                FinalNodeRecognizer = new BorderFinalNodeRecognizer(),
+                FinalNodeRecognizer = new BorderEntryPointRecognizer(),
                 ExplorationHeuristicFactory = new SimpleHeuristicFactory<GreedyExplorationHeuristic>(),
                 MergingHeuristicFactory = new SimpleHeuristicFactory<NeverMergeHeuristic>(),
                 SmtHeuristicFactory = new SimpleHeuristicFactory<SimpleSmtHeuristic>()
@@ -21,7 +21,7 @@ namespace AskTheCode.PathExploration
         {
         }
 
-        public IFinalNodeRecognizer FinalNodeRecognizer { get; set; }
+        public IEntryPointRecognizer FinalNodeRecognizer { get; set; }
 
         public IHeuristicFactory<IExplorationHeuristic> ExplorationHeuristicFactory { get; set; }
 

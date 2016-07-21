@@ -12,7 +12,7 @@ namespace AskTheCode.PathExploration.Heuristics
         {
         }
 
-        public IEnumerable<bool> DoReuse(SmtSolverHandler solverHandler, IReadOnlyList<ExplorationNode> branchedNodes)
+        public IEnumerable<bool> DoReuse(SmtSolverHandler solverHandler, IReadOnlyList<ExplorationState> branchedNodes)
         {
             foreach (var node in branchedNodes)
             {
@@ -20,12 +20,12 @@ namespace AskTheCode.PathExploration.Heuristics
             }
         }
 
-        public bool DoSolve(ExplorationNode node)
+        public bool DoSolve(ExplorationState node)
         {
             return true;
         }
 
-        public SmtSolverHandler SelectMergedSolverHandler(ExplorationNode current, ExplorationNode existing)
+        public SmtSolverHandler SelectMergedSolverHandler(ExplorationState current, ExplorationState existing)
         {
             return current.SolverHandler;
         }

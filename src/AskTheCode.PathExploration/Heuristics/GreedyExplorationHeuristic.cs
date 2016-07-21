@@ -16,7 +16,7 @@ namespace AskTheCode.PathExploration.Heuristics
             this.explorer = explorer;
         }
 
-        public IEnumerable<bool> DoBranch(ExplorationNode node, IReadOnlyList<FlowEdge> edges)
+        public IEnumerable<bool> DoBranch(ExplorationState node, IReadOnlyList<FlowEdge> edges)
         {
             foreach (var edge in edges)
             {
@@ -24,7 +24,7 @@ namespace AskTheCode.PathExploration.Heuristics
             }
         }
 
-        public ExplorationNode PickNextNode()
+        public ExplorationState PickNextNode()
         {
             return this.explorer.Nodes.FirstOrDefault();
         }

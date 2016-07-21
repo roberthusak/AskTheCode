@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
 
 namespace AskTheCode.PathExploration
 {
-    public interface IFinalNodeRecognizer
+    public interface IEntryPointRecognizer
     {
         bool IsFinalNode(FlowNode node);
     }

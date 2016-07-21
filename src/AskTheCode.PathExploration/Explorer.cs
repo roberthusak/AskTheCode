@@ -14,19 +14,19 @@ namespace AskTheCode.PathExploration
     {
         private ExplorationContext context;
         private StartingNodeInfo startingNode;
-        private IFinalNodeRecognizer finalNodeRecognizer;
+        private IEntryPointRecognizer finalNodeRecognizer;
         private Action<ExplorationResult> resultCallback;
 
         private SmtContextHandler smtContextHandler;
 
-        private FlowGraphsNodeOverlay<List<ExplorationNode>> nodesOnLocations =
-            new FlowGraphsNodeOverlay<List<ExplorationNode>>(() => new List<ExplorationNode>());
+        private FlowGraphsNodeOverlay<List<ExplorationState>> nodesOnLocations =
+            new FlowGraphsNodeOverlay<List<ExplorationState>>(() => new List<ExplorationState>());
 
         internal Explorer(
             ExplorationContext explorationContext,
             IContextFactory smtContextFactory,
             StartingNodeInfo startingNode,
-            IFinalNodeRecognizer finalNodeRecognizer,
+            IEntryPointRecognizer finalNodeRecognizer,
             Action<ExplorationResult> resultCallback)
         {
             // TODO: Solve this marginal case directly in the ExplorationContext
@@ -44,14 +44,14 @@ namespace AskTheCode.PathExploration
                 0,
                 this.startingNode.Node,
                 ImmutableArray<FlowEdge>.Empty);
-            var rootNode = new ExplorationNode(
+            var rootNode = new ExplorationState(
                 rootPath,
                 this.smtContextHandler.CreateEmptySolver(rootPath, this.startingNode));
             this.AddNode(rootNode);
         }
 
         // TODO: Make readonly for the heuristics
-        public HashSet<ExplorationNode> Nodes { get; private set; } = new HashSet<ExplorationNode>();
+        public HashSet<ExplorationState> Nodes { get; private set; } = new HashSet<ExplorationState>();
 
         public IExplorationHeuristic ExplorationHeuristic { get; internal set; }
 
@@ -81,7 +81,7 @@ namespace AskTheCode.PathExploration
                     throw new NotImplementedException();
                 }
 
-                var toSolve = new List<ExplorationNode>();
+                var toSolve = new List<ExplorationState>();
 
                 int i = 0;
                 foreach (bool doBranch in this.ExplorationHeuristic.DoBranch(currentNode, edges))
@@ -93,7 +93,7 @@ namespace AskTheCode.PathExploration
                             currentNode.Path.Depth + 1,
                             edges[i].From,
                             ImmutableArray.Create(edges[i]));
-                        var branchedNode = new ExplorationNode(branchedPath, currentNode.SolverHandler);
+                        var branchedNode = new ExplorationState(branchedPath, currentNode.SolverHandler);
 
                         bool wasMerged = false;
                         foreach (var mergeCandidate in this.nodesOnLocations[branchedNode.Path.Node].ToArray())
@@ -166,13 +166,13 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        private void AddNode(ExplorationNode node)
+        private void AddNode(ExplorationState node)
         {
             this.Nodes.Add(node);
             this.nodesOnLocations[node.Path.Node].Add(node);
         }
 
-        private void RemoveNode(ExplorationNode node)
+        private void RemoveNode(ExplorationState node)
         {
             this.Nodes.Remove(node);
             this.nodesOnLocations[node.Path.Node].Remove(node);

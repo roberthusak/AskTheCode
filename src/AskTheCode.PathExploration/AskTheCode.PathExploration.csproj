@@ -43,13 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BorderFinalNodeRecognizer.cs" />
+    <Compile Include="BorderEntryPointRecognizer.cs" />
     <Compile Include="ExecutionModel.cs" />
     <Compile Include="ExecutionModelEventArgs.cs" />
     <Compile Include="ExplorationContext.cs" />
-    <Compile Include="ExplorationNode.cs" />
     <Compile Include="ExplorationOptions.cs" />
     <Compile Include="ExplorationResult.cs" />
+    <Compile Include="ExplorationState.cs" />
     <Compile Include="Explorer.cs" />
     <Compile Include="Heuristics\GreedyExplorationHeuristic.cs" />
     <Compile Include="Heuristics\IExplorationHeuristic.cs" />
@@ -58,10 +58,10 @@
     <Compile Include="Heuristics\NeverMergeHeuristic.cs" />
     <Compile Include="Heuristics\SimpleHeuristicFactory.cs" />
     <Compile Include="Heuristics\SimpleSmtHeuristic.cs" />
-    <Compile Include="IFinalNodeRecognizer.cs" />
     <Compile Include="Heuristics\IHeuristic.cs" />
     <Compile Include="Heuristics\IMergingHeuristic.cs" />
     <Compile Include="Heuristics\IPartitioningHeuristic.cs" />
+    <Compile Include="IEntryPointRecognizer.cs" />
     <Compile Include="NodeInterpretations.cs" />
     <Compile Include="Path.cs" />
     <Compile Include="PathCounterExample.cs" />

@@ -197,7 +197,7 @@ namespace ControlFlowGraphViewer
             }
 
             var methodSyntax = this.csharpMethodSyntaxes[index];
-            var builder = new CSharpFlowGraphBuilder(
+            var builder = new CSharpGraphBuilder(
                 this.cliModelManager,
                 this.csharpDocument.Id,
                 this.csharpSemanticModel,

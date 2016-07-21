@@ -7,7 +7,7 @@ using AskTheCode.ControlFlowGraphs;
 
 namespace AskTheCode.PathExploration
 {
-    public class BorderFinalNodeRecognizer : IFinalNodeRecognizer
+    public class BorderEntryPointRecognizer : IEntryPointRecognizer
     {
         public bool IsFinalNode(FlowNode node)
         {

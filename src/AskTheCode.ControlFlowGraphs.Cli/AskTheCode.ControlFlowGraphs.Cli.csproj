@@ -244,7 +244,7 @@
     <Compile Include="BuildNodeId.cs" />
     <Compile Include="BuildVariableId.cs" />
     <Compile Include="CodeMapRecord.cs" />
-    <Compile Include="CSharpFlowGraphBuilder.cs" />
+    <Compile Include="CSharpGraphBuilder.cs" />
     <Compile Include="ExpressionDepthBuilderVisitor.cs" />
     <Compile Include="FlowGraphCodeMap.cs" />
     <Compile Include="FlowGraphTranslator.cs" />

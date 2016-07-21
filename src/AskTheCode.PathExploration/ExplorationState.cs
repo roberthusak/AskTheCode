@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
@@ -6,9 +6,9 @@ using System.Text;
 
 namespace AskTheCode.PathExploration
 {
-    public class ExplorationNode
+    public class ExplorationState
     {
-        public ExplorationNode(Path path, SmtSolverHandler solverHandler)
+        public ExplorationState(Path path, SmtSolverHandler solverHandler)
         {
             Contract.Requires(path != null);
             Contract.Requires(solverHandler != null);
@@ -21,7 +21,7 @@ namespace AskTheCode.PathExploration
 
         public SmtSolverHandler SolverHandler { get; internal set; }
 
-        public void Merge(ExplorationNode node, SmtSolverHandler solverHandler)
+        public void Merge(ExplorationState node, SmtSolverHandler solverHandler)
         {
             Contract.Requires(node != null);
             Contract.Requires(solverHandler != null);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -20,7 +20,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         Value
     }
 
-    internal class CSharpFlowGraphBuilder
+    // TODO: Consider putting to CSharp namespace together with the related classes
+    internal class CSharpGraphBuilder
     {
         // TODO: Move modelManager to CSharpFlowGraphProvider
         private readonly TypeModelManager modelManager;
@@ -31,7 +32,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private readonly HashSet<BuildingContext> pending = new HashSet<BuildingContext>();
         private readonly DocumentId documentId;
 
-        public CSharpFlowGraphBuilder(
+        public CSharpGraphBuilder(
             TypeModelManager modelManager,
             DocumentId documentId,
             SemanticModel semanticModel,
@@ -110,9 +111,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         // TODO: Extract to interface (+ extension methods) and make private, change in the documentation otherwise
         public class BuildingContext
         {
-            private CSharpFlowGraphBuilder builder;
+            private CSharpGraphBuilder builder;
 
-            public BuildingContext(CSharpFlowGraphBuilder builder, BuildGraph graph)
+            public BuildingContext(CSharpGraphBuilder builder, BuildGraph graph)
             {
                 Contract.Requires(builder != null);
                 Contract.Requires(graph != null);
@@ -332,10 +333,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         private class BuilderModellingContext : IModellingContext
         {
-            private CSharpFlowGraphBuilder owner;
+            private CSharpGraphBuilder owner;
             private BuildNode node;
 
-            public BuilderModellingContext(CSharpFlowGraphBuilder owner, BuildNode node)
+            public BuilderModellingContext(CSharpGraphBuilder owner, BuildNode node)
             {
                 Contract.Requires(owner != null);
                 Contract.Requires(node != null);

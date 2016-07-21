@@ -13,7 +13,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 {
     internal class ValueDepthBuilderVisitor : ExpressionDepthBuilderVisitor
     {
-        public ValueDepthBuilderVisitor(CSharpFlowGraphBuilder.BuildingContext context)
+        public ValueDepthBuilderVisitor(CSharpGraphBuilder.BuildingContext context)
             : base(context)
         {
         }
