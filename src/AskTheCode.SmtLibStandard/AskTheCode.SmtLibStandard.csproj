@@ -177,7 +177,6 @@
     <Compile Include="SymbolName.cs" />
     <Compile Include="NamedVariable.cs" />
     <Compile Include="INamedSymbol.cs" />
-    <Compile Include="VariableInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
