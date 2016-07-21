@@ -22,23 +22,28 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
     internal class CSharpFlowGraphBuilder
     {
+        // TODO: Move modelManager to CSharpFlowGraphProvider
         private readonly TypeModelManager modelManager;
         private readonly SemanticModel semanticModel;
         private readonly MethodDeclarationSyntax methodSyntax;
 
         private readonly Queue<BuildNode> readyQueue = new Queue<BuildNode>();
         private readonly HashSet<BuildingContext> pending = new HashSet<BuildingContext>();
+        private readonly DocumentId documentId;
 
         public CSharpFlowGraphBuilder(
             TypeModelManager modelManager,
+            DocumentId documentId,
             SemanticModel semanticModel,
             MethodDeclarationSyntax methodSyntax)
         {
             Contract.Requires<ArgumentNullException>(modelManager != null, nameof(modelManager));
+            Contract.Requires<ArgumentNullException>(documentId != null, nameof(documentId));
             Contract.Requires<ArgumentNullException>(semanticModel != null, nameof(semanticModel));
             Contract.Requires<ArgumentNullException>(methodSyntax != null, nameof(methodSyntax));
 
             this.modelManager = modelManager;
+            this.documentId = documentId;
             this.semanticModel = semanticModel;
             this.methodSyntax = methodSyntax;
         }
@@ -48,7 +53,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.readyQueue.Clear();
             this.pending.Clear();
 
-            var graph = new BuildGraph(this.methodSyntax);
+            var graph = new BuildGraph(this.documentId, this.methodSyntax);
             this.readyQueue.Enqueue(graph.EnterNode);
 
             var context = new BuildingContext(this, graph);
@@ -102,7 +107,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
         }
 
-        // TODO: Extract to interface (+ extension methods) and make private
+        // TODO: Extract to interface (+ extension methods) and make private, change in the documentation otherwise
         public class BuildingContext
         {
             private CSharpFlowGraphBuilder builder;

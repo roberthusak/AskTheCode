@@ -20,6 +20,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private IngoingEdgesOverlay ingoingEdges;
         private ExpressionTranslator expressionTranslator;
         private OrdinalOverlay<BuildVariableId, BuildVariable, FlowVariable> buildToFlowVariablesMap;
+        private OrdinalOverlay<BuildNodeId, BuildNode, FlowNodeMappedInfo> buildToFlowNodesMap;
 
         public FlowGraphTranslator(BuildGraph buildGraph, FlowGraphId flowGraphId)
         {
@@ -31,6 +32,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public FlowGraph FlowGraph { get; private set; }
 
+        public FlowGraphCodeMap CodeMap { get; private set; }
+
         // TODO: Consider splitting into multiple methods to increase readability
         public FlowGraph Translate()
         {
@@ -39,7 +42,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             this.expressionTranslator = new ExpressionTranslator(this);
             this.buildToFlowVariablesMap = new OrdinalOverlay<BuildVariableId, BuildVariable, FlowVariable>();
-            var buildToFlowNodesMap = new OrdinalOverlay<BuildNodeId, BuildNode, FlowNode>();
+            this.buildToFlowNodesMap = new OrdinalOverlay<BuildNodeId, BuildNode, FlowNodeMappedInfo>();
             var nodeQueue = new Queue<BuildNode>();
             var edgeQueue = new Queue<EdgeInfo>();
             var visitedNodes = new OrdinalOverlay<BuildNodeId, BuildNode, bool>();
@@ -52,7 +55,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
 
             var flowEnterNode = this.builder.AddEnterNode(flowParameters);
-            buildToFlowNodesMap[this.BuildGraph.EnterNode] = flowEnterNode;
+            this.buildToFlowNodesMap[this.BuildGraph.EnterNode] = flowEnterNode;
             visitedNodes[this.BuildGraph.EnterNode] = true;
 
             Contract.Assert(this.BuildGraph.EnterNode.OutgoingEdges.Count == 1);
@@ -64,7 +67,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             {
                 var buildNode = nodeQueue.Dequeue();
                 Contract.Assert(visitedNodes[buildNode]);
-                Contract.Assert(buildToFlowNodesMap[buildNode] == null);
+                Contract.Assert(this.buildToFlowNodesMap[buildNode].FlowNode == null);
 
                 BuildNode firstBuildNode, lastBuildNode;
 
@@ -74,7 +77,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     firstBuildNode = buildNode;
                     lastBuildNode = buildNode;
 
-                    buildToFlowNodesMap[buildNode] = flowNode;
+                    this.buildToFlowNodesMap[buildNode] = flowNode;
                 }
                 else
                 {
@@ -83,9 +86,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     this.ProcessInnerNodesSequence(buildNode, out firstBuildNode, out lastBuildNode, out assignments);
 
                     flowNode = this.builder.AddInnerNode(assignments);
+                    int assignmentOffset = 0;
                     foreach (var processedNode in this.GetBuildNodesSequenceRange(firstBuildNode, lastBuildNode))
                     {
-                        buildToFlowNodesMap[processedNode] = flowNode;
+                        this.buildToFlowNodesMap[processedNode] = new FlowNodeMappedInfo(flowNode, assignmentOffset);
+                        assignmentOffset += processedNode.VariableModel?.AssignmentLeft.Count ?? 0;
                     }
                 }
 
@@ -103,7 +108,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 foreach (var edgeInfo in this.ingoingEdges[firstBuildNode])
                 {
-                    var flowFromNode = buildToFlowNodesMap[edgeInfo.From];
+                    var flowFromNode = this.buildToFlowNodesMap[edgeInfo.From].FlowNode;
                     if (flowFromNode == null)
                     {
                         edgeQueue.Enqueue(edgeInfo);
@@ -118,8 +123,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             while (edgeQueue.Count > 0)
             {
                 var edgeInfo = edgeQueue.Dequeue();
-                FlowNode flowFrom = buildToFlowNodesMap[edgeInfo.From];
-                FlowNode flowTo = buildToFlowNodesMap[edgeInfo.Edge.To];
+                FlowNode flowFrom = this.buildToFlowNodesMap[edgeInfo.From];
+                FlowNode flowTo = this.buildToFlowNodesMap[edgeInfo.Edge.To];
 
                 Contract.Assert(flowFrom != null);
                 Contract.Assert(flowTo != null);
@@ -127,7 +132,24 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
 
             this.FlowGraph = this.builder.FreezeAndReleaseGraph();
+
+            this.TranslateCodeMap();
+
             return this.FlowGraph;
+        }
+
+        private void TranslateCodeMap()
+        {
+            this.CodeMap = new FlowGraphCodeMap(this.FlowGraph.Nodes.Count, this.BuildGraph.DocumentId);
+
+            foreach (var buildNode in this.BuildGraph.Nodes)
+            {
+                var flowNodeInfo = this.buildToFlowNodesMap[buildNode];
+                if (flowNodeInfo.FlowNode != null)
+                {
+                    // TODO
+                }
+            }
         }
 
         private IngoingEdgesOverlay ComputeIngoingEdges(BuildGraph graph)

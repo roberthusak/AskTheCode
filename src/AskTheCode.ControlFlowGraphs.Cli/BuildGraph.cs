@@ -17,10 +17,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private BuildNodeId.Provider nodeIdProvider = new BuildNodeId.Provider();
         private BuildVariableId.Provider variableIdProvider = new BuildVariableId.Provider();
 
-        public BuildGraph(MethodDeclarationSyntax methodSyntax)
+        public BuildGraph(DocumentId documentId, MethodDeclarationSyntax methodSyntax)
         {
+            this.DocumentId = documentId;
+
             this.EnterNode = this.AddNode(methodSyntax);
         }
+
+        public DocumentId DocumentId { get; private set; }
 
         public BuildNode EnterNode { get; private set; }
 

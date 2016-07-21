@@ -18,13 +18,13 @@ using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.Tests;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.ControlFlowGraphs.Tests;
+using AskTheCode.PathExploration;
+using AskTheCode.SmtLibStandard.Z3;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.WpfGraphControl;
-using AskTheCode.PathExploration;
-using AskTheCode.SmtLibStandard.Z3;
 
 namespace ControlFlowGraphViewer
 {
@@ -39,6 +39,7 @@ namespace ControlFlowGraphViewer
 
         private MethodInfo[] flowGeneratorMethods;
 
+        private Document csharpDocument;
         private SemanticModel csharpSemanticModel;
         private MethodDeclarationSyntax[] csharpMethodSyntaxes;
         private TypeModelManager cliModelManager;
@@ -79,12 +80,12 @@ namespace ControlFlowGraphViewer
 
             // C# CFGs built from the syntax trees of the sample methods
             var workspace = SampleCSharpWorkspaceProvider.MethodSampleClass();
-            var document = workspace.CurrentSolution.Projects.Single().Documents.Single();
-            var root = await document.GetSyntaxRootAsync();
+            this.csharpDocument = workspace.CurrentSolution.Projects.Single().Documents.Single();
+            var root = await this.csharpDocument.GetSyntaxRootAsync();
 
             this.csharpMethodSyntaxes = root.DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
             this.methodSelectionCombo.ItemsSource = this.csharpMethodSyntaxes;
-            this.csharpSemanticModel = await document.GetSemanticModelAsync();
+            this.csharpSemanticModel = await this.csharpDocument.GetSemanticModelAsync();
             this.cliModelManager = new TypeModelManager();
             this.csharpGraphDepth = GraphDepth.Statement;
         }
@@ -196,7 +197,11 @@ namespace ControlFlowGraphViewer
             }
 
             var methodSyntax = this.csharpMethodSyntaxes[index];
-            var builder = new CSharpFlowGraphBuilder(this.cliModelManager, this.csharpSemanticModel, methodSyntax);
+            var builder = new CSharpFlowGraphBuilder(
+                this.cliModelManager,
+                this.csharpDocument.Id,
+                this.csharpSemanticModel,
+                methodSyntax);
 
             if (this.csharpIntermediate)
             {

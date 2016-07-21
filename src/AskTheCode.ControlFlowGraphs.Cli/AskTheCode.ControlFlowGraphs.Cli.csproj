@@ -243,9 +243,12 @@
     <Compile Include="BuildVariable.cs" />
     <Compile Include="BuildNodeId.cs" />
     <Compile Include="BuildVariableId.cs" />
+    <Compile Include="CodeMapRecord.cs" />
     <Compile Include="CSharpFlowGraphBuilder.cs" />
     <Compile Include="ExpressionDepthBuilderVisitor.cs" />
+    <Compile Include="FlowGraphCodeMap.cs" />
     <Compile Include="FlowGraphTranslator.cs" />
+    <Compile Include="FlowNodeMappedInfo.cs" />
     <Compile Include="MethodLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatementDepthBuilderVisitor.cs" />
