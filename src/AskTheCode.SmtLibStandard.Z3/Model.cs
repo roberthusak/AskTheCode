@@ -12,16 +12,72 @@ namespace AskTheCode.SmtLibStandard.Z3
     {
         private Microsoft.Z3.Model model;
 
+        private Dictionary<int, FuncDecl> intConstDecls;
+        private Dictionary<string, FuncDecl> stringConstDecls;
+
         internal Model(Microsoft.Z3.Model z3model)
         {
             this.model = z3model;
         }
 
-        // TODO: Handle also textual symbol names
+        private Dictionary<int, FuncDecl> IntConstDecls
+        {
+            get
+            {
+                if (this.intConstDecls == null)
+                {
+                    this.intConstDecls = new Dictionary<int, FuncDecl>();
+                    foreach (var decl in this.model.ConstDecls)
+                    {
+                        if (decl.Name.IsIntSymbol())
+                        {
+                            int key = ((IntSymbol)decl.Name).Int;
+                            this.intConstDecls.Add(key, decl);
+                        }
+                    }
+                }
+
+                return this.intConstDecls;
+            }
+        }
+
+        private Dictionary<string, FuncDecl> StringConstDecls
+        {
+            get
+            {
+                if (this.stringConstDecls == null)
+                {
+                    this.stringConstDecls = new Dictionary<string, FuncDecl>();
+                    foreach (var decl in this.model.ConstDecls)
+                    {
+                        if (decl.Name.IsStringSymbol())
+                        {
+                            string key = ((StringSymbol)decl.Name).String;
+                            this.stringConstDecls.Add(key, decl);
+                        }
+                    }
+                }
+
+                return this.stringConstDecls;
+            }
+        }
+
         public Interpretation GetInterpretation(SymbolName variableName)
         {
-            var constDecl = this.model.ConstDecls
-                .First(decl => decl.Name.IsIntSymbol() && ((IntSymbol)decl.Name).Int == variableName.Number.Value);
+            FuncDecl constDecl;
+            if (variableName.Number != null && variableName.Text == null)
+            {
+                this.IntConstDecls.TryGetValue(variableName.Number.Value, out constDecl);
+            }
+            else
+            {
+                this.StringConstDecls.TryGetValue(variableName.ToString(), out constDecl);
+            }
+
+            if (constDecl == null)
+            {
+                return null;
+            }
 
             var interprExpr = this.model.ConstInterp(constDecl);
 
@@ -35,9 +91,10 @@ namespace AskTheCode.SmtLibStandard.Z3
                 var intNum = (IntNum)interprExpr;
                 return ExpressionFactory.IntInterpretation(intNum.Int64);
             }
-
-            // TODO
-            throw new NotImplementedException();
+            else
+            {
+                return null;
+            }
         }
 
         public double GetValue(RealHandle handle)
