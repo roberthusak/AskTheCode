@@ -4,29 +4,22 @@ namespace AskTheCode.PathExploration
 {
     public class ExplorationOptions
     {
-        public static readonly ExplorationOptions Default;
-
-        static ExplorationOptions()
+        public static ExplorationOptions Default
         {
-            Default = new ExplorationOptions()
-            {
-                FinalNodeRecognizer = new BorderEntryPointRecognizer(),
-                ExplorationHeuristicFactory = new SimpleHeuristicFactory<GreedyExplorationHeuristic>(),
-                MergingHeuristicFactory = new SimpleHeuristicFactory<NeverMergeHeuristic>(),
-                SmtHeuristicFactory = new SimpleHeuristicFactory<SimpleSmtHeuristic>()
-            };
+            get { return new ExplorationOptions(); }
         }
 
-        public ExplorationOptions()
-        {
-        }
+        public IEntryPointRecognizer FinalNodeRecognizer { get; set; } = new BorderEntryPointRecognizer();
 
-        public IEntryPointRecognizer FinalNodeRecognizer { get; set; }
+        public IHeuristicFactory<IExplorationHeuristic> ExplorationHeuristicFactory { get; set; } =
+            new SimpleHeuristicFactory<GreedyExplorationHeuristic>();
 
-        public IHeuristicFactory<IExplorationHeuristic> ExplorationHeuristicFactory { get; set; }
+        public IHeuristicFactory<IMergingHeuristic> MergingHeuristicFactory { get; set; } =
+            new SimpleHeuristicFactory<NeverMergeHeuristic>();
 
-        public IHeuristicFactory<IMergingHeuristic> MergingHeuristicFactory { get; set; }
+        public IHeuristicFactory<ISmtHeuristic> SmtHeuristicFactory { get; set; } =
+            new SimpleHeuristicFactory<SimpleSmtHeuristic>();
 
-        public IHeuristicFactory<ISmtHeuristic> SmtHeuristicFactory { get; set; }
+        public int TimeoutSeconds { get; set; } = 30;
     }
 }

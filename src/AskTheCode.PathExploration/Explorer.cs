@@ -7,6 +7,7 @@ using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
+using System.Threading;
 
 namespace AskTheCode.PathExploration
 {
@@ -60,7 +61,7 @@ namespace AskTheCode.PathExploration
         public ISmtHeuristic SmtHeuristic { get; internal set; }
 
         // TODO: Divide into submethods to make more readable
-        internal void Explore()
+        internal void Explore(CancellationToken cancelToken)
         {
             for (
                 var currentNode = this.ExplorationHeuristic.PickNextNode();
@@ -162,6 +163,13 @@ namespace AskTheCode.PathExploration
                             this.resultCallback(result);
                         }
                     }
+                }
+
+                // Check the cancellation before picking next node
+                if (cancelToken.IsCancellationRequested)
+                {
+                    // It is an expected behaviour with well defined result, there is no need to throw an exception
+                    break;
                 }
             }
         }

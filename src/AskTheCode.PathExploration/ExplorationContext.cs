@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
+using System.Threading;
 
 namespace AskTheCode.PathExploration
 {
     public class ExplorationContext
     {
+        // TODO: Consider enforcing it to be read-only
         private List<ExecutionModel> executionModels = new List<ExecutionModel>();
 
         public ExplorationContext(
@@ -34,7 +36,7 @@ namespace AskTheCode.PathExploration
 
         public event EventHandler<ExecutionModelEventArgs> ExecutionModelFound;
 
-        public IReadOnlyCollection<ExecutionModel> ExecutionModels
+        public IReadOnlyList<ExecutionModel> ExecutionModels
         {
             get { return this.executionModels; }
         }
@@ -54,7 +56,7 @@ namespace AskTheCode.PathExploration
         public void Explore()
         {
             var explorer = this.CreateExplorer();
-            explorer.Explore();
+            explorer.Explore(default(CancellationToken));
         }
 
         public async Task ExploreAsync()
@@ -62,8 +64,12 @@ namespace AskTheCode.PathExploration
             // TODO: Implement exploration partitioning to multiple explorers
             var explorer = this.CreateExplorer();
 
-            var explorationTask = new Task(explorer.Explore);
+            var cancelSource = new CancellationTokenSource();
+
+            var explorationTask = new Task(() => explorer.Explore(cancelSource.Token));
             explorationTask.Start();
+
+            cancelSource.CancelAfter(this.Options.TimeoutSeconds * 1000);
 
             await explorationTask;
         }
