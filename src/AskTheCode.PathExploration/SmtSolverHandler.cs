@@ -265,13 +265,14 @@ namespace AskTheCode.PathExploration
         {
             foreach (var assignment in assignments)
             {
-                var equal = (BoolHandle)ExpressionFactory.Equal(assignment.Variable, assignment.Value);
-                this.smtSolver.AddAssertion(this.nameProvider, equal);
                 this.variableVersions[assignment.Variable]++;
+                var assignmentWrapper = new FlowVariableAssignmentWrapper(assignment.Variable);
+                var equal = (BoolHandle)ExpressionFactory.Equal(assignmentWrapper, assignment.Value);
+                this.smtSolver.AddAssertion(this.nameProvider, equal);
             }
         }
 
-        private class VersionedNameProvider : INameProvider<FlowVariable>
+        private class VersionedNameProvider : INameProvider<Variable>
         {
             private SmtSolverHandler owner;
 
@@ -282,19 +283,33 @@ namespace AskTheCode.PathExploration
 
             public SymbolName GetName(Variable variable)
             {
+                bool assignment = false;
+
                 var flowVariable = variable as FlowVariable;
+                if (flowVariable == null)
+                {
+                    var assignmentWrapper = variable as FlowVariableAssignmentWrapper;
+                    if (assignmentWrapper != null)
+                    {
+                        flowVariable = assignmentWrapper.Variable;
+                        assignment = true;
+                    }
+                }
+
                 if (flowVariable == null)
                 {
                     throw new InvalidOperationException();
                 }
 
-                return this.GetName(flowVariable);
-            }
+                int version = this.owner.variableVersions[flowVariable];
+                if (assignment)
+                {
+                    // In case of assignment, the recently raised version should be applied only to the right side
+                    Contract.Assert(version > 0);
+                    version--;
+                }
 
-            public SymbolName GetName(FlowVariable variable)
-            {
-                int version = this.owner.variableVersions[variable];
-                return this.owner.contextHandler.GetVariableVersionSymbol(variable, version);
+                return this.owner.contextHandler.GetVariableVersionSymbol(flowVariable, version);
             }
         }
     }
