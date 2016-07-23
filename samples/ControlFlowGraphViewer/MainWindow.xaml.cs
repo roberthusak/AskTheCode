@@ -25,6 +25,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.WpfGraphControl;
+using System.Collections.ObjectModel;
 
 namespace ControlFlowGraphViewer
 {
@@ -48,6 +49,8 @@ namespace ControlFlowGraphViewer
 
         private FlowGraph currentFlowGraph;
         private FlowNode currentFlowNode;
+        private ObservableCollection<KeyValuePair<string, List<string>>> foundPaths =
+            new ObservableCollection<KeyValuePair<string, List<string>>>();
 
         public MainWindow()
         {
@@ -88,6 +91,8 @@ namespace ControlFlowGraphViewer
             this.csharpSemanticModel = await this.csharpDocument.GetSemanticModelAsync();
             this.cliModelManager = new TypeModelManager();
             this.csharpGraphDepth = GraphDepth.Statement;
+
+            this.foundPathsView.ItemsSource = this.foundPaths;
         }
 
         private void AglGraphViewer_MouseDown(object sender, MsaglMouseEventArgs e)
@@ -247,14 +252,54 @@ namespace ControlFlowGraphViewer
             this.exploreButton.IsEnabled = false;
         }
 
-        private void ExploreButton_Click(object sender, RoutedEventArgs e)
+        private async void ExploreButton_Click(object sender, RoutedEventArgs e)
         {
+            this.exploreButton.IsEnabled = false;
+            this.exploreProgress.IsIndeterminate = true;
+            this.foundPaths.Clear();
+
             var startNode = new StartingNodeInfo(this.currentFlowNode, null);
             var graphProvider = new DummyFlowGraphProvider();
             var z3Factory = new ContextFactory();
 
             var explorationContext = new ExplorationContext(graphProvider, z3Factory, startNode);
-            explorationContext.Explore();
+            explorationContext.ExecutionModelFound += this.ExplorationContext_ExecutionModelFound;
+            await explorationContext.ExploreAsync();
+
+            this.exploreButton.IsEnabled = true;
+            this.exploreProgress.IsIndeterminate = false;
+        }
+
+        private async void ExplorationContext_ExecutionModelFound(object sender, ExecutionModelEventArgs e)
+        {
+            var modelList = new List<string>();
+            for (int i = 0; i < e.ExecutionModel.NodeInterpretations.Length; i++)
+            {
+                for (int j = 0; j < e.ExecutionModel.NodeInterpretations[i].Length; j++)
+                {
+                    var innerNode = e.ExecutionModel.PathNodes[i] as InnerFlowNode;
+                    if (innerNode != null)
+                    {
+                        int reversedIndex = innerNode.Assignments.Count - 1 - j;
+                        string variableName = innerNode.Assignments[reversedIndex].Variable.DisplayName;
+                        var interpretation = e.ExecutionModel.NodeInterpretations[i][j];
+                        if (interpretation != null)
+                        {
+                            string line = $"{variableName} = {interpretation.Value}";
+                            modelList.Add(line);
+                        }
+                    }
+                }
+            }
+
+            modelList.Reverse();
+
+            await this.Dispatcher.InvokeAsync(() =>
+            {
+                string pathName = $"Path {this.foundPaths.Count}";
+                var pathData = new KeyValuePair<string, List<string>>(pathName, modelList);
+                this.foundPaths.Add(pathData);
+            });
         }
     }
 }

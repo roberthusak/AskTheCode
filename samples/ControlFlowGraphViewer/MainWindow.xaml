@@ -49,6 +49,11 @@
                     <Label x:Name="nodeIdLabel" />
                 </StackPanel>
                 <Button x:Name="exploreButton" Content="Explore!" Margin="4" Click="ExploreButton_Click" />
+                <ProgressBar x:Name="exploreProgress" Height="20" Margin="4" />
+                <Label>Found paths:</Label>
+                <ListBox x:Name="foundPathsView" DisplayMemberPath="Key" Height="100" Margin="4" />
+                <Label>Path model:</Label>
+                <ListBox ItemsSource="{Binding ElementName=foundPathsView, Path=SelectedItem.Value}" MinHeight="200" Margin="4" />
             </StackPanel>
             <Border BorderBrush="Gray" BorderThickness="0,0,1,0">
                 <!-- TODO: Implement properly working scrollbars (ScrollViewer doesn't work here) -->
