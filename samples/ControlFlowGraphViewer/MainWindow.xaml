@@ -39,22 +39,33 @@
             </TabItem>
         </TabControl>
         <DockPanel Grid.Column="1" Grid.Row="1">
-            <StackPanel x:Name="propertiesPanel" DockPanel.Dock="Right" Width="120" Background="WhiteSmoke">
-                <StackPanel Orientation="Horizontal">
-                    <Label>Graph ID:</Label>
-                    <Label x:Name="graphIdLabel" />
+            <Grid x:Name="propertiesPanel" DockPanel.Dock="Right" Width="120" Background="WhiteSmoke">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label>Graph ID:</Label>
+                        <Label x:Name="graphIdLabel" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label>Node ID:</Label>
+                        <Label x:Name="nodeIdLabel" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label>Timeout (s):</Label>
+                        <TextBox x:Name="timeoutText" VerticalContentAlignment="Center" Text="30" Margin="2" />
+                    </StackPanel>
+                    <Button x:Name="exploreButton" Content="Explore!" Margin="2" Click="ExploreButton_Click" />
+                    <ProgressBar x:Name="exploreProgress" Height="20" Margin="2" />
+                    <Label>Found paths:</Label>
+                    <ListBox x:Name="foundPathsView" DisplayMemberPath="Key" Height="100" Margin="2" />
+                    <Label>Path model:</Label>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <Label>Node ID:</Label>
-                    <Label x:Name="nodeIdLabel" />
-                </StackPanel>
-                <Button x:Name="exploreButton" Content="Explore!" Margin="4" Click="ExploreButton_Click" />
-                <ProgressBar x:Name="exploreProgress" Height="20" Margin="4" />
-                <Label>Found paths:</Label>
-                <ListBox x:Name="foundPathsView" DisplayMemberPath="Key" Height="100" Margin="4" />
-                <Label>Path model:</Label>
-                <ListBox ItemsSource="{Binding ElementName=foundPathsView, Path=SelectedItem.Value}" MinHeight="200" Margin="4" />
-            </StackPanel>
+                <ListBox Grid.Row="1" ItemsSource="{Binding ElementName=foundPathsView, Path=SelectedItem.Value}" MinHeight="200"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="2" />
+            </Grid>
             <Border BorderBrush="Gray" BorderThickness="0,0,1,0">
                 <!-- TODO: Implement properly working scrollbars (ScrollViewer doesn't work here) -->
                 <ScrollContentPresenter>

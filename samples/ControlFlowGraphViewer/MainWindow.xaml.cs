@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -25,7 +26,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.WpfGraphControl;
-using System.Collections.ObjectModel;
 
 namespace ControlFlowGraphViewer
 {
@@ -261,8 +261,15 @@ namespace ControlFlowGraphViewer
             var startNode = new StartingNodeInfo(this.currentFlowNode, null);
             var graphProvider = new DummyFlowGraphProvider();
             var z3Factory = new ContextFactory();
+            var options = new ExplorationOptions();
 
-            var explorationContext = new ExplorationContext(graphProvider, z3Factory, startNode);
+            int timeoutSeconds;
+            if (int.TryParse(this.timeoutText.Text, out timeoutSeconds))
+            {
+                options.TimeoutSeconds = timeoutSeconds;
+            }
+
+            var explorationContext = new ExplorationContext(graphProvider, z3Factory, startNode, options);
             explorationContext.ExecutionModelFound += this.ExplorationContext_ExecutionModelFound;
             await explorationContext.ExploreAsync();
 
