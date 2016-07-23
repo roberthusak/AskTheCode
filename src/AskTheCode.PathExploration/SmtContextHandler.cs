@@ -8,6 +8,7 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.PathExploration
 {
+    // TODO: Keep the list of solvers (already in the documentation...)
     public class SmtContextHandler
     {
         private IContextFactory contextFactory;
@@ -46,7 +47,12 @@ namespace AskTheCode.PathExploration
             var versionsList = this.variableVersionSymbols[variable];
             for (int i = versionsList.Count; i <= version; i++)
             {
+                // TODO: Make configurable without the dependence on the Debug/Release configuration
+#if DEBUG
+                var symbolName = new SymbolName($"{variable.ToString()}_{version}", this.lastVariableNumber);
+#else
                 var symbolName = new SymbolName(null, this.lastVariableNumber);
+#endif
                 this.lastVariableNumber++;
                 versionsList.Add(symbolName);
             }
