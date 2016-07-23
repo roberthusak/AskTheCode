@@ -27,6 +27,8 @@ namespace AskTheCode.PathExploration
             StartingNodeInfo startingNode)
             : this(contextHandler, smtSolver, path)
         {
+            this.smtSolver.Push();
+
             var innerNode = startingNode.Node as InnerFlowNode;
             if (innerNode != null && startingNode.AssignmentIndex != null)
             {
@@ -34,7 +36,6 @@ namespace AskTheCode.PathExploration
                     .Take(startingNode.AssignmentIndex.Value + 1)
                     .Reverse();
                 this.AssertAssignments(initialAssignments);
-                this.smtSolver.Push();
             }
         }
 
@@ -106,6 +107,8 @@ namespace AskTheCode.PathExploration
             {
                 var currentPath = pathStack.Pop();
 
+                this.smtSolver.Push();
+
                 // TODO: Handle merged nodes
                 var edge = currentPath.LeadingEdges.Single();
                 var node = currentPath.Node;
@@ -117,7 +120,6 @@ namespace AskTheCode.PathExploration
                     this.AssertAssignments(innerNode.Assignments.Reverse());
                 }
 
-                this.smtSolver.Push();
                 this.Path = currentPath;
             }
 
