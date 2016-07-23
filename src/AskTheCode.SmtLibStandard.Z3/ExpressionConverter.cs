@@ -149,11 +149,11 @@ namespace AskTheCode.SmtLibStandard.Z3
                         this.VisitArithChild(function, 0),
                         this.VisitArithChild(function, 1));
                 case ExpressionKind.LessThanOrEqual:
-                    return this.context.MkGe(
+                    return this.context.MkLe(
                         this.VisitArithChild(function, 0),
                         this.VisitArithChild(function, 1));
                 case ExpressionKind.GreaterThanOrEqual:
-                    return this.context.MkLe(
+                    return this.context.MkGe(
                         this.VisitArithChild(function, 0),
                         this.VisitArithChild(function, 1));
 
