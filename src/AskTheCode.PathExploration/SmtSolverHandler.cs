@@ -204,20 +204,41 @@ namespace AskTheCode.PathExploration
 
             foreach (var node in pathNodes)
             {
+                List<Interpretation> interpretations = null;
+
                 var innerNode = node as InnerFlowNode;
                 if (innerNode != null)
                 {
-                    var interpretations = new List<Interpretation>();
+                    interpretations = new List<Interpretation>();
                     foreach (var assignment in innerNode.Assignments.Reverse())
                     {
-                        int variableVersion = variableVersions[assignment.Variable];
-                        var variableSymbolName = this.contextHandler.GetVariableVersionSymbol(assignment.Variable, variableVersion);
+                        int version = variableVersions[assignment.Variable];
+                        var symbolName = this.contextHandler.GetVariableVersionSymbol(assignment.Variable, version);
                         variableVersions[assignment.Variable]++;
 
-                        var interpretation = this.smtSolver.Model.GetInterpretation(variableSymbolName);
+                        var interpretation = this.smtSolver.Model.GetInterpretation(symbolName);
                         interpretations.Add(interpretation);
                     }
+                }
+                else
+                {
+                    var enterNode = node as EnterFlowNode;
+                    if (enterNode != null)
+                    {
+                        interpretations = new List<Interpretation>();
+                        foreach (var param in enterNode.Parameters.Reverse())
+                        {
+                            int version = variableVersions[param];
+                            var symbolName = this.contextHandler.GetVariableVersionSymbol(param, version);
 
+                            var interpretation = this.smtSolver.Model.GetInterpretation(symbolName);
+                            interpretations.Add(interpretation);
+                        }
+                    }
+                }
+
+                if (interpretations != null)
+                {
                     nodeInterpretations.Add(interpretations.ToImmutableArray());
                 }
                 else

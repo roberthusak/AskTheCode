@@ -72,13 +72,13 @@ namespace AskTheCode.PathExploration
                 this.RemoveNode(currentNode);
 
                 IReadOnlyList<FlowEdge> edges;
-                if (!(currentNode.Path.Node is EnterFlowNode || currentNode.Path.Node is CallFlowNode))
+                if (!(currentNode.Path.Node is EnterFlowNode))
                 {
                     edges = currentNode.Path.Node.IngoingEdges;
                 }
                 else
                 {
-                    // TODO: Handle also border edges and their connections
+                    // TODO: Handle also border edges and their connections, properly process the call nodes
                     throw new NotImplementedException();
                 }
 
