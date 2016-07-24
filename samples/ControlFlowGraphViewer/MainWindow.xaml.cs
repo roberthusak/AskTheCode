@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -26,6 +27,7 @@ using AskTheCode.SmtLibStandard.Z3;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.WpfGraphControl;
 
@@ -42,6 +44,7 @@ namespace ControlFlowGraphViewer
 
         private MethodInfo[] flowGeneratorMethods;
 
+        private Workspace csharpWorkspace;
         private Document csharpDocument;
         private SemanticModel csharpSemanticModel;
         private MethodDeclarationSyntax[] csharpMethodSyntaxes;
@@ -84,17 +87,36 @@ namespace ControlFlowGraphViewer
             this.graphSelectionCombo.SelectedIndex = 0;
 
             // C# CFGs built from the syntax trees of the sample methods
-            var workspace = SampleCSharpWorkspaceProvider.MethodSampleClass();
-            this.csharpDocument = workspace.CurrentSolution.Projects.Single().Documents.Single();
-            var root = await this.csharpDocument.GetSyntaxRootAsync();
+            var args = Environment.GetCommandLineArgs();
+            if (args.Length >= 2 && File.Exists(args[1]))
+            {
+                string file = args[1];
+                string suffix = System.IO.Path.GetExtension(file);
+                if (suffix == ".cs")
+                {
+                    this.csharpWorkspace = SampleCSharpWorkspaceProvider.CreateWorkspaceFromSingleFile(file);
+                }
+                else if (suffix == ".csproj")
+                {
+                    this.csharpWorkspace = MSBuildWorkspace.Create();
+                    var project = await ((MSBuildWorkspace)this.csharpWorkspace).OpenProjectAsync(file);
+                }
+            }
 
-            this.csharpMethodSyntaxes = root.DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
-            this.methodSelectionCombo.ItemsSource = this.csharpMethodSyntaxes;
-            this.csharpSemanticModel = await this.csharpDocument.GetSemanticModelAsync();
-            this.cliModelManager = new TypeModelManager();
-            this.csharpGraphDepth = GraphDepth.Statement;
+            if (this.csharpWorkspace == null)
+            {
+                this.csharpMethodTab.IsEnabled = false;
+            }
+            else
+            {
+                this.foundPathsView.ItemsSource = this.foundPaths;
+                this.cliModelManager = new TypeModelManager();
+                this.csharpGraphDepth = GraphDepth.Statement;
 
-            this.foundPathsView.ItemsSource = this.foundPaths;
+                this.documentSelectionCombo.ItemsSource = this.csharpWorkspace.CurrentSolution.Projects
+                    .SelectMany(project => project.Documents)
+                    .ToArray();
+            }
         }
 
         private void AglGraphViewer_MouseDown(object sender, MsaglMouseEventArgs e)
@@ -177,6 +199,21 @@ namespace ControlFlowGraphViewer
         {
             await this.BuildCSharpFlowGraph();
             e.Handled = true;
+        }
+
+        private async void DocumentSelectionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var document = e.AddedItems.OfType<Document>().FirstOrDefault();
+
+            if (document != null)
+            {
+                this.csharpDocument = document;
+                var root = await this.csharpDocument.GetSyntaxRootAsync();
+
+                this.csharpMethodSyntaxes = root.DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
+                this.csharpSemanticModel = await this.csharpDocument.GetSemanticModelAsync();
+                this.methodSelectionCombo.ItemsSource = this.csharpMethodSyntaxes;
+            }
         }
 
         private async void CSharpDepthRadioButton_Checked(object sender, RoutedEventArgs e)

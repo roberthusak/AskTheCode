@@ -14,6 +14,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AskTheCode.ControlFlowGraphs.Cli.Tests;
 using Microsoft.CodeAnalysis;
+using System.IO;
+using Microsoft.CodeAnalysis.MSBuild;
 
 namespace StandaloneGui
 {
@@ -38,8 +40,28 @@ namespace StandaloneGui
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var workspace = SampleCSharpWorkspaceProvider.MethodSampleClass();
-            var document = workspace.CurrentSolution.Projects.Single().Documents.Single();
+            Project project = null;
+            var args = Environment.GetCommandLineArgs();
+            if (args.Length >= 2 && File.Exists(args[1]))
+            {
+                string file = args[1];
+                string suffix = System.IO.Path.GetExtension(file);
+                if (suffix == ".csproj")
+                {
+                    var workspace = MSBuildWorkspace.Create();
+                    project = await workspace.OpenProjectAsync(file);
+                }
+            }
+
+            var document = project?.Documents.FirstOrDefault();
+
+            if (document == null)
+            {
+                MessageBox.Show("Please pass the project to open as an argument of the program");
+                this.Close();
+                return;
+            }
+
             await this.OpenDocument(document);
         }
 

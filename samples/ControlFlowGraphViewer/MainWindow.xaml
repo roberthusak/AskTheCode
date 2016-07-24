@@ -24,6 +24,8 @@
             </TabItem>
             <TabItem x:Name="csharpMethodTab" Header="C# CFG Building">
                 <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
+                    <Label>File:</Label>
+                    <ComboBox x:Name="documentSelectionCombo" DisplayMemberPath="Name" Margin="2" SelectionChanged="DocumentSelectionCombo_SelectionChanged" />
                     <Label>Method:</Label>
                     <ComboBox x:Name="methodSelectionCombo" DisplayMemberPath="Identifier.Text" Margin="2" SelectionChanged="MethodSelectionCombo_SelectionChanged" />
                     <!--<Label>Intermediate</Label>-->
