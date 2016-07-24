@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
@@ -20,6 +21,7 @@ using AskTheCode.ControlFlowGraphs.Cli.Tests;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.ControlFlowGraphs.Tests;
 using AskTheCode.PathExploration;
+using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Z3;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -282,19 +284,19 @@ namespace ControlFlowGraphViewer
             var modelList = new List<string>();
             for (int i = 0; i < e.ExecutionModel.NodeInterpretations.Length; i++)
             {
-                for (int j = 0; j < e.ExecutionModel.NodeInterpretations[i].Length; j++)
+                var node = e.ExecutionModel.PathNodes[i];
+                var interpretations = e.ExecutionModel.NodeInterpretations[i];
+                var innerNode = node as InnerFlowNode;
+                if (innerNode != null)
                 {
-                    var innerNode = e.ExecutionModel.PathNodes[i] as InnerFlowNode;
-                    if (innerNode != null)
+                    this.AddNodeModels(modelList, interpretations, (j) => innerNode.Assignments[j].Variable);
+                }
+                else
+                {
+                    var enterNode = node as EnterFlowNode;
+                    if (enterNode != null)
                     {
-                        int reversedIndex = innerNode.Assignments.Count - 1 - j;
-                        string variableName = innerNode.Assignments[reversedIndex].Variable.DisplayName;
-                        var interpretation = e.ExecutionModel.NodeInterpretations[i][j];
-                        if (interpretation != null)
-                        {
-                            string line = $"{variableName} = {interpretation.Value}";
-                            modelList.Add(line);
-                        }
+                        this.AddNodeModels(modelList, interpretations, (j) => enterNode.Parameters[j]);
                     }
                 }
             }
@@ -307,6 +309,21 @@ namespace ControlFlowGraphViewer
                 var pathData = new KeyValuePair<string, List<string>>(pathName, modelList);
                 this.foundPaths.Add(pathData);
             });
+        }
+
+        private void AddNodeModels(List<string> modelList, ImmutableArray<Interpretation> interpretations, Func<int, Variable> variableProvider)
+        {
+            for (int i = 0; i < interpretations.Length; i++)
+            {
+                int reversedIndex = interpretations.Length - 1 - i;
+                string paramName = variableProvider(reversedIndex).DisplayName;
+                var interpretation = interpretations[i];
+                if (interpretation != null)
+                {
+                    string line = $"{paramName} = {interpretation.Value}";
+                    modelList.Add(line);
+                }
+            }
         }
     }
 }
