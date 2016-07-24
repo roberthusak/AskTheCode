@@ -59,6 +59,7 @@
                         <Label>Timeout (s):</Label>
                         <TextBox x:Name="timeoutText" VerticalContentAlignment="Center" Text="30" Margin="2" />
                     </StackPanel>
+                    <CheckBox x:Name="assertionCheckBox" IsChecked="True" Content="Check assertion" Margin="4" />
                     <Button x:Name="exploreButton" Content="Explore!" Margin="2" Click="ExploreButton_Click" />
                     <ProgressBar x:Name="exploreProgress" Height="20" Margin="2" />
                     <Label>Found paths:</Label>

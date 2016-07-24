@@ -137,6 +137,16 @@ namespace ControlFlowGraphViewer
                 this.nodeIdLabel.Content = id.ToString();
                 this.exploreButton.IsEnabled = true;
 
+                var assignments = (this.currentFlowNode as InnerFlowNode)?.Assignments;
+                if (assignments != null && assignments.Count > 0 && assignments.Last().Variable.Sort == Sort.Bool)
+                {
+                    this.assertionCheckBox.IsEnabled = true;
+                }
+                else
+                {
+                    this.assertionCheckBox.IsEnabled = false;
+                }
+
                 foreach (var node in this.aglGraphViewer.Graph.Nodes)
                 {
                     node.Attr.LineWidth = 1;
@@ -297,7 +307,10 @@ namespace ControlFlowGraphViewer
             this.exploreProgress.IsIndeterminate = true;
             this.foundPaths.Clear();
 
-            var startNode = new StartingNodeInfo(this.currentFlowNode, null);
+            bool isAssertChecked = (this.assertionCheckBox.IsEnabled && this.assertionCheckBox.IsChecked == true);
+            int? assignmentIndex = isAssertChecked ?
+                ((InnerFlowNode)this.currentFlowNode).Assignments.Count - 1 : (int?)null;
+            var startNode = new StartingNodeInfo(this.currentFlowNode, assignmentIndex, isAssertChecked);
             var graphProvider = new DummyFlowGraphProvider();
             var z3Factory = new ContextFactory();
             var options = new ExplorationOptions();
