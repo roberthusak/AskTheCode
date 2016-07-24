@@ -11,7 +11,7 @@ namespace AskTheCode.PathExploration
     {
         public bool IsFinalNode(FlowNode node)
         {
-            return !(node is InnerFlowNode);
+            return (node is EnterFlowNode);
         }
     }
 }
