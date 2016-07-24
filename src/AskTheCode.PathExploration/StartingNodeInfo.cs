@@ -8,17 +8,20 @@ namespace AskTheCode.PathExploration
 {
     public class StartingNodeInfo
     {
-        public StartingNodeInfo(FlowNode node, int? assignmentIndex)
+        public StartingNodeInfo(FlowNode node, int? assignmentIndex, bool isAssertionChecked)
         {
             Contract.Requires(node != null);
 
             this.Node = node;
             this.AssignmentIndex = assignmentIndex;
+            this.IsAssertionChecked = isAssertionChecked;
         }
 
         public FlowNode Node { get; private set; }
 
         public int? AssignmentIndex { get; private set; }
+
+        public bool IsAssertionChecked { get; private set; }
 
         public Assignment? Assignment
         {

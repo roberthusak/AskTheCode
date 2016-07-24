@@ -32,8 +32,15 @@ namespace AskTheCode.PathExploration
             var innerNode = startingNode.Node as InnerFlowNode;
             if (innerNode != null && startingNode.AssignmentIndex != null)
             {
+                if (startingNode.IsAssertionChecked)
+                {
+                    var assertionVar = innerNode.Assignments[startingNode.AssignmentIndex.Value].Variable;
+                    this.smtSolver.AddAssertion(this.nameProvider, !(BoolHandle)assertionVar);
+                }
+
+                int assignmentsCount = startingNode.AssignmentIndex.Value + 1;
                 var initialAssignments = innerNode.Assignments
-                    .Take(startingNode.AssignmentIndex.Value + 1)
+                    .Take(assignmentsCount)
                     .Reverse();
                 this.AssertAssignments(initialAssignments);
             }
