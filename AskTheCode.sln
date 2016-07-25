@@ -44,6 +44,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard.Z
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandaloneGui", "samples\StandaloneGui\StandaloneGui.csproj", "{148CBCE1-1398-4867-B263-E7E357623970}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EvaluationTests", "test\inputs\csharp\EvaluationTests\EvaluationTests.csproj", "{8268B9E2-442C-4444-8A4C-34EC534AB65A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,6 +108,10 @@ Global
 		{148CBCE1-1398-4867-B263-E7E357623970}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{148CBCE1-1398-4867-B263-E7E357623970}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{148CBCE1-1398-4867-B263-E7E357623970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8268B9E2-442C-4444-8A4C-34EC534AB65A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8268B9E2-442C-4444-8A4C-34EC534AB65A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8268B9E2-442C-4444-8A4C-34EC534AB65A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8268B9E2-442C-4444-8A4C-34EC534AB65A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,5 +133,6 @@ Global
 		{3E566315-AD9D-4794-86F1-3353792E66FF} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 		{DCCAF6A8-0F39-415B-B5E6-76658F314EE2} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 		{148CBCE1-1398-4867-B263-E7E357623970} = {EAEC332F-9604-4A3E-86B1-6CFF427B7A45}
+		{8268B9E2-442C-4444-8A4C-34EC534AB65A} = {2CB9758F-B2A5-4686-A0EB-7666E4145A7A}
 	EndGlobalSection
 EndGlobal
