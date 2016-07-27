@@ -134,7 +134,7 @@ namespace ControlFlowGraphViewer
 
         private string FormatTypeModelList(IEnumerable<ITypeModel> typeModels)
         {
-            var arguments = typeModels.SelectMany(arg => arg.AssignmentRight);
+            var arguments = typeModels.SelectMany(arg => arg?.AssignmentRight.ToString() ?? "?");
             return string.Join(", ", arguments);
         }
 

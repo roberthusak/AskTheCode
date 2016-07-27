@@ -341,13 +341,15 @@ namespace ControlFlowGraphViewer
                 {
                     this.AddNodeModels(modelList, interpretations, (j) => innerNode.Assignments[j].Variable);
                 }
-                else
+                else if (node is EnterFlowNode)
                 {
                     var enterNode = node as EnterFlowNode;
-                    if (enterNode != null)
-                    {
-                        this.AddNodeModels(modelList, interpretations, (j) => enterNode.Parameters[j]);
-                    }
+                    this.AddNodeModels(modelList, interpretations, (j) => enterNode.Parameters[j]);
+                }
+                else if (node is CallFlowNode)
+                {
+                    var callNode = node as CallFlowNode;
+                    this.AddNodeModels(modelList, interpretations, (j) => callNode.ReturnAssignments[j]);
                 }
             }
 

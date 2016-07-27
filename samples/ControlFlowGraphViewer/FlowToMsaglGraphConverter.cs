@@ -75,7 +75,14 @@ namespace ControlFlowGraphViewer
                 {
                     labelBuild.Append('(');
                     labelBuild.Append(string.Join(", ", callNode.ReturnAssignments));
-                    labelBuild.Append(") \u2190 ");
+                    if (callNode.Location.CanBeExplored)
+                    {
+                        labelBuild.Append(") \u2190 "); 
+                    }
+                    else
+                    {
+                        labelBuild.Append(") ~ ");
+                    }
                 }
 
                 labelBuild.Append(callNode.Location.ToString());
