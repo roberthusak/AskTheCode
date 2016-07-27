@@ -192,9 +192,22 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             if (borderData.Kind == BorderDataKind.MethodCall || borderData.Kind == BorderDataKind.ExceptionThrow)
             {
-                var location = new MethodLocation(borderData.Method);
-                var buildArguments = borderData.Arguments.SelectMany(typeModel => typeModel.AssignmentRight);
-                var flowArguments = buildArguments.Select(expression => this.TranslateExpression(expression));
+                MethodLocation location;
+                IEnumerable<Expression> flowArguments;
+
+                if (borderData.Arguments.Any(arg => arg == null))
+                {
+                    // We cannot model method calls without properly modelling all their arguments first
+                    location = new MethodLocation(borderData.Method, false);
+                    flowArguments = Enumerable.Empty<Expression>();
+                }
+                else
+                {
+                    bool canBeExplored = borderData.Method.Locations.Any(loc => loc.IsInSource);
+                    location = new MethodLocation(borderData.Method, canBeExplored);
+                    var buildArguments = borderData.Arguments.SelectMany(typeModel => typeModel.AssignmentRight);
+                    flowArguments = buildArguments.Select(expression => this.TranslateExpression(expression));
+                }
 
                 if (borderData.Kind == BorderDataKind.MethodCall)
                 {

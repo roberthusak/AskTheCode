@@ -20,6 +20,11 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
         public string Name { get; private set; }
 
+        public bool CanBeExplored
+        {
+            get { return false; }
+        }
+
         public override string ToString()
         {
             return this.Name;

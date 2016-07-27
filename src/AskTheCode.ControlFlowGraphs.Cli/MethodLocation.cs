@@ -10,14 +10,17 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 {
     public class MethodLocation : ILocation
     {
-        public MethodLocation(IMethodSymbol method)
+        public MethodLocation(IMethodSymbol method, bool canBeExplored)
         {
             Contract.Requires<ArgumentNullException>(method != null, nameof(method));
 
             this.Method = method;
+            this.CanBeExplored = canBeExplored;
         }
 
         public IMethodSymbol Method { get; private set; }
+
+        public bool CanBeExplored { get; private set; }
 
         public override string ToString()
         {

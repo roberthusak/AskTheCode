@@ -126,6 +126,18 @@ namespace AskTheCode.PathExploration
                 {
                     this.AssertAssignments(innerNode.Assignments.Reverse());
                 }
+                else if (currentPath.Node is CallFlowNode)
+                {
+                    var callNode = currentPath.Node as CallFlowNode;
+                    if (!callNode.Location.CanBeExplored)
+                    {
+                        foreach (var updatedVariable in callNode.ReturnAssignments)
+                        {
+                            // We let the variable contain any value by not constraining its current version
+                            this.variableVersions[updatedVariable]++;
+                        }
+                    }
+                }
 
                 this.Path = currentPath;
             }
@@ -219,28 +231,30 @@ namespace AskTheCode.PathExploration
                     interpretations = new List<Interpretation>();
                     foreach (var assignment in innerNode.Assignments.Reverse())
                     {
-                        int version = variableVersions[assignment.Variable];
-                        var symbolName = this.contextHandler.GetVariableVersionSymbol(assignment.Variable, version);
+                        var interpretation = this.GetVariableInterpretation(variableVersions, assignment.Variable);
+                        interpretations.Add(interpretation);
                         variableVersions[assignment.Variable]++;
-
-                        var interpretation = this.smtSolver.Model.GetInterpretation(symbolName);
+                    }
+                }
+                else if (node is EnterFlowNode)
+                {
+                    var enterNode = node as EnterFlowNode;
+                    interpretations = new List<Interpretation>();
+                    foreach (var param in enterNode.Parameters.Reverse())
+                    {
+                        var interpretation = this.GetVariableInterpretation(variableVersions, param);
                         interpretations.Add(interpretation);
                     }
                 }
-                else
+                else if (node is CallFlowNode)
                 {
-                    var enterNode = node as EnterFlowNode;
-                    if (enterNode != null)
+                    var callNode = node as CallFlowNode;
+                    interpretations = new List<Interpretation>();
+                    foreach (var assignedVariable in callNode.ReturnAssignments.Reverse())
                     {
-                        interpretations = new List<Interpretation>();
-                        foreach (var param in enterNode.Parameters.Reverse())
-                        {
-                            int version = variableVersions[param];
-                            var symbolName = this.contextHandler.GetVariableVersionSymbol(param, version);
-
-                            var interpretation = this.smtSolver.Model.GetInterpretation(symbolName);
-                            interpretations.Add(interpretation);
-                        }
+                        var interpretation = this.GetVariableInterpretation(variableVersions, assignedVariable);
+                        interpretations.Add(interpretation);
+                        variableVersions[assignedVariable]++;
                     }
                 }
 
@@ -255,6 +269,15 @@ namespace AskTheCode.PathExploration
             }
 
             return new ExecutionModel(pathNodes.ToImmutableArray(), nodeInterpretations.ToImmutableArray());
+        }
+
+        private Interpretation GetVariableInterpretation(FlowGraphsVariableOverlay<int> variableVersions, FlowVariable variable)
+        {
+            int version = variableVersions[variable];
+            var symbolName = this.contextHandler.GetVariableVersionSymbol(variable, version);
+
+            var interpretation = this.smtSolver.Model.GetInterpretation(symbolName);
+            return interpretation;
         }
 
         private void RetractVariableVersions(int nodeCount)

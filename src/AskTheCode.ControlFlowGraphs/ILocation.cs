@@ -6,5 +6,6 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public interface ILocation
     {
+        bool CanBeExplored { get; }
     }
 }

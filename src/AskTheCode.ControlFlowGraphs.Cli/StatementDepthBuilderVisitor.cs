@@ -31,7 +31,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 this.Context.TryGetModel(parameterSyntax);
             }
 
-            if ((methodSyntax.ReturnType as PredefinedTypeSyntax).Keyword.Text == "void")
+            if ((methodSyntax.ReturnType as PredefinedTypeSyntax)?.Keyword.Text == "void")
             {
                 var implicitReturn = this.Context.AddFinalNode(methodSyntax.Body.CloseBraceToken);
                 implicitReturn.BorderData = new BorderData(BorderDataKind.Return, null, null);
