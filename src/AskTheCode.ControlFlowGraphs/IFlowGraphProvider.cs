@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace AskTheCode.ControlFlowGraphs
 {
@@ -8,6 +9,6 @@ namespace AskTheCode.ControlFlowGraphs
     {
         FlowGraph this[FlowGraphId graphId] { get; }
 
-        FlowGraph GetFlowGraphAsync(ILocation location);
+        Task<FlowGraph> GetFlowGraphAsync(ILocation location);
     }
 }

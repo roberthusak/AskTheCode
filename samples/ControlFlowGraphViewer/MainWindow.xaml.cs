@@ -271,8 +271,8 @@ namespace ControlFlowGraphViewer
             {
                 var buildGraph = await builder.BuildAsync(GraphDepth.Value);
 
-                var flowGraphTranslator = new FlowGraphTranslator(buildGraph, new FlowGraphId(0));
-                var flowGraph = flowGraphTranslator.Translate();
+                var flowGraphTranslator = new FlowGraphTranslator(buildGraph, builder.DisplayGraph, new FlowGraphId(0));
+                var flowGraph = flowGraphTranslator.Translate().FlowGraph;
 
                 var aglGraph = this.flowGraphConverter.Convert(flowGraph);
                 aglGraph.Attr.LayerDirection = LayerDirection.TB;

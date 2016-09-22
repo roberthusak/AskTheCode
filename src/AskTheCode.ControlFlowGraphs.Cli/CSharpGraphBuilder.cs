@@ -10,6 +10,7 @@ using AskTheCode.SmtLibStandard.Handles;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
@@ -18,6 +19,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         Statement,
         Expression,
         Value
+    }
+
+    internal enum DisplayNodeConfig
+    {
+        Ignore,
+        Inherit,
+        CreateNew
     }
 
     // TODO: Consider putting to CSharp namespace together with the related classes
@@ -47,7 +55,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.documentId = documentId;
             this.semanticModel = semanticModel;
             this.methodSyntax = methodSyntax;
+
+            this.DisplayGraph = new DisplayGraph(this.documentId);
         }
+
+        public DisplayGraph DisplayGraph { get; private set; }
 
         public async Task<BuildGraph> BuildAsync(GraphDepth depth = GraphDepth.Value)
         {
@@ -262,7 +274,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return new BuilderModellingContext(this.builder, this.CurrentNode);
             }
 
-            public BuildNode AddFinalNode(SyntaxNodeOrToken label)
+            public BuildNode AddFinalNode(SyntaxNodeOrToken label, bool createDisplayNode = false)
             {
                 BuildNode node;
                 if (label.IsNode)
@@ -276,18 +288,34 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     node.LabelOverride = label;
                 }
 
+                if (createDisplayNode)
+                {
+                    node.DisplayNode = this.AddDisplayNode(label.Span);
+                }
+
                 return node;
             }
 
-            public BuildNode EnqueueNode(SyntaxNode syntax)
+            public BuildNode EnqueueNode(SyntaxNode syntax, DisplayNodeConfig displayConfig = DisplayNodeConfig.Ignore)
             {
                 var node = this.Graph.AddNode(syntax);
                 this.builder.readyQueue.Enqueue(node);
 
+                if (displayConfig == DisplayNodeConfig.CreateNew)
+                {
+                    node.DisplayNode = this.AddDisplayNode(syntax.Span);
+                }
+                else if (displayConfig == DisplayNodeConfig.Inherit)
+                {
+                    node.DisplayNode = this.CurrentNode.DisplayNode;
+                }
+
                 return node;
             }
 
-            public BuildNode PrependCurrentNode(SyntaxNode prependedSyntax)
+            public BuildNode PrependCurrentNode(
+                SyntaxNode prependedSyntax,
+                DisplayNodeConfig displayConfig = DisplayNodeConfig.Ignore)
             {
                 // The syntaxes will be swaped subsequently
                 var prependedCurrent = this.ReenqueueCurrentNode(this.CurrentNode.Syntax);
@@ -299,15 +327,34 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 this.CurrentNode = newCurrent;
 
+                if (displayConfig == DisplayNodeConfig.CreateNew)
+                {
+                    prependedCurrent.DisplayNode = this.AddDisplayNode(prependedSyntax.Span);
+                }
+                else if (displayConfig == DisplayNodeConfig.Inherit)
+                {
+                    prependedCurrent.DisplayNode = this.CurrentNode.DisplayNode;
+                }
+
                 return prependedCurrent;
             }
 
-            public BuildNode ReenqueueCurrentNode(SyntaxNode syntaxUpdate)
+            public BuildNode ReenqueueCurrentNode(SyntaxNode syntaxUpdate, bool createDisplayNode = false)
             {
                 this.CurrentNode.Syntax = syntaxUpdate;
                 this.builder.readyQueue.Enqueue(this.CurrentNode);
 
+                if (createDisplayNode)
+                {
+                    this.CurrentNode.DisplayNode = this.AddDisplayNode(syntaxUpdate.Span);
+                }
+
                 return this.CurrentNode;
+            }
+
+            public DisplayNode AddDisplayNode(TextSpan span)
+            {
+                return this.builder.DisplayGraph.AddNode(span);
             }
 
             public void DelayCompletion(Task pendingTask)

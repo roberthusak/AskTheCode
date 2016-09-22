@@ -20,29 +20,24 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
         }
 
-        public sealed override void VisitTypeParameterList(TypeParameterListSyntax parametersNode)
-        {
-            foreach (var parameter in parametersNode.Parameters)
-            {
-                this.Context.TryGetModel(parameter);
-            }
-        }
 
         public sealed override void VisitExpressionStatement(ExpressionStatementSyntax syntax)
         {
             this.Context.CurrentNode.Syntax = syntax.Expression;
+            this.Context.CurrentNode.DisplayNode = this.Context.AddDisplayNode(syntax.Expression.Span);
             this.Visit(syntax.Expression);
         }
 
         public sealed override void VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax syntax)
         {
             this.Context.CurrentNode.Syntax = syntax.Declaration;
+            this.Context.CurrentNode.DisplayNode = this.Context.AddDisplayNode(syntax.Declaration.Span);
             this.Visit(syntax.Declaration);
         }
 
         public sealed override void VisitVariableDeclaration(VariableDeclarationSyntax syntax)
         {
-            this.ProcessSequentially(syntax.Variables);
+            this.ProcessSequentially(syntax.Variables, DisplayNodeConfig.Inherit);
         }
 
         public sealed override void VisitEqualsValueClause(EqualsValueClauseSyntax syntax)
@@ -95,7 +90,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             else
             {
                 // Nested assignments - from the view of the inner one
-                var innerAssignment = this.Context.PrependCurrentNode(assignmentSyntax.Right);
+                var innerAssignment = this.Context.PrependCurrentNode(
+                    assignmentSyntax.Right,
+                    DisplayNodeConfig.Inherit);
 
                 this.Context.CurrentNode.ValueModel = leftModel;
                 innerAssignment.VariableModel = leftModel;
@@ -211,7 +208,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 argumentModel = this.Context.CreateTemporaryVariableModel(argumentFactory, argumentType);
 
-                var argumentComputation = this.Context.PrependCurrentNode(argument);
+                var argumentComputation = this.Context.PrependCurrentNode(argument, DisplayNodeConfig.Inherit);
                 argumentComputation.VariableModel = argumentModel;
             }
 
@@ -221,7 +218,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private void ProcessLogicalAndExpression(BinaryExpressionSyntax andSyntax)
         {
             var left = this.Context.ReenqueueCurrentNode(andSyntax.Left);
-            var right = this.Context.EnqueueNode(andSyntax.Right);
+            var right = this.Context.EnqueueNode(andSyntax.Right, DisplayNodeConfig.Inherit);
             right.VariableModel = left.VariableModel;
 
             left.LabelOverride = null;
@@ -254,7 +251,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private void ProcessLogicalOrExpression(BinaryExpressionSyntax orSyntax)
         {
             var left = this.Context.ReenqueueCurrentNode(orSyntax.Left);
-            var right = this.Context.EnqueueNode(orSyntax.Right);
+            var right = this.Context.EnqueueNode(orSyntax.Right, DisplayNodeConfig.Inherit);
             right.VariableModel = left.VariableModel;
 
             left.LabelOverride = null;

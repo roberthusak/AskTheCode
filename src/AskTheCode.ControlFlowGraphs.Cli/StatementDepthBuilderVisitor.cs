@@ -22,10 +22,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             Contract.Requires(this.Context.CurrentNode.OutgoingEdges.Count == 0);
 
-            var enter = this.Context.ReenqueueCurrentNode(methodSyntax.ParameterList);
+            var enter = this.Context.ReenqueueCurrentNode(methodSyntax.ParameterList, createDisplayNode: true);
             var body = this.Context.EnqueueNode(methodSyntax.Body);
             enter.AddEdge(body);
 
+            // Create the variables representing parameters
             foreach (var parameterSyntax in methodSyntax.ParameterList.Parameters)
             {
                 this.Context.TryGetModel(parameterSyntax);
@@ -33,11 +34,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             if ((methodSyntax.ReturnType as PredefinedTypeSyntax)?.Keyword.Text == "void")
             {
-                var implicitReturn = this.Context.AddFinalNode(methodSyntax.Body.CloseBraceToken);
+                var implicitReturn = this.Context.AddFinalNode(
+                    methodSyntax.Body.CloseBraceToken,
+                    createDisplayNode: true);
                 implicitReturn.BorderData = new BorderData(BorderDataKind.Return, null, null);
                 body.AddEdge(implicitReturn);
-
-                // TODO: Add also ReturnFlowNode here
             }
 
             return;
@@ -47,6 +48,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             this.Context.CurrentNode.OutgoingEdges.Clear();
             this.Context.CurrentNode.BorderData = new BorderData(BorderDataKind.Return, null, null);
+
+            // Get rid of the semicolon
+            int expressionEnd = returnSyntax.SemicolonToken.FullSpan.Start;
+            var expressionSpan = new Microsoft.CodeAnalysis.Text.TextSpan(
+                returnSyntax.SpanStart,
+                expressionEnd - returnSyntax.SpanStart);
+            this.Context.CurrentNode.DisplayNode = this.Context.AddDisplayNode(expressionSpan);
 
             if (returnSyntax.Expression != null)
             {
@@ -59,6 +67,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public override void VisitThrowStatement(ThrowStatementSyntax throwSyntax)
         {
             this.Context.CurrentNode.OutgoingEdges.Clear();
+            this.Context.CurrentNode.DisplayNode = this.Context.AddDisplayNode(throwSyntax.Span);
 
             var constructorSyntax = throwSyntax.Expression as ObjectCreationExpressionSyntax;
             if (constructorSyntax != null && constructorSyntax.ArgumentList.Arguments.Count == 0)
@@ -89,7 +98,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             Contract.Assert(outEdge?.ValueCondition == null);
 
             this.Context.CurrentNode.OutgoingEdges.Clear();
-            var condition = this.Context.ReenqueueCurrentNode(ifSyntax.Condition);
+            var condition = this.Context.ReenqueueCurrentNode(ifSyntax.Condition, createDisplayNode: true);
             var statement = this.Context.EnqueueNode(ifSyntax.Statement);
             condition.AddEdge(statement, ExpressionFactory.True);
 
@@ -140,7 +149,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             var outEdge = this.Context.CurrentNode.GetSingleEdge();
 
             this.Context.CurrentNode.OutgoingEdges.Clear();
-            var condition = this.Context.ReenqueueCurrentNode(whileSyntax.Condition);
+            var condition = this.Context.ReenqueueCurrentNode(whileSyntax.Condition, createDisplayNode: true);
             var statement = this.Context.EnqueueNode(whileSyntax.Statement);
             condition.AddEdge(statement, ExpressionFactory.True);
             statement.AddEdge(condition);
@@ -156,12 +165,16 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             return;
         }
 
-        protected void ProcessSequentially<TSyntax>(IReadOnlyList<TSyntax> syntaxes)
+        protected void ProcessSequentially<TSyntax>(
+            IReadOnlyList<TSyntax> syntaxes,
+            DisplayNodeConfig displayConfig = DisplayNodeConfig.Ignore)
             where TSyntax : SyntaxNode
         {
             if (syntaxes.Count > 0)
             {
-                var precedingStatement = this.Context.ReenqueueCurrentNode(syntaxes.First());
+                var precedingStatement = this.Context.ReenqueueCurrentNode(
+                    syntaxes.First(),
+                    createDisplayNode: displayConfig == DisplayNodeConfig.CreateNew);
 
                 if (syntaxes.Count > 1)
                 {
@@ -170,8 +183,18 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                     for (int i = 1; i < syntaxes.Count; i++)
                     {
-                        var currentStatement = this.Context.EnqueueNode(syntaxes[i]);
+                        var syntax = syntaxes[i];
+                        var currentStatement = this.Context.EnqueueNode(syntax);
                         precedingStatement.AddEdge(currentStatement);
+
+                        if (displayConfig == DisplayNodeConfig.CreateNew)
+                        {
+                            currentStatement.DisplayNode = this.Context.AddDisplayNode(syntax.Span);
+                        }
+                        else if (displayConfig == DisplayNodeConfig.Inherit)
+                        {
+                            currentStatement.DisplayNode = precedingStatement.DisplayNode;
+                        }
 
                         precedingStatement = currentStatement;
                     }

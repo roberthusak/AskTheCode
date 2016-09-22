@@ -22,9 +22,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private OrdinalOverlay<BuildVariableId, BuildVariable, FlowVariable> buildToFlowVariablesMap;
         private OrdinalOverlay<BuildNodeId, BuildNode, FlowNodeMappedInfo> buildToFlowNodesMap;
 
-        public FlowGraphTranslator(BuildGraph buildGraph, FlowGraphId flowGraphId)
+        public FlowGraphTranslator(BuildGraph buildGraph, DisplayGraph displayGraph, FlowGraphId flowGraphId)
         {
             this.BuildGraph = buildGraph;
+            this.DisplayGraph = displayGraph;
             this.flowGraphId = flowGraphId;
         }
 
@@ -32,10 +33,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public FlowGraph FlowGraph { get; private set; }
 
-        public FlowGraphCodeMap CodeMap { get; private set; }
+        public DisplayGraph DisplayGraph { get; private set; }
 
         // TODO: Consider splitting into multiple methods to increase readability
-        public FlowGraph Translate()
+        public GeneratedGraphs Translate()
         {
             this.builder = new FlowGraphBuilder(this.flowGraphId);
             this.ingoingEdges = this.ComputeIngoingEdges(this.BuildGraph);
@@ -133,23 +134,58 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             this.FlowGraph = this.builder.FreezeAndReleaseGraph();
 
-            this.TranslateCodeMap();
+            this.FinishDisplayGraph();
 
-            return this.FlowGraph;
+            return new GeneratedGraphs(this.FlowGraph, this.DisplayGraph);
         }
 
-        private void TranslateCodeMap()
+        // TODO: Consider changing the branching into assertions where possible
+        private void FinishDisplayGraph()
         {
-            this.CodeMap = new FlowGraphCodeMap(this.FlowGraph.Nodes.Count, this.BuildGraph.DocumentId);
-
             foreach (var buildNode in this.BuildGraph.Nodes)
             {
                 var flowNodeInfo = this.buildToFlowNodesMap[buildNode];
                 if (flowNodeInfo.FlowNode != null)
                 {
-                    // TODO
+                    var displayNode = buildNode.DisplayNode;
+                    if (displayNode == null)
+                    {
+                        continue;
+                    }
+
+                    // TODO: Offset and factory
+                    var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span);
+                    displayNode.AddRecord(record);
+
+                    foreach (var buildEdge in buildNode.OutgoingEdges)
+                    {
+                        if (buildEdge.To.DisplayNode == null)
+                        {
+                            continue;
+                        }
+
+                        // Prevent self loops and multiple edges
+                        var targetDisplayNode = buildEdge.To.DisplayNode;
+                        if (displayNode != targetDisplayNode
+                            && !displayNode.OutgoingEdges.Any(displayEdge => displayEdge.To == targetDisplayNode))
+                        {
+                            // TODO: Edge label
+                            this.DisplayGraph.AddEdge(displayNode, targetDisplayNode);
+                        }
+
+                        //var targetFlowNodeInfo = this.buildToFlowNodesMap[buildEdge.To];
+                        //if (targetFlowNodeInfo.FlowNode != null)
+                        //{
+                        //    // We cannot step into the middle of the CFG node
+                        //    Contract.Assert(targetFlowNodeInfo.AssignmentOffset == 0);
+
+
+                        //}
+                    }
                 }
             }
+
+            this.DisplayGraph.Freeze();
         }
 
         private IngoingEdgesOverlay ComputeIngoingEdges(BuildGraph graph)

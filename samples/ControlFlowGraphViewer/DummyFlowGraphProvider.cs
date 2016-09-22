@@ -17,7 +17,7 @@ namespace ControlFlowGraphViewer
             }
         }
 
-        public FlowGraph GetFlowGraphAsync(ILocation location)
+        Task<FlowGraph> IFlowGraphProvider.GetFlowGraphAsync(ILocation location)
         {
             throw new NotImplementedException();
         }

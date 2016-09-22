@@ -18,7 +18,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private SyntaxNodeOrToken? labelOverride;
         private ITypeModel variableModel;
         private ITypeModel valueModel;
-        private BorderData callData;
+        private BorderData borderData;
+        private DisplayNode displayNode;
 
         public BuildNode(BuildNodeId id, SyntaxNode syntax)
         {
@@ -65,8 +66,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public BorderData BorderData
         {
-            get { return this.callData; }
-            set { DataHelper.SetOnceAssert(ref this.callData, value); }
+            get { return this.borderData; }
+            set { DataHelper.SetOnceAssert(ref this.borderData, value); }
+        }
+
+        public DisplayNode DisplayNode
+        {
+            get { return this.displayNode; }
+            set { DataHelper.SetOnceAssert(ref this.displayNode, value); }
         }
 
         public void SwapOutgoingEdges(BuildNode other)
@@ -94,9 +101,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             DataHelper.Swap(ref this.valueModel, ref other.valueModel);
         }
 
-        public void SwapCallData(BuildNode other)
+        public void SwapBorderData(BuildNode other)
         {
-            DataHelper.Swap(ref this.callData, ref other.callData);
+            DataHelper.Swap(ref this.borderData, ref other.borderData);
+        }
+
+        public void SwapDisplayNode(BuildNode other)
+        {
+            DataHelper.Swap(ref this.displayNode, ref other.displayNode);
         }
 
         public void SwapContents(BuildNode other)
@@ -106,7 +118,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.SwapLabelOverride(other);
             this.SwapVariableModel(other);
             this.SwapValueModel(other);
-            this.SwapCallData(other);
+            this.SwapBorderData(other);
+            this.SwapDisplayNode(other);
         }
 
         public BuildEdge AddEdge(BuildNode to, Expression valueCondition = null)
