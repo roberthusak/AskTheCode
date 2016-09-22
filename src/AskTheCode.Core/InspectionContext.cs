@@ -25,7 +25,7 @@ namespace AskTheCode.Core
 
         public InspectionNode InspectionTreeRoot { get; private set; }
 
-        public async Task StartInspecting(Document document, LinePosition position, string expression)
+        public async Task StartInspecting(Document document, int position, string expression)
         {
             Contract.Requires<ArgumentNullException>(document != null, nameof(document));
             Contract.Requires<ArgumentException>(document.Project != null);
@@ -37,10 +37,9 @@ namespace AskTheCode.Core
             var semanticModel = await document.GetSemanticModelAsync();
             var sourceText = await root.SyntaxTree.GetTextAsync();
 
-            int absolutePosition = sourceText.Lines[position.Line - 1].Start + position.Character;
-            Contract.Assert(absolutePosition <= sourceText.Length); // TODO: Or '<'?
+            Contract.Assert(position <= sourceText.Length); // TODO: Or '<'?
 
-            var inspectedToken = root.FindToken(absolutePosition);  // TODO: Check it is valid
+            var inspectedToken = root.FindToken(position);  // TODO: Check it is valid
             var syntaxNode = inspectedToken.Parent;
 
             // TODO: Create a sophisticated validation mechanism to give appropriate information to the end user

@@ -39,7 +39,11 @@ namespace AskTheCode.Vsix
             var dte2 = ShellPackageAlias.GetGlobalService(typeof(SDTE)) as EnvDTE80.DTE2;
             var highlightService = ShellPackageAlias.GetGlobalService(typeof(SHighlightService)) as IHighlightService;
             var componentModel = ShellPackageAlias.GetGlobalService(typeof(SComponentModel)) as IComponentModel;
+
+            // TODO: Avoid throwing InvalidCastException if the user has the LanguageServices library of version 1.1.0.0
+            // (It corresponds to Visual Studio Update 1)
             var workspace = componentModel?.GetService<VisualStudioWorkspace>();
+
             Contract.Assert(dte2 != null);
             Contract.Assert(highlightService != null);
             Contract.Assert(workspace != null);

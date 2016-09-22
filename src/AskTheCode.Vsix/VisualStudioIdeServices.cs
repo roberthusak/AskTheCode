@@ -29,8 +29,6 @@ namespace AskTheCode.Vsix
             this.dte2 = dte2;
             this.highlightService = highlightService;
             this.Workspace = workspace;
-
-            this.Workspace.WorkspaceChanged += this.WorkspaceChanged;
         }
 
         public Workspace Workspace { get; private set; }
@@ -188,20 +186,6 @@ namespace AskTheCode.Vsix
             }
 
             return true;
-        }
-
-        private async void WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
-        {
-            if (e.DocumentId != null)
-            {
-                var oldDocument = e.OldSolution.GetDocument(e.DocumentId);
-                var oldText = await oldDocument.GetTextAsync();
-                var newDocument = e.NewSolution.GetDocument(e.DocumentId);
-                var newText = await newDocument.GetTextAsync();
-            }
-            else
-            {
-            }
         }
     }
 }
