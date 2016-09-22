@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StandaloneGui"
+        xmlns:vm="clr-namespace:AskTheCode.ViewModel;assembly=AskTheCode.ViewModel"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800" WindowState="Maximized" Loaded="Window_Loaded">
     <Grid>
@@ -21,14 +22,25 @@
                      BorderThickness="0" FontFamily="Consolas" FontSize="14">
                 <TextBox.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Display Control Flow Graph" Click="DisplayCfg_Click" />
+                        <MenuItem Header="Display Control Flow Graph" Command="{Binding DisplayFlowGraphCommand}" />
                     </ContextMenu>
                 </TextBox.ContextMenu>
             </TextBox>
         </Border>
-        
-        <Border x:Name="cfgWindow" Padding="5" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,0">
 
+        <Border x:Name="cfgWindow" Padding="5" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,0">
+            <TabControl ItemsSource="{Binding FlowGraphs}" SelectedItem="{Binding SelectedFlowGraph}" AllowDrop="True">
+                <TabControl.ItemTemplate>
+                    <DataTemplate DataType="vm:FlowGraphView">
+                        <TextBlock Text="{Binding Header}" />
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate DataType="vm:FlowGraphView">
+                        <local:MsaglGraphPresenter GraphViewerConsumer="{Binding .}" />
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
         </Border>
         
         <Border x:Name="exploreWindow" Padding="5,0,5,5" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1">

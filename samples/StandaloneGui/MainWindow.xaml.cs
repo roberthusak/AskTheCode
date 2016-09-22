@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,10 +13,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.Tests;
+using AskTheCode.ViewModel;
 using Microsoft.CodeAnalysis;
-using System.IO;
 using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis.Text;
 
 namespace StandaloneGui
 {
@@ -28,6 +31,8 @@ namespace StandaloneGui
         {
             this.InitializeComponent();
         }
+
+        public MSBuildWorkspace Workspace { get; private set; }
 
         public Document OpenedDocument { get; private set; }
 
@@ -48,8 +53,8 @@ namespace StandaloneGui
                 string suffix = System.IO.Path.GetExtension(file);
                 if (suffix == ".csproj")
                 {
-                    var workspace = MSBuildWorkspace.Create();
-                    project = await workspace.OpenProjectAsync(file);
+                    this.Workspace = MSBuildWorkspace.Create();
+                    project = await this.Workspace.OpenProjectAsync(file);
                 }
             }
 
@@ -63,11 +68,56 @@ namespace StandaloneGui
             }
 
             await this.OpenDocument(document);
+
+            this.DataContext = new ToolView(new SimpleIdeServices(this));
         }
 
-        private void DisplayCfg_Click(object sender, RoutedEventArgs e)
+        private class SimpleIdeServices : IIdeServices
         {
-            // TODO
+            private readonly MainWindow window;
+
+            public SimpleIdeServices(MainWindow window)
+            {
+                this.window = window;
+            }
+
+            public Workspace Workspace
+            {
+                get { return this.window.Workspace; }
+            }
+
+            public Document GetOpenedDocument()
+            {
+                return this.window.OpenedDocument;
+            }
+
+            public void HighlightText(SourceText text, IDictionary<HighlightType, IEnumerable<TextSpan>> highlights)
+            {
+                throw new NotImplementedException();
+            }
+
+            public async void OpenDocument(Document document)
+            {
+                await this.window.OpenDocument(document);
+            }
+
+            public void SelectText(SourceText text, TextSpan selectedSpan)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryGetCaretPosition(out Document document, out int position)
+            {
+                document = this.window.OpenedDocument;
+                position = this.window.code.CaretIndex;
+
+                return true;
+            }
+
+            public bool TryGetSelectedText(out Document document, out TextSpan selectedSpan)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

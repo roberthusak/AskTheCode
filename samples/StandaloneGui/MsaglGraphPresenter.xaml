@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:StandaloneGui"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="200" BorderBrush="Gray" BorderThickness="1">
+             d:DesignHeight="200" d:DesignWidth="200" BorderBrush="Gray" BorderThickness="1" Loaded="UserControl_Loaded">
     <!-- TODO: Implement properly working scrollbars (ScrollViewer doesn't work here) -->
     <ScrollContentPresenter>
         <ContentPresenter.Content>
