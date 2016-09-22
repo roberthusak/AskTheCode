@@ -147,6 +147,9 @@
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.Workspaces.Common.1.3.2\lib\net45\Microsoft.CodeAnalysis.Workspaces.Desktop.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Msagl.Drawing">
+      <HintPath>..\..\lib\Microsoft.Msagl.Drawing.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.AppContext.4.1.0\lib\net46\System.AppContext.dll</HintPath>
@@ -249,8 +252,11 @@
   <ItemGroup>
     <Compile Include="Command.cs" />
     <Compile Include="ControlView.cs" />
+    <Compile Include="FlowGraphView.cs" />
+    <Compile Include="IGraphViewerConsumer.cs" />
     <Compile Include="IIdeServices.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
+    <Compile Include="ToolView.cs" />
     <Compile Include="TreeNodeView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -267,6 +273,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj">
+      <Project>{A1A0861D-1D52-4F19-9782-96443D7F37F6}</Project>
+      <Name>AskTheCode.ControlFlowGraphs.Cli</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj">
+      <Project>{c39b0a93-11c6-4cf1-b0b8-31bd15d6a7f5}</Project>
+      <Name>AskTheCode.ControlFlowGraphs</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AskTheCode.Core\AskTheCode.Core.csproj">
       <Project>{9DDF533A-C7FA-454E-9EFD-39305819CE04}</Project>
       <Name>AskTheCode.Core</Name>

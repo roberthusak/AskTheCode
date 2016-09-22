@@ -27,7 +27,7 @@ namespace AskTheCode.ViewModel
 
         bool TryGetSelectedText(out Document document, out TextSpan selectedSpan);
 
-        bool TryGetCaretPosition(out Document document, out LinePosition position);
+        bool TryGetCaretPosition(out Document document, out int position);
 
         void HighlightText(
             SourceText text,

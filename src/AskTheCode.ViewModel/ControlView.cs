@@ -57,7 +57,7 @@ namespace AskTheCode.ViewModel
             // TODO: Validate opened solution
 
             Document document;
-            LinePosition position;
+            int position;
             this.ideServices.TryGetCaretPosition(out document, out position);
 
             // TODO: Validate position in the code

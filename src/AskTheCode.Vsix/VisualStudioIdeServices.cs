@@ -70,17 +70,17 @@ namespace AskTheCode.Vsix
                 lineSpan.End.Character);
         }
 
-        public bool TryGetCaretPosition(out Document document, out LinePosition position)
+        public bool TryGetCaretPosition(out Document document, out int position)
         {
             EnvDTE.TextSelection selection;
             if (!this.TryGetDocumentAndSelection(out document, out selection))
             {
-                position = default(LinePosition);
+                position = -1;
                 return false;
             }
 
             var selectionPoint = selection.AnchorPoint;
-            position = new LinePosition(selectionPoint.Line, selectionPoint.LineCharOffset);
+            position = selectionPoint.AbsoluteCharOffset;
             return true;
         }
 
