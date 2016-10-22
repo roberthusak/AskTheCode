@@ -255,7 +255,10 @@
     <Compile Include="FlowGraphView.cs" />
     <Compile Include="IGraphViewerConsumer.cs" />
     <Compile Include="IIdeServices.cs" />
+    <Compile Include="MethodFlowView.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
+    <Compile Include="PathView.cs" />
+    <Compile Include="StatementFlowView.cs" />
     <Compile Include="ToolView.cs" />
     <Compile Include="TreeNodeView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -284,6 +287,18 @@
     <ProjectReference Include="..\AskTheCode.Core\AskTheCode.Core.csproj">
       <Project>{9DDF533A-C7FA-454E-9EFD-39305819CE04}</Project>
       <Name>AskTheCode.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.PathExploration\AskTheCode.PathExploration.csproj">
+      <Project>{3e566315-ad9d-4794-86f1-3353792e66ff}</Project>
+      <Name>AskTheCode.PathExploration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.SmtLibStandard.Z3\AskTheCode.SmtLibStandard.Z3.csproj">
+      <Project>{dccaf6a8-0f39-415b-b5e6-76658f314ee2}</Project>
+      <Name>AskTheCode.SmtLibStandard.Z3</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj">
+      <Project>{2a814f35-9b19-4487-9e85-c9d1a2ffc955}</Project>
+      <Name>AskTheCode.SmtLibStandard</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
