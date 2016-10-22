@@ -29,7 +29,7 @@
         </Border>
 
         <Border x:Name="cfgWindow" Padding="5" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,0">
-            <TabControl ItemsSource="{Binding FlowGraphs}" SelectedItem="{Binding SelectedFlowGraph}" AllowDrop="True">
+            <TabControl ItemsSource="{Binding FlowGraphs}" SelectedItem="{Binding SelectedFlowGraph}">
                 <TabControl.ItemTemplate>
                     <DataTemplate DataType="vm:FlowGraphView">
                         <TextBlock Text="{Binding Header}" />
@@ -63,21 +63,25 @@
                 <Label Content="Call graph:" Padding="0,5,5,5" />
                 <Button Grid.Column="1" Content="Display in large window" Margin="5" />
                 <local:MsaglGraphPresenter Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,5,0" />
-                <Button Grid.Row="2" Content="Explore" Margin="0,5,0,0" />
+                <Button Grid.Row="2" Content="Explore" Command="{Binding ExploreCommand}" Margin="0,5,0,0" />
+                <ProgressBar Grid.Row="2" Grid.Column="1" Margin="5" IsIndeterminate="{Binding IsExploring}" />
 
                 <Label Grid.Column="2" Content="Related paths:" Padding="0,5,5,5" />
-                <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,5,0" />
+                <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,5,0"
+                         ItemsSource="{Binding Paths}" SelectedItem="{Binding SelectedPath}" DisplayMemberPath="Name" />
 
                 <Label Grid.Column="3" Content="Path control flow:" Padding="0,5,5,5" />
-                <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="0,0,5,0" />
+                <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="0,0,5,0"
+                         ItemsSource="{Binding SelectedPath.MethodFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow}" DisplayMemberPath="Name" />
 
                 <Label Grid.Column="4" Grid.ColumnSpan="2" Content="Method control flow:" Padding="0,5,5,5" />
                 <Button Grid.Column="6" Content="Show control flow graph" Margin="5" />
-                <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3">
+                <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3" AutoGenerateColumns="False" IsReadOnly="True"
+                          ItemsSource="{Binding SelectedPath.SelectedMethodFlow.StatementFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow.SelectedStatementFlow}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Statement" Width="2*" />
-                        <DataGridTextColumn Header="Value" Width="*" />
-                        <DataGridTextColumn Header="Type" Width="*" />
+                        <DataGridTextColumn Header="Statement" Binding="{Binding Statement}" Width="2*" />
+                        <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
