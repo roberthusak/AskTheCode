@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EvaluationTests.Annotations;
-using Microsoft.Pex.Framework;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EvaluationTests
@@ -24,89 +24,29 @@ namespace EvaluationTests
     /// 3: equilateral
     /// 4: not a triangle
     /// </remarks>
-    [TestClass]
-    [PexClass]
-    public class TriangleClassification
+    public partial class TriangleClassification
     {
-        [PexMethod]
+        [Pure]
         [ContractVerification(true)]
-        public void CheckOriginal(int a, int b, int c)
+        public static bool CheckResult(int a, int b, int c, int result)
         {
-            int result = ClassifyOriginal(a, b, c);
-            bool isValid = CheckResult(a, b, c, result);
+            CheckResultConditionalEnsures(a, b, c, result);
 
-            Evaluation.ValidAssert(isValid);
-        }
-
-        [PexMethod]
-        [ContractVerification(true)]
-        public void CheckMutant1(int a, int b, int c)
-        {
-            int result = ClassifyMutant1(a, b, c);
-            bool isValid = CheckResult(a, b, c, result);
-
-            Evaluation.InvalidAssert(isValid);
-        }
-
-        [PexMethod]
-        [ContractVerification(true)]
-        public void CheckMutant2(int a, int b, int c)
-        {
-            int result = ClassifyMutant2(a, b, c);
-            bool isValid = CheckResult(a, b, c, result);
-
-            Evaluation.InvalidAssert(isValid);
-        }
-
-        [PexMethod]
-        [ContractVerification(true)]
-        public void CheckMutant3(int a, int b, int c)
-        {
-            int result = ClassifyMutant3(a, b, c);
-            bool isValid = CheckResult(a, b, c, result);
-
-            Evaluation.InvalidAssert(isValid);
-        }
-
-        [PexMethod]
-        [ContractVerification(true)]
-        public void CheckMutant4(int a, int b, int c)
-        {
-            int result = ClassifyMutant4(a, b, c);
-            bool isValid = CheckResult(a, b, c, result);
-
-            Evaluation.InvalidAssert(isValid);
-        }
-
-        [PexMethod]
-        [ContractVerification(true)]
-        public void CheckMutant5(int a, int b, int c)
-        {
-            int result = ClassifyMutant5(a, b, c);
-            bool isValid = CheckResult(a, b, c, result);
-
-            Evaluation.InvalidAssert(isValid);
-        }
-
-        private static bool CheckResult(int a, int b, int c, int result)
-        {
             if (result == 1)
             {
-                return (a != b && b != c && a != c);
+                return CheckScaleneTriangle(a, b, c);
             }
             else if (result == 2)
             {
-                return (a == b && a != c) || (a == c && a != b)
-                    || (b == c && b != a);
+                return CheckIsoscelesTriangle(a, b, c);
             }
             else if (result == 3)
             {
-                return (a == b && b == c);
+                return CheckEquilateralTriangle(a, b, c);
             }
             else if (result == 4)
             {
-                return (a <= 0 || b <= 0 || c <= 0
-                    || a <= b + c || b <= a + c || c <= b + c);
+                return !CheckValidTriangle(a, b, c);
             }
             else
             {
@@ -114,8 +54,11 @@ namespace EvaluationTests
             }
         }
 
-        private static int ClassifyOriginal(int a, int b, int c)
+        [ContractVerification(true)]
+        public static int ClassifyOriginal(int a, int b, int c)
         {
+            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+
             int result;
 
             // After a quick confirmation that it's a legal triangle, detect any sides of equal length
@@ -144,7 +87,7 @@ namespace EvaluationTests
 
             if (result == 0)
             {
-               // Confirm it's a legal triangle before declaring it to be scalene
+                // Confirm it's a legal triangle before declaring it to be scalene
                 if (a + b <= c || b + c <= a || a + c <= b)
                 {
                     result = 4;
@@ -182,8 +125,11 @@ namespace EvaluationTests
             return result;
         }
 
-        private static int ClassifyMutant1(int a, int b, int c)
+        [ContractVerification(true)]
+        public static int ClassifyMutant1(int a, int b, int c)
         {
+            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+
             int result;
 
             // After a quick confirmation that it's a legal triangle, detect any sides of equal length
@@ -251,8 +197,11 @@ namespace EvaluationTests
             return result;
         }
 
-        private static int ClassifyMutant2(int a, int b, int c)
+        [ContractVerification(true)]
+        public static int ClassifyMutant2(int a, int b, int c)
         {
+            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+
             int result;
 
             // After a quick confirmation that it's a legal triangle, detect any sides of equal length
@@ -320,8 +269,11 @@ namespace EvaluationTests
             return result;
         }
 
-        private static int ClassifyMutant3(int a, int b, int c)
+        [ContractVerification(true)]
+        public static int ClassifyMutant3(int a, int b, int c)
         {
+            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+
             int result;
 
             // After a quick confirmation that it's a legal triangle, detect any sides of equal length
@@ -389,8 +341,11 @@ namespace EvaluationTests
             return result;
         }
 
-        private static int ClassifyMutant4(int a, int b, int c)
+        [ContractVerification(true)]
+        public static int ClassifyMutant4(int a, int b, int c)
         {
+            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+
             int result;
 
             // After a quick confirmation that it's a legal triangle, detect any sides of equal length
@@ -458,8 +413,11 @@ namespace EvaluationTests
             return result;
         }
 
-        private static int ClassifyMutant5(int a, int b, int c)
+        [ContractVerification(true)]
+        public static int ClassifyMutant5(int a, int b, int c)
         {
+            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+
             int result;
 
             // After a quick confirmation that it's a legal triangle, detect any sides of equal length
@@ -525,6 +483,54 @@ namespace EvaluationTests
             }
 
             return result;
+        }
+
+        [Conditional(Evaluation.ContractsHintsSymbol)]
+        [ContractAbbreviator]
+        public static void ClassifyConditionalEnsures(int a, int b, int c, int result)
+        {
+            Contract.Ensures(result >= 1 && result <= 4);
+            Contract.Ensures((result != 1) || CheckScaleneTriangle(a, b, c));
+            Contract.Ensures((result != 2) || CheckIsoscelesTriangle(a, b, c));
+            Contract.Ensures((result != 3) || CheckEquilateralTriangle(a, b, c));
+            Contract.Ensures((result != 4) || !CheckValidTriangle(a, b, c));
+        }
+
+        [Conditional(Evaluation.ContractsHintsSymbol)]
+        [ContractAbbreviator]
+        public static void CheckResultConditionalEnsures(int a, int b, int c, int result)
+        {
+            Contract.Ensures(Contract.Result<bool>() == (
+                (result == 1 && CheckScaleneTriangle(a, b, c))
+                || (result == 2 && CheckIsoscelesTriangle(a, b, c))
+                || (result == 3 && CheckEquilateralTriangle(a, b, c))
+                || (result == 4 && !CheckValidTriangle(a, b, c))));
+        }
+
+        [Pure]
+        public static bool CheckValidTriangle(int a, int b, int c)
+        {
+            return a > 0 && b > 0 && c > 0
+                && a < b + c && b < a + c && c < a + b;
+        }
+
+        [Pure]
+        public static bool CheckScaleneTriangle(int a, int b, int c)
+        {
+            return CheckValidTriangle(a, b, c) && (a != b && b != c && a != c);
+        }
+
+        [Pure]
+        public static bool CheckIsoscelesTriangle(int a, int b, int c)
+        {
+            return CheckValidTriangle(a, b, c)
+                    && ((a == b && a != c) || (a == c && a != b) || (b == c && b != a));
+        }
+
+        [Pure]
+        public static bool CheckEquilateralTriangle(int a, int b, int c)
+        {
+            return CheckValidTriangle(a, b, c) && (a == b && b == c);
         }
     }
 }

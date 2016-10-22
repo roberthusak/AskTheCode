@@ -169,4 +169,122 @@ public static class MethodSampleClass
             return false;
         }
     }
+
+    public static void DataIndependentCycle(int x)
+    {
+        int i = 0;
+        while (i < 20)
+        {
+            x = 2 * x;
+            i = i + 1;
+        }
+
+        Debug.Assert(x < 32);
+    }
+
+    public static void TriangleClassificationInlined(int a, int b, int c)
+    {
+        int result;
+
+        // After a quick confirmation that it's a legal triangle, detect any sides of equal length
+        if (a <= 0 || b <= 0 || c <= 0)
+        {
+            result = 4;
+        }
+        else
+        {
+            result = 0;
+
+            if (a == b)
+            {
+                /* result = result + 1 in original */
+                //result = a + 1;
+                result = result + 1;
+            }
+
+            /* (a == c) in original */
+            //if (a >= c)
+            if (a == c)
+            {
+                result = result + 2;
+            }
+
+            if (b == c)
+            {
+                result = result + 3;
+            }
+
+            if (result == 0)
+            {
+                // Confirm it's a legal triangle before declaring it to be scalene
+                if (a + b <= c || b + c <= a || a + c <= b)
+                {
+                    result = 4;
+                }
+                else
+                {
+                    result = 1;
+                }
+            }
+            else
+            {
+                // Confirm it's a legal triangle before declaring it to be isosceles or equilateral
+                if (result > 3)
+                {
+                    /* result = 3 in original */
+                    //result = 0;
+                    result = 3;
+                    }
+                else if (result == 1 && a + b > c)
+                {
+                    result = 2;
+                }
+                /* (result == 2 && a + c > b) in original */
+                //else if (result == 3 && a + c > b)
+                else if (result == 2 && a + c > b)
+                {
+                    result = 2;
+                }
+                /* (result == 3 && b + c > a) in original */
+                //else if (result != 3 && b + c > a)
+                else if (result == 3 && b + c > a)
+                {
+                    result = 2;
+                }
+                else
+                {
+                    result = 4;
+                }
+            }
+        }
+
+        bool validTriangle = (a <= 0 || b <= 0 || c <= 0
+                || a <= b + c || b <= a + c || c <= a + b);
+
+        bool succeeded;
+        if (result == 1)
+        {
+            succeeded = validTriangle && (a != b && b != c && a != c);
+        }
+        else if (result == 2)
+        {
+            succeeded = validTriangle && ((a == b && a != c) || (a == c && a != b)
+                || (b == c && b != a));
+        }
+        else if (result == 3)
+        {
+            succeeded = validTriangle && (a == b && b == c);
+        }
+        else if (result == 4)
+        {
+            succeeded = !validTriangle;
+        }
+        else
+        {
+            succeeded = false;
+        }
+
+        succeeded = succeeded;
+        Contract.Assert(succeeded);
+    }
 }

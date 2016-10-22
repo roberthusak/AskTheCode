@@ -18,6 +18,24 @@ namespace EvaluationTests
         private const int SimpleLoopTarget = 64;
         private const int LoopedModuloTarget = 512;
 
+        /// <remarks>
+        /// When unwinding the loop condition backwards, AskTheCode does not have any information about the initial value
+        /// of i. Therefore, it leads to an infinite cycle stopping after the timeout has passed.
+        /// </remarks>
+        [PexMethod]
+        [ContractVerification(true)]
+        public static void DataIndependentLoop(int x)
+        {
+            int i = 0;
+            while (i < 20)
+            {
+                x = 2 * x;
+                i = i + 1;
+            }
+
+            Evaluation.InvalidAssert(x < 32);
+        }
+
         [PexMethod]
         [ContractVerification(true)]
         [LinearlyParametrizedEvaluation(nameof(SimpleLoopTarget), 64, 64, 64)]
@@ -52,7 +70,8 @@ namespace EvaluationTests
             Evaluation.InvalidAssert(c != 30);
         }
 
-        [PexMethod]
+        [PexMethod(MaxRunsWithoutNewTests = 1000)]
+        [PexAssertReachEventually]
         [ContractVerification(true)]
         public static void TwoLoops(int x, int y)
         {
@@ -69,6 +88,7 @@ namespace EvaluationTests
             {
                 if (p == 50 && c == 2)
                 {
+                    PexAssert.ReachEventually();
                     Evaluation.InvalidUnreachable();
                 }
 
