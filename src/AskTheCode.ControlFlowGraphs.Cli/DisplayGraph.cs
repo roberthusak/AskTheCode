@@ -17,6 +17,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private DisplayNodeId.Provider nodeIdProvider = new DisplayNodeId.Provider();
         private List<DisplayNode> mutableNodes = new List<DisplayNode>();
 
+        // TODO: Freeze too, remove or rework (there may be more than one DisplayNode for a FlowNode)
         private OrdinalOverlay<FlowNodeId, FlowNode, DisplayNode> mapFromFlowNodes =
             new OrdinalOverlay<FlowNodeId, FlowNode, DisplayNode>();
 

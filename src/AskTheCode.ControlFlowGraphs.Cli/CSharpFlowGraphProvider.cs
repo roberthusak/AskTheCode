@@ -18,14 +18,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private OrdinalOverlay<FlowGraphId, FlowGraph, GeneratedGraphs> generatedGraphs =
             new OrdinalOverlay<FlowGraphId, FlowGraph, GeneratedGraphs>();
 
-        private TypeModelManager modelManager = new TypeModelManager();
-
         public CSharpFlowGraphProvider(Solution solution)
         {
             Contract.Requires<ArgumentNullException>(solution != null, nameof(solution));
 
             this.Solution = solution;
         }
+
+        public TypeModelManager ModelManager { get; private set; } = new TypeModelManager();
 
         public Solution Solution { get; private set; }
 
@@ -37,6 +37,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public DisplayGraph GetDisplayGraph(FlowGraphId graphId)
         {
             return this.generatedGraphs[graphId].DisplayGraph;
+        }
+
+        public MethodLocation GetLocation(FlowGraphId graphId)
+        {
+            return this.generatedGraphs[graphId].Location;
         }
 
         public async Task<FlowGraph> GetFlowGraphAsync(ILocation location)
@@ -83,7 +88,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             var semanticModel = document.GetSemanticModelAsync().Result;
 
             var builder = new CSharpGraphBuilder(
-                this.modelManager,
+                this.ModelManager,
                 document.Id,
                 semanticModel,
                 methodSyntax);
@@ -92,7 +97,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             var buildGraph = builder.BuildAsync().Result;
 
             var flowGraphTranslator = new FlowGraphTranslator(buildGraph, builder.DisplayGraph, graphId);
-            return flowGraphTranslator.Translate();
+            var result = flowGraphTranslator.Translate();
+            result.Location = location;
+
+            return result;
         }
     }
 }

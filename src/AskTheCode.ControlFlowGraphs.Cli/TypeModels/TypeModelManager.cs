@@ -10,7 +10,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
     // TODO: Add dynamic factories registering
     // TODO: Add working with global variables
-    internal class TypeModelManager
+    public class TypeModelManager
     {
         private IntegerModelFactory integerFactory = new IntegerModelFactory();
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
@@ -15,12 +16,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             FlowNode flowNode,
             TextSpan span,
             int firstVariableIndex = -1,
-            ITypeModelFactory modelFactory = null)
+            ITypeSymbol type = null)
         {
             this.FlowNode = flowNode;
             this.Span = span;
             this.FirstVariableIndex = firstVariableIndex;
-            this.ModelFactory = modelFactory;
+            this.Type = type;
         }
 
         public FlowNode FlowNode { get; private set; }
@@ -29,7 +30,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public int FirstVariableIndex { get; private set; }
 
-        public ITypeModelFactory ModelFactory { get; private set; }
-
+        public ITypeSymbol Type { get; private set; }
     }
 }
