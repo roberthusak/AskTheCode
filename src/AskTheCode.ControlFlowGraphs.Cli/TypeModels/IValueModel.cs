@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
-    // TODO: Add means to display values to the user (e.g. tree view for the control flow display)
+    // TODO: Add means to display structured values to the user (e.g. tree view for the control flow display)
     public interface IValueModel : ITypeModel
     {
+        string ValueText { get; }
     }
 }
