@@ -8,6 +8,7 @@ using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
+using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
@@ -153,8 +154,16 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                         continue;
                     }
 
-                    // TODO: Offset and factory
-                    var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span);
+                    // Offset and type
+                    int assignmentOffset = -1;
+                    ITypeSymbol type = null;
+                    if (buildNode.VariableModel != null)
+                    {
+                        assignmentOffset = flowNodeInfo.AssignmentOffset;
+                        type = buildNode.VariableModel.Type;
+                    }
+
+                    var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span, assignmentOffset, type);
                     displayNode.AddRecord(record);
 
                     foreach (var buildEdge in buildNode.OutgoingEdges)
