@@ -9,6 +9,7 @@ using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
@@ -154,17 +155,44 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                         continue;
                     }
 
-                    // Offset and type
-                    int assignmentOffset = -1;
-                    ITypeSymbol type = null;
-                    if (buildNode.VariableModel != null)
+                    if (buildNode.BorderData?.Kind == BorderDataKind.Enter)
                     {
-                        assignmentOffset = flowNodeInfo.AssignmentOffset;
-                        type = buildNode.VariableModel.Type;
-                    }
+                        int assignmentOffset = 0;
+                        foreach (var parameterSyntax in ((ParameterListSyntax)buildNode.Syntax).Parameters)
+                        {
+                            string parameterName = parameterSyntax.Identifier.Text;
+                            var parameterModel =
+                                (from kvp in this.BuildGraph.DefinedVariableModels
+                                 where kvp.Key.Kind == SymbolKind.Parameter && kvp.Key.Name == parameterName
+                                 select kvp.Value).FirstOrDefault();
 
-                    var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span, assignmentOffset, type);
-                    displayNode.AddRecord(record);
+                            if (parameterModel != null)
+                            {
+                                var record = new DisplayNodeRecord(
+                                    flowNodeInfo.FlowNode,
+                                    parameterSyntax.Span,
+                                    assignmentOffset,
+                                    parameterModel.Type);
+                                displayNode.AddRecord(record);
+
+                                assignmentOffset += parameterModel.AssignmentLeft.Count;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Offset and type
+                        int assignmentOffset = -1;
+                        ITypeSymbol type = null;
+                        if (buildNode.VariableModel != null)
+                        {
+                            assignmentOffset = flowNodeInfo.AssignmentOffset;
+                            type = buildNode.VariableModel.Type;
+                        }
+
+                        var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span, assignmentOffset, type);
+                        displayNode.AddRecord(record);
+                    }
 
                     foreach (var buildEdge in buildNode.OutgoingEdges)
                     {

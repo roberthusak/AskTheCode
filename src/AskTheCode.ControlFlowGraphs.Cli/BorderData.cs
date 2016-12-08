@@ -13,9 +13,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
     // TODO: Consider adding also Enter kind (in order not to be handled separately in the translation)
     internal enum BorderDataKind
     {
+        Enter,
         Return,
         MethodCall,
-        ExceptionThrow
+        ExceptionThrow,
     }
 
     internal class BorderData
