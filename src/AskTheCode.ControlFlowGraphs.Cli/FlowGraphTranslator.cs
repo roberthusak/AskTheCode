@@ -368,7 +368,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
         }
 
-        private FlowEdge TranslateEdge(
+        private InnerFlowEdge TranslateEdge(
             BuildEdge buildEdge,
             BuildNode buildFrom,
             FlowNode flowFrom,

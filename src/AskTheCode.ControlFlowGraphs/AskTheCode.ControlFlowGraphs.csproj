@@ -135,7 +135,6 @@
     <Compile Include="CallFlowNode.cs" />
     <Compile Include="EnterFlowNode.cs" />
     <Compile Include="FlowEdge.cs" />
-    <Compile Include="FlowEdgeId.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="FlowGraphBuilder.cs" />
     <Compile Include="FlowGraphId.cs" />
@@ -146,11 +145,15 @@
     <Compile Include="GlobalFlowVariableId.cs" />
     <Compile Include="IFlowGraphProvider.cs" />
     <Compile Include="ILocation.cs" />
+    <Compile Include="OuterFlowEdge.cs" />
+    <Compile Include="InnerFlowEdge.cs" />
+    <Compile Include="OuterFlowEdgeId.cs" />
+    <Compile Include="InnerFlowEdgeId.cs" />
     <Compile Include="InnerFlowNode.cs" />
     <Compile Include="LocalFlowVariable.cs" />
     <Compile Include="LocalFlowVariableId.cs" />
-    <Compile Include="Overlays\FlowEdgeOverlay.cs" />
     <Compile Include="Overlays\FlowGraphsVariableOverlay.cs" />
+    <Compile Include="Overlays\InnerFlowEdgeOverlay.cs" />
     <Compile Include="Overlays\LocalFlowVariableOverlay.cs" />
     <Compile Include="Overlays\GlobalFlowVariableOverlay.cs" />
     <Compile Include="Overlays\FlowGraphsNodeOverlay.cs" />

@@ -41,7 +41,7 @@ namespace AskTheCode.ControlFlowGraphs
 
         public IReadOnlyList<FlowNode> Nodes { get; private set; }
 
-        public IReadOnlyList<FlowEdge> Edges { get; private set; }
+        public IReadOnlyList<InnerFlowEdge> Edges { get; private set; }
 
         public IReadOnlyList<LocalFlowVariable> LocalVariables { get; private set; }
 
@@ -49,7 +49,7 @@ namespace AskTheCode.ControlFlowGraphs
 
         internal List<FlowNode> MutableNodes { get; private set; } = new List<FlowNode>();
 
-        internal List<FlowEdge> MutableEdges { get; private set; } = new List<FlowEdge>();
+        internal List<InnerFlowEdge> MutableEdges { get; private set; } = new List<InnerFlowEdge>();
 
         internal List<LocalFlowVariable> MutableLocalVariables { get; private set; }
             = new List<LocalFlowVariable>();
@@ -59,7 +59,7 @@ namespace AskTheCode.ControlFlowGraphs
             get { return this.Nodes[nodeId.Value]; }
         }
 
-        public FlowEdge this[FlowEdgeId edgeId]
+        public InnerFlowEdge this[InnerFlowEdgeId edgeId]
         {
             get { return this.Edges[edgeId.Value]; }
         }

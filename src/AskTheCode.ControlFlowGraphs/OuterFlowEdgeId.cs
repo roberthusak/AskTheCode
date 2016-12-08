@@ -5,7 +5,7 @@ using AskTheCode.Common;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public struct FlowEdgeId : IOrdinalId<FlowEdgeId>
+    public struct OuterFlowEdgeId : IOrdinalId<OuterFlowEdgeId>
     {
         private readonly int value;
 
@@ -13,7 +13,7 @@ namespace AskTheCode.ControlFlowGraphs
         private readonly bool isValid;
 #endif
 
-        public FlowEdgeId(int value)
+        public OuterFlowEdgeId(int value)
         {
             this.value = value;
 
@@ -39,19 +39,19 @@ namespace AskTheCode.ControlFlowGraphs
             get { return this.value; }
         }
 
-        public bool Equals(FlowEdgeId other)
+        public bool Equals(OuterFlowEdgeId other)
         {
             return this.Value == other.Value;
         }
 
-        internal class Provider : IIdProvider<FlowEdgeId>
+        internal class Provider : IIdProvider<OuterFlowEdgeId>
         {
             private OrdinalIdValueGenerator valueGenerator = new OrdinalIdValueGenerator();
 
-            public FlowEdgeId GenerateNewId()
+            public OuterFlowEdgeId GenerateNewId()
             {
                 int id = this.valueGenerator.GenerateNextIdValue();
-                return new FlowEdgeId(id);
+                return new OuterFlowEdgeId(id);
             }
         }
     }

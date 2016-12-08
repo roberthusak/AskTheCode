@@ -12,7 +12,7 @@ namespace AskTheCode.ControlFlowGraphs
     public class FlowGraphBuilder
     {
         private FlowNodeId.Provider nodeIdProvider;
-        private FlowEdgeId.Provider edgeIdProvider;
+        private InnerFlowEdgeId.Provider edgeIdProvider;
         private LocalFlowVariableId.Provider variableIdProvider;
 
         public FlowGraphBuilder()
@@ -31,7 +31,7 @@ namespace AskTheCode.ControlFlowGraphs
             Contract.Requires<InvalidOperationException>(this.Graph == null);
 
             this.nodeIdProvider = new FlowNodeId.Provider();
-            this.edgeIdProvider = new FlowEdgeId.Provider();
+            this.edgeIdProvider = new InnerFlowEdgeId.Provider();
             this.variableIdProvider = new LocalFlowVariableId.Provider();
 
             this.Graph = new FlowGraph(newGraphId, this);
@@ -133,12 +133,12 @@ namespace AskTheCode.ControlFlowGraphs
             return node;
         }
 
-        public FlowEdge AddEdge(FlowNode from, FlowNode to)
+        public InnerFlowEdge AddEdge(FlowNode from, FlowNode to)
         {
             return this.AddEdge(from, to, true);
         }
 
-        public FlowEdge AddEdge(FlowNode from, FlowNode to, BoolHandle condition)
+        public InnerFlowEdge AddEdge(FlowNode from, FlowNode to, BoolHandle condition)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(from != null, nameof(from));
@@ -147,7 +147,7 @@ namespace AskTheCode.ControlFlowGraphs
             Contract.Requires<ArgumentException>(to.Graph == this.Graph, nameof(to));
 
             var edgeId = this.edgeIdProvider.GenerateNewId();
-            var edge = new FlowEdge(edgeId, from, to, condition);
+            var edge = new InnerFlowEdge(edgeId, from, to, condition);
             this.Graph.MutableEdges.Add(edge);
             Contract.Assert(edgeId.Value == this.Graph.MutableEdges.IndexOf(edge));
 

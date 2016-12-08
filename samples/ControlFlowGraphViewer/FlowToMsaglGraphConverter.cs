@@ -119,7 +119,7 @@ namespace ControlFlowGraphViewer
             aglNode.Label = label;
         }
 
-        private void DecorateEdge(Edge aglEdge, FlowEdge flowEdge)
+        private void DecorateEdge(Edge aglEdge, InnerFlowEdge flowEdge)
         {
             if (flowEdge.Condition.Expression == ExpressionFactory.True)
             {
