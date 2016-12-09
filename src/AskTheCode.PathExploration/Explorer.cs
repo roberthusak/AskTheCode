@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
 using System.Text;
+using System.Threading;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
-using System.Threading;
 
 namespace AskTheCode.PathExploration
 {
@@ -64,17 +64,17 @@ namespace AskTheCode.PathExploration
         internal void Explore(CancellationToken cancelToken)
         {
             for (
-                var currentNode = this.ExplorationHeuristic.PickNextState();
-                currentNode != null;
-                currentNode = this.ExplorationHeuristic.PickNextState())
+                var currentState = this.ExplorationHeuristic.PickNextState();
+                currentState != null;
+                currentState = this.ExplorationHeuristic.PickNextState())
             {
-                // TODO: Consider reusing the node instead of discarding
-                this.RemoveState(currentNode);
+                // TODO: Consider reusing the state instead of discarding
+                this.RemoveState(currentState);
 
                 IReadOnlyList<FlowEdge> edges;
-                if (!(currentNode.Path.Node is EnterFlowNode))
+                if (!(currentState.Path.Node is EnterFlowNode))
                 {
-                    edges = currentNode.Path.Node.IngoingEdges;
+                    edges = currentState.Path.Node.IngoingEdges;
                 }
                 else
                 {
@@ -85,16 +85,16 @@ namespace AskTheCode.PathExploration
                 var toSolve = new List<ExplorationState>();
 
                 int i = 0;
-                foreach (bool doBranch in this.ExplorationHeuristic.DoBranch(currentNode, edges))
+                foreach (bool doBranch in this.ExplorationHeuristic.DoBranch(currentState, edges))
                 {
                     if (doBranch)
                     {
                         var branchedPath = new Path(
-                            ImmutableArray.Create(currentNode.Path),
-                            currentNode.Path.Depth + 1,
+                            ImmutableArray.Create(currentState.Path),
+                            currentState.Path.Depth + 1,
                             edges[i].From,
                             ImmutableArray.Create(edges[i]));
-                        var branchedState = new ExplorationState(branchedPath, currentNode.SolverHandler);
+                        var branchedState = new ExplorationState(branchedPath, currentState.SolverHandler);
 
                         bool wasMerged = false;
                         foreach (var mergeCandidate in this.statesOnLocations[branchedState.Path.Node].ToArray())
@@ -142,24 +142,24 @@ namespace AskTheCode.PathExploration
                 if (toSolve.Count > 0)
                 {
                     int j = 0;
-                    foreach (bool doReuse in this.SmtHeuristic.DoReuse(currentNode.SolverHandler, toSolve))
+                    foreach (bool doReuse in this.SmtHeuristic.DoReuse(currentState.SolverHandler, toSolve))
                     {
                         if (!doReuse)
                         {
-                            toSolve[j].SolverHandler = currentNode.SolverHandler.Clone();
+                            toSolve[j].SolverHandler = currentState.SolverHandler.Clone();
                         }
 
                         j++;
                     }
 
-                    foreach (var branchedNode in toSolve)
+                    foreach (var branchedState in toSolve)
                     {
-                        var resultKind = branchedNode.SolverHandler.Solve(branchedNode.Path);
+                        var resultKind = branchedState.SolverHandler.Solve(branchedState.Path);
 
-                        if (resultKind != ExplorationResultKind.Reachable || this.finalNodeRecognizer.IsFinalNode(branchedNode.Path.Node))
+                        if (resultKind != ExplorationResultKind.Reachable || this.finalNodeRecognizer.IsFinalNode(branchedState.Path.Node))
                         {
-                            this.RemoveState(branchedNode);
-                            var result = branchedNode.SolverHandler.LastResult;
+                            this.RemoveState(branchedState);
+                            var result = branchedState.SolverHandler.LastResult;
                             this.resultCallback(result);
                         }
                     }
