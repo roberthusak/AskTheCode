@@ -271,13 +271,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 if (borderData.Arguments.Any(arg => arg == null))
                 {
                     // We cannot model method calls without properly modelling all their arguments first
-                    location = new MethodLocation(borderData.Method, false);
+                    location = new MethodLocation(borderData.Method, isExplorationDisabled: true);
                     flowArguments = Enumerable.Empty<Expression>();
                 }
                 else
                 {
-                    bool canBeExplored = borderData.Method.Locations.Any(loc => loc.IsInSource);
-                    location = new MethodLocation(borderData.Method, canBeExplored);
+                    location = new MethodLocation(borderData.Method);
                     var buildArguments = borderData.Arguments.SelectMany(typeModel => typeModel.AssignmentRight);
                     flowArguments = buildArguments.Select(expression => this.TranslateExpression(expression));
                 }

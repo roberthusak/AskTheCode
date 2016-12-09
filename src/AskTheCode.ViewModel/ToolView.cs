@@ -166,7 +166,7 @@ namespace AskTheCode.ViewModel
             }
 
             // TODO: Polish the usage of this thing
-            info.Location = new MethodLocation(methodSymbol, true);
+            info.Location = new MethodLocation(methodSymbol);
             info.FlowGraph = await this.GraphProvider.GetFlowGraphAsync(info.Location);
             info.DisplayGraph = this.GraphProvider.GetDisplayGraph(info.FlowGraph.Id);
 
