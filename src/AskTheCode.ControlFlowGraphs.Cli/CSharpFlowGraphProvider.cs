@@ -8,6 +8,7 @@ using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FindSymbols;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
@@ -63,6 +64,58 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             var graphs = await this.LazyGenerateGraphsAsync((MethodLocation)location);
 
             return graphs.DisplayGraph;
+        }
+
+        public OuterFlowEdge GetCallEdge(CallFlowNode callNode, EnterFlowNode enterNode)
+        {
+            // TODO: Store outer edges instead of recreating them every time
+            return OuterFlowEdge.CreateMethodCall(new OuterFlowEdgeId(-1), callNode, enterNode);
+        }
+
+        public async Task<IReadOnlyList<OuterFlowEdge>> GetCallEdgesToAsync(EnterFlowNode enterNode)
+        {
+            var results = new List<OuterFlowEdge>();
+
+            var calledMethodLocation = this.GetLocation(enterNode.Graph.Id);
+            var references = await SymbolFinder.FindCallersAsync(calledMethodLocation.Method, this.Solution);
+            foreach (var reference in references)
+            {
+                Contract.Assert(reference.CalledSymbol.Equals(calledMethodLocation.Method));
+                var callingMethod = reference.CallingSymbol as IMethodSymbol;
+                if (callingMethod == null)
+                {
+                    continue;
+                }
+
+                var callingMethodLocation = new MethodLocation(callingMethod);
+                if (!callingMethodLocation.CanBeExplored)
+                {
+                    continue;
+                }
+
+                var graphs = await this.LazyGenerateGraphsAsync(callingMethodLocation);
+                foreach (var callNode in graphs.FlowGraph.Nodes.OfType<CallFlowNode>())
+                {
+                    if (((MethodLocation)callNode.Location).Equals(calledMethodLocation))
+                    {
+                        // TODO: Store outer edges instead of recreating them every time
+                        var callEdge = OuterFlowEdge.CreateMethodCall(new OuterFlowEdgeId(-1), callNode, enterNode);
+                        results.Add(callEdge);
+                    }
+                }
+            }
+
+            return results.ToArray();
+        }
+
+        public async Task<IReadOnlyList<OuterFlowEdge>> GetReturnEdgesToAsync(CallFlowNode callNode)
+        {
+            // TODO: Store outer edges instead of recreating them every time
+            var graph = (await this.LazyGenerateGraphsAsync((MethodLocation)callNode.Location)).FlowGraph;
+            return graph.Nodes
+                .OfType<ReturnFlowNode>()
+                .Select(returnNode => OuterFlowEdge.CreateReturn(new OuterFlowEdgeId(-1), returnNode, callNode))
+                .ToArray();
         }
 
         private async Task<GeneratedGraphs> LazyGenerateGraphsAsync(MethodLocation location)

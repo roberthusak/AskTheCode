@@ -17,7 +17,22 @@ namespace ControlFlowGraphViewer
             }
         }
 
-        Task<FlowGraph> IFlowGraphProvider.GetFlowGraphAsync(ILocation location)
+        public Task<FlowGraph> GetFlowGraphAsync(ILocation location)
+        {
+            throw new NotImplementedException();
+        }
+
+        public OuterFlowEdge GetCallEdge(CallFlowNode callNode, EnterFlowNode enterNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<OuterFlowEdge>> GetCallEdgesToAsync(EnterFlowNode enterNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<OuterFlowEdge>> GetReturnEdgesToAsync(CallFlowNode callNode)
         {
             throw new NotImplementedException();
         }
