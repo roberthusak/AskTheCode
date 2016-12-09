@@ -18,6 +18,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private OrdinalOverlay<FlowGraphId, FlowGraph, GeneratedGraphs> generatedGraphs =
             new OrdinalOverlay<FlowGraphId, FlowGraph, GeneratedGraphs>();
 
+        private Dictionary<IMethodSymbol, FlowGraphId> symbolsToGraphIdMap =
+            new Dictionary<IMethodSymbol, FlowGraphId>();
+
         public CSharpFlowGraphProvider(Solution solution)
         {
             Contract.Requires<ArgumentNullException>(solution != null, nameof(solution));
@@ -48,26 +51,36 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             Contract.Requires<ArgumentException>(location is MethodLocation, nameof(location));
 
-            // TODO: Check whether it has not been generated already
-            var result = await this.GenerateGraphsAsync((MethodLocation)location);
-            return result.FlowGraph;
+            var graphs = await this.LazyGenerateGraphsAsync((MethodLocation)location);
+
+            return graphs.FlowGraph;
         }
 
         public async Task<DisplayGraph> GetDisplayGraphAsync(ILocation location)
         {
             Contract.Requires<ArgumentException>(location is MethodLocation, nameof(location));
 
-            // TODO: Check whether it has not been generated already
-            var result = await this.GenerateGraphsAsync((MethodLocation)location);
-            return result.DisplayGraph;
+            var graphs = await this.LazyGenerateGraphsAsync((MethodLocation)location);
+
+            return graphs.DisplayGraph;
         }
 
-        private async Task<GeneratedGraphs> GenerateGraphsAsync(MethodLocation location)
+        private async Task<GeneratedGraphs> LazyGenerateGraphsAsync(MethodLocation location)
         {
-            var graphId = this.graphIdProvider.GenerateNewId();
-            var result = await Task.Run<GeneratedGraphs>(() => this.GenerateGraphsImpl(location, graphId));
+            FlowGraphId graphId;
+            GeneratedGraphs result;
+            if (this.symbolsToGraphIdMap.TryGetValue((location).Method, out graphId))
+            {
+                result = this.generatedGraphs[graphId];
+            }
+            else
+            {
+                graphId = this.graphIdProvider.GenerateNewId();
+                result = await Task.Run(() => this.GenerateGraphsImpl(location, graphId));
 
-            this.generatedGraphs[graphId] = result;
+                this.generatedGraphs[graphId] = result;
+                this.symbolsToGraphIdMap.Add(location.Method, graphId);
+            }
 
             return result;
         }
