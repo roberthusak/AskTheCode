@@ -12,15 +12,15 @@ namespace AskTheCode.PathExploration.Heuristics
         {
         }
 
-        public IEnumerable<bool> DoReuse(SmtSolverHandler solverHandler, IReadOnlyList<ExplorationState> branchedNodes)
+        public IEnumerable<bool> DoReuse(SmtSolverHandler solverHandler, IReadOnlyList<ExplorationState> branchedStates)
         {
-            foreach (var node in branchedNodes)
+            foreach (var state in branchedStates)
             {
                 yield return true;
             }
         }
 
-        public bool DoSolve(ExplorationState node)
+        public bool DoSolve(ExplorationState state)
         {
             return true;
         }

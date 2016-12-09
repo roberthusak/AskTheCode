@@ -6,7 +6,7 @@ namespace AskTheCode.PathExploration.Heuristics
 {
     public interface IMergingHeuristic : IHeuristic
     {
-        bool DoExpectMerging(ExplorationState node);
+        bool DoExpectMerging(ExplorationState state);
 
         bool DoMerge(ExplorationState current, ExplorationState existing);
     }

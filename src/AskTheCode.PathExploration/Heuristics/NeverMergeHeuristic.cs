@@ -12,7 +12,7 @@ namespace AskTheCode.PathExploration.Heuristics
         {
         }
 
-        public bool DoExpectMerging(ExplorationState node)
+        public bool DoExpectMerging(ExplorationState state)
         {
             return false;
         }

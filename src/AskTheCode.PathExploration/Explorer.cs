@@ -20,7 +20,7 @@ namespace AskTheCode.PathExploration
 
         private SmtContextHandler smtContextHandler;
 
-        private FlowGraphsNodeOverlay<List<ExplorationState>> nodesOnLocations =
+        private FlowGraphsNodeOverlay<List<ExplorationState>> statesOnLocations =
             new FlowGraphsNodeOverlay<List<ExplorationState>>(() => new List<ExplorationState>());
 
         internal Explorer(
@@ -45,14 +45,14 @@ namespace AskTheCode.PathExploration
                 0,
                 this.startingNode.Node,
                 ImmutableArray<FlowEdge>.Empty);
-            var rootNode = new ExplorationState(
+            var rootState = new ExplorationState(
                 rootPath,
                 this.smtContextHandler.CreateEmptySolver(rootPath, this.startingNode));
-            this.AddNode(rootNode);
+            this.AddState(rootState);
         }
 
         // TODO: Make readonly for the heuristics
-        public HashSet<ExplorationState> Nodes { get; private set; } = new HashSet<ExplorationState>();
+        public HashSet<ExplorationState> States { get; private set; } = new HashSet<ExplorationState>();
 
         public IExplorationHeuristic ExplorationHeuristic { get; internal set; }
 
@@ -64,12 +64,12 @@ namespace AskTheCode.PathExploration
         internal void Explore(CancellationToken cancelToken)
         {
             for (
-                var currentNode = this.ExplorationHeuristic.PickNextNode();
+                var currentNode = this.ExplorationHeuristic.PickNextState();
                 currentNode != null;
-                currentNode = this.ExplorationHeuristic.PickNextNode())
+                currentNode = this.ExplorationHeuristic.PickNextState())
             {
                 // TODO: Consider reusing the node instead of discarding
-                this.RemoveNode(currentNode);
+                this.RemoveState(currentNode);
 
                 IReadOnlyList<FlowEdge> edges;
                 if (!(currentNode.Path.Node is EnterFlowNode))
@@ -94,26 +94,26 @@ namespace AskTheCode.PathExploration
                             currentNode.Path.Depth + 1,
                             edges[i].From,
                             ImmutableArray.Create(edges[i]));
-                        var branchedNode = new ExplorationState(branchedPath, currentNode.SolverHandler);
+                        var branchedState = new ExplorationState(branchedPath, currentNode.SolverHandler);
 
                         bool wasMerged = false;
-                        foreach (var mergeCandidate in this.nodesOnLocations[branchedNode.Path.Node].ToArray())
+                        foreach (var mergeCandidate in this.statesOnLocations[branchedState.Path.Node].ToArray())
                         {
-                            if (this.MergingHeuristic.DoMerge(branchedNode, mergeCandidate))
+                            if (this.MergingHeuristic.DoMerge(branchedState, mergeCandidate))
                             {
                                 SmtSolverHandler solverHandler;
-                                if (branchedNode.SolverHandler != mergeCandidate.SolverHandler)
+                                if (branchedState.SolverHandler != mergeCandidate.SolverHandler)
                                 {
                                     solverHandler = this.SmtHeuristic.SelectMergedSolverHandler(
-                                        branchedNode,
+                                        branchedState,
                                         mergeCandidate);
                                 }
                                 else
                                 {
-                                    solverHandler = branchedNode.SolverHandler;
+                                    solverHandler = branchedState.SolverHandler;
                                 }
 
-                                mergeCandidate.Merge(branchedNode, solverHandler);
+                                mergeCandidate.Merge(branchedState, solverHandler);
                                 wasMerged = true;
 
                                 break;
@@ -122,13 +122,13 @@ namespace AskTheCode.PathExploration
 
                         if (!wasMerged)
                         {
-                            this.AddNode(branchedNode);
+                            this.AddState(branchedState);
                         }
 
-                        if (this.finalNodeRecognizer.IsFinalNode(branchedNode.Path.Node)
-                            || this.SmtHeuristic.DoSolve(branchedNode))
+                        if (this.finalNodeRecognizer.IsFinalNode(branchedState.Path.Node)
+                            || this.SmtHeuristic.DoSolve(branchedState))
                         {
-                            toSolve.Add(branchedNode);
+                            toSolve.Add(branchedState);
                         }
                     }
                     else
@@ -158,7 +158,7 @@ namespace AskTheCode.PathExploration
 
                         if (resultKind != ExplorationResultKind.Reachable || this.finalNodeRecognizer.IsFinalNode(branchedNode.Path.Node))
                         {
-                            this.RemoveNode(branchedNode);
+                            this.RemoveState(branchedNode);
                             var result = branchedNode.SolverHandler.LastResult;
                             this.resultCallback(result);
                         }
@@ -174,16 +174,16 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        private void AddNode(ExplorationState node)
+        private void AddState(ExplorationState state)
         {
-            this.Nodes.Add(node);
-            this.nodesOnLocations[node.Path.Node].Add(node);
+            this.States.Add(state);
+            this.statesOnLocations[state.Path.Node].Add(state);
         }
 
-        private void RemoveNode(ExplorationState node)
+        private void RemoveState(ExplorationState state)
         {
-            this.Nodes.Remove(node);
-            this.nodesOnLocations[node.Path.Node].Remove(node);
+            this.States.Remove(state);
+            this.statesOnLocations[state.Path.Node].Remove(state);
         }
     }
 }

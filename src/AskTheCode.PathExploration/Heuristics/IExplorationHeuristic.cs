@@ -7,8 +7,8 @@ namespace AskTheCode.PathExploration.Heuristics
 {
     public interface IExplorationHeuristic : IHeuristic
     {
-        ExplorationState PickNextNode();
+        ExplorationState PickNextState();
 
-        IEnumerable<bool> DoBranch(ExplorationState node, IReadOnlyList<FlowEdge> edges);
+        IEnumerable<bool> DoBranch(ExplorationState state, IReadOnlyList<FlowEdge> edges);
     }
 }

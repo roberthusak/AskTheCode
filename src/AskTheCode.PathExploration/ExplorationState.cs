@@ -21,17 +21,17 @@ namespace AskTheCode.PathExploration
 
         public SmtSolverHandler SolverHandler { get; internal set; }
 
-        public void Merge(ExplorationState node, SmtSolverHandler solverHandler)
+        public void Merge(ExplorationState state, SmtSolverHandler solverHandler)
         {
-            Contract.Requires(node != null);
+            Contract.Requires(state != null);
             Contract.Requires(solverHandler != null);
-            Contract.Requires(node.Path.Node == this.Path.Node);
+            Contract.Requires(state.Path.Node == this.Path.Node);
 
             this.Path = new Path(
-                this.Path.Preceeding.AddRange(node.Path.Preceeding),
-                Math.Max(this.Path.Depth, node.Path.Depth),
+                this.Path.Preceeding.AddRange(state.Path.Preceeding),
+                Math.Max(this.Path.Depth, state.Path.Depth),
                 this.Path.Node,
-                this.Path.LeadingEdges.AddRange(node.Path.LeadingEdges));
+                this.Path.LeadingEdges.AddRange(state.Path.LeadingEdges));
             this.SolverHandler = solverHandler;
         }
     }
