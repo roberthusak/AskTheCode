@@ -15,11 +15,11 @@ namespace AskTheCode.ControlFlowGraphs
 
     public class OuterFlowEdge : FlowEdge, IIdReferenced<OuterFlowEdgeId>
     {
-        internal OuterFlowEdge(OuterFlowEdgeId id, OuterFlowEdgeKind kind, FlowNode from, FlowNode to)
+        private OuterFlowEdge(OuterFlowEdgeId id, OuterFlowEdgeKind kind, FlowNode from, FlowNode to)
             : base(from, to)
         {
             Contract.Requires(id.IsValid);
-            Contract.Requires(from.Graph == to.Graph);
+            Contract.Requires(from.Graph != to.Graph);
             Contract.Requires(kind != OuterFlowEdgeKind.MethodCall || (from is CallFlowNode && to is EnterFlowNode));
             Contract.Requires(kind != OuterFlowEdgeKind.Return || (from is ReturnFlowNode && to is CallFlowNode));
 
@@ -30,5 +30,15 @@ namespace AskTheCode.ControlFlowGraphs
         public OuterFlowEdgeId Id { get; private set; }
 
         public OuterFlowEdgeKind Kind { get; private set; }
+
+        public static OuterFlowEdge CreateMethodCall(OuterFlowEdgeId id, CallFlowNode callNode, EnterFlowNode enterNode)
+        {
+            return new OuterFlowEdge(id, OuterFlowEdgeKind.MethodCall, callNode, enterNode);
+        }
+
+        public static OuterFlowEdge CreateReturn(OuterFlowEdgeId id, ReturnFlowNode returnNode, CallFlowNode callNode)
+        {
+            return new OuterFlowEdge(id, OuterFlowEdgeKind.Return, returnNode, callNode);
+        }
     }
 }
