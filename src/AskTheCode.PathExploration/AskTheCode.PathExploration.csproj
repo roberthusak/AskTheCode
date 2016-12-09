@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BorderEntryPointRecognizer.cs" />
+    <Compile Include="CallSiteStack.cs" />
     <Compile Include="ExecutionModel.cs" />
     <Compile Include="ExecutionModelEventArgs.cs" />
     <Compile Include="ExplorationContext.cs" />

@@ -8,16 +8,19 @@ namespace AskTheCode.PathExploration
 {
     public class ExplorationState
     {
-        public ExplorationState(Path path, SmtSolverHandler solverHandler)
+        public ExplorationState(Path path, CallSiteStack callSiteStack, SmtSolverHandler solverHandler)
         {
             Contract.Requires(path != null);
             Contract.Requires(solverHandler != null);
 
             this.Path = path;
+            this.CallSiteStack = callSiteStack;
             this.SolverHandler = solverHandler;
         }
 
         public Path Path { get; private set; }
+
+        public CallSiteStack CallSiteStack { get; private set; }
 
         public SmtSolverHandler SolverHandler { get; internal set; }
 
@@ -26,6 +29,7 @@ namespace AskTheCode.PathExploration
             Contract.Requires(state != null);
             Contract.Requires(solverHandler != null);
             Contract.Requires(state.Path.Node == this.Path.Node);
+            Contract.Requires(state.CallSiteStack.Equals(this.CallSiteStack));
 
             this.Path = new Path(
                 this.Path.Preceeding.AddRange(state.Path.Preceeding),

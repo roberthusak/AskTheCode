@@ -10,6 +10,7 @@ using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
+using AskTheCode.Common;
 
 namespace AskTheCode.PathExploration
 {
@@ -49,6 +50,7 @@ namespace AskTheCode.PathExploration
                 ImmutableArray<FlowEdge>.Empty);
             var rootState = new ExplorationState(
                 rootPath,
+                CallSiteStack.Empty,
                 this.smtContextHandler.CreateEmptySolver(rootPath, this.startingNode));
             this.AddState(rootState);
         }
@@ -76,10 +78,21 @@ namespace AskTheCode.PathExploration
                 // TODO: Properly use the asynchronous operations instead of .Result
                 IReadOnlyList<FlowEdge> edges;
                 var currentNode = currentState.Path.Node;
+                var graphProvider = this.context.FlowGraphProvider;
                 if (currentNode is EnterFlowNode)
                 {
-                    // TODO: Utilize the call site stack
-                    edges = Task.Run(() => this.context.FlowGraphProvider.GetCallEdgesToAsync((EnterFlowNode)currentNode)).Result;
+                    if (currentState.CallSiteStack == CallSiteStack.Empty)
+                    {
+                        edges = Task.Run(() => graphProvider.GetCallEdgesToAsync((EnterFlowNode)currentNode)).Result;
+                    }
+                    else
+                    {
+                        // The execution is constrained by the call site on the stack
+                        var edge = graphProvider.GetCallEdge(
+                            currentState.CallSiteStack.CallSite,
+                            (EnterFlowNode)currentNode);
+                        edges = edge.ToSingular();
+                    }
                 }
                 else if (currentNode is CallFlowNode)
                 {
@@ -91,7 +104,7 @@ namespace AskTheCode.PathExploration
                     }
                     else
                     {
-                        edges = Task.Run(() => this.context.FlowGraphProvider.GetReturnEdgesToAsync((CallFlowNode)currentNode)).Result;
+                        edges = Task.Run(() => graphProvider.GetReturnEdgesToAsync((CallFlowNode)currentNode)).Result;
                     }
                 }
                 else
@@ -106,12 +119,18 @@ namespace AskTheCode.PathExploration
                 {
                     if (doBranch)
                     {
+                        var edge = edges[i];
                         var branchedPath = new Path(
                             ImmutableArray.Create(currentState.Path),
                             currentState.Path.Depth + 1,
-                            edges[i].From,
-                            ImmutableArray.Create(edges[i]));
-                        var branchedState = new ExplorationState(branchedPath, currentState.SolverHandler);
+                            edge.From,
+                            ImmutableArray.Create(edge));
+                        CallSiteStack callSiteStack = GetNewCallSiteStack(currentState, edge);
+
+                        var branchedState = new ExplorationState(
+                            branchedPath,
+                            callSiteStack,
+                            currentState.SolverHandler);
 
                         bool wasMerged = false;
                         foreach (var mergeCandidate in this.statesOnLocations[branchedState.Path.Node].ToArray())
@@ -189,6 +208,32 @@ namespace AskTheCode.PathExploration
                     break;
                 }
             }
+        }
+
+        private static CallSiteStack GetNewCallSiteStack(ExplorationState currentState, FlowEdge edge)
+        {
+            CallSiteStack callSiteStack;
+            if (edge.From is ReturnFlowNode)
+            {
+                Contract.Assert(edge is OuterFlowEdge);
+                Contract.Assert(((OuterFlowEdge)edge).Kind == OuterFlowEdgeKind.Return);
+
+                callSiteStack = currentState.CallSiteStack.Push((CallFlowNode)edge.To);
+            }
+            else if (edge.To is EnterFlowNode)
+            {
+                Contract.Assert(edge is OuterFlowEdge);
+                Contract.Assert(((OuterFlowEdge)edge).Kind == OuterFlowEdgeKind.MethodCall);
+
+                callSiteStack = currentState.CallSiteStack.IsEmpty ?
+                    currentState.CallSiteStack : currentState.CallSiteStack.Pop();
+            }
+            else
+            {
+                callSiteStack = currentState.CallSiteStack;
+            }
+
+            return callSiteStack;
         }
 
         private void AddState(ExplorationState state)
