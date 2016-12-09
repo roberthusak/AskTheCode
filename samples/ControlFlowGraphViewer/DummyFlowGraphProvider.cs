@@ -27,12 +27,12 @@ namespace ControlFlowGraphViewer
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<OuterFlowEdge>> GetCallEdgesToAsync(EnterFlowNode enterNode)
+        public Task<IReadOnlyList<OuterFlowEdge>> GetCallEdgesToAsync(EnterFlowNode enterNode)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<OuterFlowEdge>> GetReturnEdgesToAsync(CallFlowNode callNode)
+        public Task<IReadOnlyList<OuterFlowEdge>> GetReturnEdgesToAsync(CallFlowNode callNode)
         {
             throw new NotImplementedException();
         }
