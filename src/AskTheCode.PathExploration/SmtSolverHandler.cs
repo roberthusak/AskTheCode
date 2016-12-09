@@ -70,6 +70,7 @@ namespace AskTheCode.PathExploration
             cloned.lastResult = this.lastResult;
             cloned.LastResultKind = this.LastResultKind;
 
+            // TODO: Clone the underlying SMT solver!
             // TODO: Clone the variable versions! (we need to make the overlay cloneable/enumerable)
             throw new NotImplementedException();
         }
@@ -120,6 +121,7 @@ namespace AskTheCode.PathExploration
                 var edge = currentPath.LeadingEdges.Single();
                 var node = currentPath.Node;
 
+                // TODO: Properly handle the interprocedural flow
                 this.AssertEdgeCondition(edge);
                 var innerNode = currentPath.Node as InnerFlowNode;
                 if (innerNode != null)
@@ -287,6 +289,7 @@ namespace AskTheCode.PathExploration
             var path = this.Path;
             for (int i = 0; i < nodeCount; i++)
             {
+                // TODO: Handle interprocedural flow
                 var innerNode = path.Node as InnerFlowNode;
                 if (innerNode != null)
                 {
@@ -306,9 +309,13 @@ namespace AskTheCode.PathExploration
         // TODO: Handle also border nodes and interprocedural value flow
         private void AssertEdgeCondition(FlowEdge edge)
         {
-            if (edge.Condition.Expression != ExpressionFactory.True)
+            var innerEdge = edge as InnerFlowEdge;
+            if (innerEdge != null)
             {
-                this.smtSolver.AddAssertion(this.nameProvider, edge.Condition);
+                if (innerEdge.Condition.Expression != ExpressionFactory.True)
+                {
+                    this.smtSolver.AddAssertion(this.nameProvider, innerEdge.Condition);
+                }
             }
         }
 

@@ -10,21 +10,17 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public abstract class FlowEdge
     {
-        internal FlowEdge(FlowNode from, FlowNode to, BoolHandle condition)
+        internal FlowEdge(FlowNode from, FlowNode to)
         {
             Contract.Requires(from != null);
             Contract.Requires(to != null);
-            Contract.Requires(condition.Expression != null);
 
             this.From = from;
             this.To = to;
-            this.Condition = condition;
         }
 
         public FlowNode From { get; private set; }
 
         public FlowNode To { get; private set; }
-
-        public BoolHandle Condition { get; private set; }
     }
 }
