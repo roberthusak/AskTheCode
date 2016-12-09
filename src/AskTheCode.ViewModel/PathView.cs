@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,11 +35,34 @@ namespace AskTheCode.ViewModel
                 {
                     this.methodFlows = new ObservableCollection<MethodFlowView>();
 
-                    // TODO: Handle multiple methods in one execution model
-                    var flowGraphId = this.ExecutionModel.PathNodes[0].Graph.Id;
-                    var location = this.ToolView.GraphProvider.GetLocation(flowGraphId);
-                    var methodFlow = new MethodFlowView(this, location, 0, this.ExecutionModel.PathNodes.Length);
-                    this.methodFlows.Add(methodFlow);
+                    var pathNodes = this.ExecutionModel.PathNodes;
+                    Contract.Assert(pathNodes.Length > 0);
+
+                    int currentSegmentStart = 0;
+                    var currentGraph = pathNodes[0].Graph;
+                    for (int i = 0; i < pathNodes.Length; i++)
+                    {
+                        if (pathNodes[i].Graph != currentGraph)
+                        {
+                            var location = this.ToolView.GraphProvider.GetLocation(currentGraph.Id);
+                            var methodFlow = new MethodFlowView(
+                                this,
+                                location,
+                                currentSegmentStart,
+                                i - currentSegmentStart);
+                            this.methodFlows.Insert(0, methodFlow);
+                            currentSegmentStart = i;
+                            currentGraph = pathNodes[i].Graph;
+                        }
+                    }
+
+                    var locationLast = this.ToolView.GraphProvider.GetLocation(currentGraph.Id);
+                    var methodFlowLast = new MethodFlowView(
+                        this,
+                        locationLast,
+                        currentSegmentStart,
+                        pathNodes.Length - currentSegmentStart);
+                    this.methodFlows.Insert(0, methodFlowLast);
                 }
 
                 return this.methodFlows;
