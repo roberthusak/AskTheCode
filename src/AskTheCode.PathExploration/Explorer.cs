@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.PathExploration.Heuristics;
@@ -71,15 +73,30 @@ namespace AskTheCode.PathExploration
                 // TODO: Consider reusing the state instead of discarding
                 this.RemoveState(currentState);
 
+                // TODO: Properly use the asynchronous operations instead of .Result
                 IReadOnlyList<FlowEdge> edges;
-                if (!(currentState.Path.Node is EnterFlowNode))
+                var currentNode = currentState.Path.Node;
+                if (currentNode is EnterFlowNode)
                 {
-                    edges = currentState.Path.Node.IngoingEdges;
+                    // TODO: Utilize the call site stack
+                    edges = Task.Run(() => this.context.FlowGraphProvider.GetCallEdgesToAsync((EnterFlowNode)currentNode)).Result;
+                }
+                else if (currentNode is CallFlowNode)
+                {
+                    // TODO: Handle merged nodes
+                    if (currentState.Path.Preceeding.FirstOrDefault()?.Node is EnterFlowNode)
+                    {
+                        // We have already returned from the call
+                        edges = currentNode.IngoingEdges;
+                    }
+                    else
+                    {
+                        edges = Task.Run(() => this.context.FlowGraphProvider.GetReturnEdgesToAsync((CallFlowNode)currentNode)).Result;
+                    }
                 }
                 else
                 {
-                    // TODO: Handle also border edges and their connections, properly process the call nodes
-                    throw new NotImplementedException();
+                    edges = currentNode.IngoingEdges;
                 }
 
                 var toSolve = new List<ExplorationState>();

@@ -258,6 +258,7 @@
     <Compile Include="MethodFlowView.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="PathView.cs" />
+    <Compile Include="PublicMethodEntryRecognizer.cs" />
     <Compile Include="StatementFlowView.cs" />
     <Compile Include="ToolView.cs" />
     <Compile Include="TreeNodeView.cs" />

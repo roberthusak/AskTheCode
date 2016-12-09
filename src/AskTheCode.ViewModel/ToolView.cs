@@ -104,7 +104,9 @@ namespace AskTheCode.ViewModel
             // TODO: Handle also assertion verification (not just reachability) and type models with multiple variables
             var startNode = new StartingNodeInfo(flowNodeRecord.FlowNode, flowNodeRecord.FirstVariableIndex, false);
             var z3ContextFactory = new ContextFactory();
-            var explorationContext = new ExplorationContext(this.GraphProvider, z3ContextFactory, startNode);
+            var options = new ExplorationOptions();
+            options.FinalNodeRecognizer = new PublicMethodEntryRecognizer();
+            var explorationContext = new ExplorationContext(this.GraphProvider, z3ContextFactory, startNode, options);
 
             // TODO: Make it run the handler in the same thread to prevent any race conditions in the whole ViewModel
             explorationContext.ExecutionModelFound += this.OnExecutionModelFound;
