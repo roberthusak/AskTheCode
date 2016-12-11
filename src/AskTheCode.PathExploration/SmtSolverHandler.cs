@@ -18,7 +18,7 @@ namespace AskTheCode.PathExploration
         private ExplorationResult lastResult;
 
         private VersionedNameProvider nameProvider;
-        private FlowGraphsVariableOverlay<int> variableVersions = new FlowGraphsVariableOverlay<int>();
+        private VariableVersionManager variableVersionManager = new VariableVersionManager();
 
         internal SmtSolverHandler(
             SmtContextHandler contextHandler,
@@ -136,7 +136,7 @@ namespace AskTheCode.PathExploration
                         foreach (var updatedVariable in callNode.ReturnAssignments)
                         {
                             // We let the variable contain any value by not constraining its current version
-                            this.variableVersions[updatedVariable]++;
+                            this.variableVersionManager.CreateNewVersion(updatedVariable);
                         }
                     }
                 }
@@ -296,8 +296,8 @@ namespace AskTheCode.PathExploration
                     // The order of the assertions is not important here
                     foreach (var assignment in innerNode.Assignments)
                     {
-                        this.variableVersions[assignment.Variable]--;
-                        Contract.Assert(this.variableVersions[assignment.Variable] >= 0);
+                        this.variableVersionManager.RetractVersion(assignment.Variable);
+                        Contract.Assert(this.variableVersionManager.GetVersion(assignment.Variable) >= 0);
                     }
                 }
 
@@ -323,7 +323,7 @@ namespace AskTheCode.PathExploration
         {
             foreach (var assignment in assignments)
             {
-                this.variableVersions[assignment.Variable]++;
+                this.variableVersionManager.CreateNewVersion(assignment.Variable);
                 var assignmentWrapper = new FlowVariableAssignmentWrapper(assignment.Variable);
                 var equal = (BoolHandle)ExpressionFactory.Equal(assignmentWrapper, assignment.Value);
                 this.smtSolver.AddAssertion(this.nameProvider, equal);
@@ -359,7 +359,7 @@ namespace AskTheCode.PathExploration
                     throw new InvalidOperationException();
                 }
 
-                int version = this.owner.variableVersions[flowVariable];
+                int version = this.owner.variableVersionManager.GetVersion(flowVariable);
                 if (assignment)
                 {
                     // In case of assignment, the recently raised version should be applied only to the right side

@@ -71,6 +71,7 @@
     <Compile Include="SmtContextHandler.cs" />
     <Compile Include="SmtSolverHandler.cs" />
     <Compile Include="StartingNodeInfo.cs" />
+    <Compile Include="VariableVersionManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AskTheCode.Common\AskTheCode.Common.csproj">
