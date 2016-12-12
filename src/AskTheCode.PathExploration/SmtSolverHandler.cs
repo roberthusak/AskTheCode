@@ -13,49 +13,32 @@ namespace AskTheCode.PathExploration
 {
     public class SmtSolverHandler
     {
-        private SmtContextHandler contextHandler;
-        private ISolver smtSolver;
-        private ExplorationResult lastResult;
+        private readonly SmtContextHandler contextHandler;
+        private readonly ISolver smtSolver;
+        private readonly PathConditionHandler pathConditionHandler;
 
-        private VersionedNameProvider nameProvider;
-        private VariableVersionManager variableVersionManager = new VariableVersionManager();
+        private ExplorationResult lastResult;
 
         internal SmtSolverHandler(
             SmtContextHandler contextHandler,
             ISolver smtSolver,
             Path path,
             StartingNodeInfo startingNode)
-            : this(contextHandler, smtSolver, path)
+            : this(
+                contextHandler,
+                smtSolver,
+                new PathConditionHandler(contextHandler, smtSolver, path, startingNode))
         {
-            this.smtSolver.Push();
-
-            var innerNode = startingNode.Node as InnerFlowNode;
-            if (innerNode != null && startingNode.AssignmentIndex != null)
-            {
-                if (startingNode.IsAssertionChecked)
-                {
-                    var assertionVar = innerNode.Assignments[startingNode.AssignmentIndex.Value].Variable;
-                    this.smtSolver.AddAssertion(this.nameProvider, !(BoolHandle)assertionVar);
-                }
-
-                int assignmentsCount = startingNode.AssignmentIndex.Value + 1;
-                var initialAssignments = innerNode.Assignments
-                    .Take(assignmentsCount)
-                    .Reverse();
-                this.AssertAssignments(initialAssignments);
-            }
         }
 
-        private SmtSolverHandler(SmtContextHandler contextHandler, ISolver smtSolver, Path path)
+        private SmtSolverHandler(SmtContextHandler contextHandler, ISolver smtSolver, PathConditionHandler pathConditionHandler)
         {
             this.contextHandler = contextHandler;
             this.smtSolver = smtSolver;
-            this.Path = path;
-
-            this.nameProvider = new VersionedNameProvider(this);
+            this.pathConditionHandler = pathConditionHandler;
         }
 
-        public Path Path { get; private set; }
+        public Path Path => this.pathConditionHandler.Path;
 
         public ExplorationResultKind? LastResultKind { get; private set; }
 
@@ -66,12 +49,12 @@ namespace AskTheCode.PathExploration
 
         public SmtSolverHandler Clone()
         {
-            var cloned = new SmtSolverHandler(this.contextHandler, this.smtSolver, this.Path);
+            var cloned = new SmtSolverHandler(this.contextHandler, this.smtSolver, this.pathConditionHandler);
             cloned.lastResult = this.lastResult;
             cloned.LastResultKind = this.LastResultKind;
 
-            // TODO: Clone the underlying SMT solver!
-            // TODO: Clone the variable versions! (we need to make the overlay cloneable/enumerable)
+            // TODO: Clone the underlying SMT solver and path condition handler!
+            // TODO: Clone the variable versions of the latter! (we need to make the overlay cloneable/enumerable)
             throw new NotImplementedException();
         }
 
@@ -81,69 +64,7 @@ namespace AskTheCode.PathExploration
             Contract.Ensures(this.Path == path);
             Contract.Ensures(this.LastResultKind != null);
 
-            int popCount = 0;
-            var pathStack = new Stack<Path>();
-            var currentRetracting = this.Path;
-            var targetRetracting = path;
-            while (currentRetracting != targetRetracting)
-            {
-                if (currentRetracting.Depth > targetRetracting.Depth)
-                {
-                    popCount++;
-
-                    // TODO: Handle merged nodes
-                    currentRetracting = currentRetracting.Preceeding.Single();
-                }
-                else
-                {
-                    pathStack.Push(targetRetracting);
-
-                    // TODO: Handle merged nodes
-                    targetRetracting = targetRetracting.Preceeding.Single();
-                }
-            }
-
-            if (popCount > 0)
-            {
-                this.RetractVariableVersions(popCount);
-                this.smtSolver.Pop(popCount);
-            }
-
-            this.Path = currentRetracting;
-
-            while (pathStack.Count > 0)
-            {
-                var currentPath = pathStack.Pop();
-
-                this.smtSolver.Push();
-
-                // TODO: Handle merged nodes
-                var edge = currentPath.LeadingEdges.Single();
-                var node = currentPath.Node;
-
-                // TODO: Properly handle the interprocedural flow
-                this.AssertEdgeCondition(edge);
-                var innerNode = currentPath.Node as InnerFlowNode;
-                if (innerNode != null)
-                {
-                    this.AssertAssignments(innerNode.Assignments.Reverse());
-                }
-                else if (currentPath.Node is CallFlowNode)
-                {
-                    var callNode = currentPath.Node as CallFlowNode;
-                    if (!callNode.Location.CanBeExplored)
-                    {
-                        foreach (var updatedVariable in callNode.ReturnAssignments)
-                        {
-                            // We let the variable contain any value by not constraining its current version
-                            this.variableVersionManager.CreateNewVersion(updatedVariable);
-                        }
-                    }
-                }
-
-                this.Path = currentPath;
-            }
-
+            this.pathConditionHandler.Update(path);
             Contract.Assert(this.Path == path);
 
             var solverResult = this.smtSolver.Solve();
@@ -280,95 +201,6 @@ namespace AskTheCode.PathExploration
 
             var interpretation = this.smtSolver.Model.GetInterpretation(symbolName);
             return interpretation;
-        }
-
-        private void RetractVariableVersions(int nodeCount)
-        {
-            Contract.Requires(nodeCount <= this.Path.Depth);
-
-            var path = this.Path;
-            for (int i = 0; i < nodeCount; i++)
-            {
-                // TODO: Handle interprocedural flow
-                var innerNode = path.Node as InnerFlowNode;
-                if (innerNode != null)
-                {
-                    // The order of the assertions is not important here
-                    foreach (var assignment in innerNode.Assignments)
-                    {
-                        this.variableVersionManager.RetractVersion(assignment.Variable);
-                        Contract.Assert(this.variableVersionManager.GetVersion(assignment.Variable) >= 0);
-                    }
-                }
-
-                // TODO: Handle merged nodes
-                path = path.Preceeding.Single();
-            }
-        }
-
-        // TODO: Handle also border nodes and interprocedural value flow
-        private void AssertEdgeCondition(FlowEdge edge)
-        {
-            var innerEdge = edge as InnerFlowEdge;
-            if (innerEdge != null)
-            {
-                if (innerEdge.Condition.Expression != ExpressionFactory.True)
-                {
-                    this.smtSolver.AddAssertion(this.nameProvider, innerEdge.Condition);
-                }
-            }
-        }
-
-        private void AssertAssignments(IEnumerable<Assignment> assignments)
-        {
-            foreach (var assignment in assignments)
-            {
-                this.variableVersionManager.CreateNewVersion(assignment.Variable);
-                var assignmentWrapper = new FlowVariableAssignmentWrapper(assignment.Variable);
-                var equal = (BoolHandle)ExpressionFactory.Equal(assignmentWrapper, assignment.Value);
-                this.smtSolver.AddAssertion(this.nameProvider, equal);
-            }
-        }
-
-        private class VersionedNameProvider : INameProvider<Variable>
-        {
-            private SmtSolverHandler owner;
-
-            public VersionedNameProvider(SmtSolverHandler owner)
-            {
-                this.owner = owner;
-            }
-
-            public SymbolName GetName(Variable variable)
-            {
-                bool assignment = false;
-
-                var flowVariable = variable as FlowVariable;
-                if (flowVariable == null)
-                {
-                    var assignmentWrapper = variable as FlowVariableAssignmentWrapper;
-                    if (assignmentWrapper != null)
-                    {
-                        flowVariable = assignmentWrapper.Variable;
-                        assignment = true;
-                    }
-                }
-
-                if (flowVariable == null)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                int version = this.owner.variableVersionManager.GetVersion(flowVariable);
-                if (assignment)
-                {
-                    // In case of assignment, the recently raised version should be applied only to the right side
-                    Contract.Assert(version > 0);
-                    version--;
-                }
-
-                return this.owner.contextHandler.GetVariableVersionSymbol(flowVariable, version);
-            }
         }
     }
 }
