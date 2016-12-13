@@ -141,6 +141,7 @@ namespace AskTheCode.PathExploration
 
             pathNodes.Reverse();
 
+            // TODO: Use the same version management as in PathConditionHandler
             var variableVersions = new FlowGraphsVariableOverlay<int>();
             var nodeInterpretations = new List<ImmutableArray<Interpretation>>();
 

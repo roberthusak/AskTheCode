@@ -81,7 +81,7 @@ namespace AskTheCode.PathExploration
                     popCount++;
 
                     // TODO: Handle merged nodes
-                    this.Retract(currentRetracting.LeadingEdges.Single());
+                    this.RetractVersions(currentRetracting.LeadingEdges.Single());
                     currentRetracting = currentRetracting.Preceeding.Single();
                 }
                 else
@@ -137,44 +137,24 @@ namespace AskTheCode.PathExploration
                 var outerEdge = (OuterFlowEdge)edge;
                 if (outerEdge.Kind == OuterFlowEdgeKind.Return)
                 {
-                    var callerGraph = outerEdge.To.Graph;
-                    var frame = new LocalFlowVariableOverlay<int>();
-                    foreach (var variable in callerGraph.LocalVariables)
-                    {
-                        var versionInfo = this.variableVersions[variable];
-                        frame[variable] = versionInfo.CurrentVersion;
-                        versionInfo.PushNewVersion();
-                    }
-
-                    this.callStack.Push(frame);
+                    this.ExtendReturn(outerEdge);
                 }
                 else
                 {
                     Contract.Assert(outerEdge.Kind == OuterFlowEdgeKind.MethodCall);
-
-                    // TODO: Distinguish in the retracting
-                    // Do not care about that when there is no known call stack
-                    if (this.callStack.Count > 0)
-                    {
-                        var callerGraph = outerEdge.From.Graph;
-                        var frame = this.callStack.Pop();
-                        foreach (var variable in callerGraph.LocalVariables)
-                        {
-                            this.variableVersions[variable].PushVersion(frame[variable]);
-                        }
-                    }
+                    this.ExtendCall(outerEdge);
                 }
             }
         }
 
-        private void Retract(FlowEdge edge)
+        private void RetractVersions(FlowEdge edge)
         {
             if (edge is InnerFlowEdge)
             {
                 var innerNode = edge.From as InnerFlowNode;
                 if (innerNode != null)
                 {
-                    this.RetractAssignments(innerNode.Assignments);
+                    this.RetractAssignmentVersions(innerNode.Assignments);
                 }
             }
             else
@@ -183,47 +163,149 @@ namespace AskTheCode.PathExploration
                 var outerEdge = (OuterFlowEdge)edge;
                 if (outerEdge.Kind == OuterFlowEdgeKind.Return)
                 {
-                    var callerGraph = outerEdge.To.Graph;
-                    foreach (var variable in callerGraph.LocalVariables)
-                    {
-                        this.variableVersions[variable].PopVersion();
-                    }
-
-                    this.callStack.Pop();
+                    this.RetractReturnVersions(outerEdge);
                 }
                 else
                 {
                     Contract.Assert(outerEdge.Kind == OuterFlowEdgeKind.MethodCall);
-
-                    var callerGraph = outerEdge.From.Graph;
-                    var frame = new LocalFlowVariableOverlay<int>();
-                    foreach (var variable in callerGraph.LocalVariables)
-                    {
-                        frame[variable] = this.variableVersions[variable].PopVersion();
-                    }
-
-                    this.callStack.Push(frame);
+                    this.RetractCallVersions(outerEdge);
                 }
             }
+        }
+
+        private void ExtendCall(OuterFlowEdge outerEdge)
+        {
+            Contract.Requires(outerEdge.Kind == OuterFlowEdgeKind.MethodCall);
+
+            var callNode = (CallFlowNode)outerEdge.From;
+            var enterNode = (EnterFlowNode)outerEdge.To;
+            var callerGraph = callNode.Graph;
+
+            // Obtain the current versions of the parameters
+            var paramVersions = enterNode.Parameters
+                .Select((variable) => this.variableVersions[variable].CurrentVersion)
+                .ToArray();
+
+            // TODO: Distinguish in the retracting
+            if (this.callStack.Count > 0)
+            {
+                // Restore the versions from the last call of the method
+                var frame = this.callStack.Pop();
+                foreach (var variable in callerGraph.LocalVariables)
+                {
+                    this.variableVersions[variable].PushVersion(frame[variable]);
+                }
+            }
+            else
+            {
+                // TODO: Create new versions only in the case of recursion
+                // When there is no known call stack, make new versions of local variables
+                foreach (var variable in callerGraph.LocalVariables)
+                {
+                    this.variableVersions[variable].PushNewVersion();
+                }
+            }
+
+            // Assert the argument passing
+            for (int i = 0; i < paramVersions.Length; i++)
+            {
+                this.AssertEquals(enterNode.Parameters[i], paramVersions[i], callNode.Arguments[i]);
+            }
+        }
+
+        private void RetractCallVersions(OuterFlowEdge outerEdge)
+        {
+            var callerGraph = outerEdge.From.Graph;
+            var frame = new LocalFlowVariableOverlay<int>();
+            foreach (var variable in callerGraph.LocalVariables)
+            {
+                frame[variable] = this.variableVersions[variable].PopVersion();
+            }
+
+            this.callStack.Push(frame);
+        }
+
+        private void ExtendReturn(OuterFlowEdge outerEdge)
+        {
+            Contract.Requires(outerEdge.Kind == OuterFlowEdgeKind.Return);
+
+            var callNode = (CallFlowNode)outerEdge.To;
+            var returnNode = (ReturnFlowNode)outerEdge.From;
+            var callerGraph = callNode.Graph;
+            var calledGraph = returnNode.Graph;
+
+            // Create new versions for the purpose of the return assignments
+            Contract.Assert(callNode.ReturnAssignments.Count == 0
+                || callNode.ReturnAssignments.Count == returnNode.ReturnValues.Count);
+            var returnVersions = new int[callNode.ReturnAssignments.Count];
+            for (int i = 0; i < returnVersions.Length; i++)
+            {
+                var variable = callNode.ReturnAssignments[i];
+                var versionInfo = this.variableVersions[variable];
+                returnVersions[i] = versionInfo.CurrentVersion;
+                versionInfo.PushNewVersion();
+            }
+
+            var frame = new LocalFlowVariableOverlay<int>();
+            foreach (var variable in callerGraph.LocalVariables)
+            {
+                var versionInfo = this.variableVersions[variable];
+                frame[variable] = versionInfo.CurrentVersion;
+                versionInfo.PushNewVersion();
+            }
+
+            this.callStack.Push(frame);
+
+            // Assert the return assignments
+            for (int i = 0; i < returnVersions.Length; i++)
+            {
+                this.AssertEquals(callNode.ReturnAssignments[i], returnVersions[i], returnNode.ReturnValues[i]);
+            }
+        }
+
+        private void RetractReturnVersions(OuterFlowEdge outerEdge)
+        {
+            var callNode = (CallFlowNode)outerEdge.To;
+            var callerGraph = callNode.Graph;
+
+            // Retract either restored or new versions
+            foreach (var variable in callerGraph.LocalVariables)
+            {
+                this.variableVersions[variable].PopVersion();
+            }
+
+            // Retract assignments after the return
+            foreach (var assignedVariable in callNode.ReturnAssignments)
+            {
+                this.variableVersions[assignedVariable].PopVersion();
+            }
+
+            this.callStack.Pop();
         }
 
         private void AssertAssignments(IEnumerable<Assignment> assignments)
         {
             foreach (var assignment in assignments)
             {
-                var versionInfo = this.variableVersions[assignment.Variable];
+                var variable = assignment.Variable;
+                var versionInfo = this.variableVersions[variable];
                 int lastVersion = versionInfo.CurrentVersion;
                 versionInfo.PushNewVersion();
 
-                var symbolName = this.contextHandler.GetVariableVersionSymbol(assignment.Variable, lastVersion);
-                var symbolWrapper = new ConcreteVariableSymbolWrapper(assignment.Variable, symbolName);
-
-                var equal = (BoolHandle)ExpressionFactory.Equal(symbolWrapper, assignment.Value);
-                this.smtSolver.AddAssertion(this.nameProvider, equal);
+                this.AssertEquals(variable, lastVersion, assignment.Value);
             }
         }
 
-        private void RetractAssignments(IEnumerable<Assignment> assignments)
+        private void AssertEquals(FlowVariable variable, int version, Expression value)
+        {
+            var symbolName = this.contextHandler.GetVariableVersionSymbol(variable, version);
+            var symbolWrapper = new ConcreteVariableSymbolWrapper(variable, symbolName);
+
+            var equal = (BoolHandle)ExpressionFactory.Equal(symbolWrapper, value);
+            this.smtSolver.AddAssertion(this.nameProvider, equal);
+        }
+
+        private void RetractAssignmentVersions(IEnumerable<Assignment> assignments)
         {
             foreach (var assignment in assignments)
             {
