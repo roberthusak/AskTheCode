@@ -66,11 +66,12 @@
     <Compile Include="IEntryPointRecognizer.cs" />
     <Compile Include="NodeInterpretations.cs" />
     <Compile Include="Path.cs" />
+    <Compile Include="PathConditionHandler.cs" />
     <Compile Include="PathCounterExample.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SmtContextHandler.cs" />
     <Compile Include="SmtSolverHandler.cs" />
-    <Compile Include="PathConditionHandler.cs" />
+    <Compile Include="PathVariableVersionHandler.cs" />
     <Compile Include="StartingNodeInfo.cs" />
   </ItemGroup>
   <ItemGroup>
