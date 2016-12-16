@@ -13,18 +13,28 @@ namespace AskTheCode.PathExploration
 {
     internal class PathVariableVersionHandler
     {
-        private readonly Stack<LocalFlowVariableOverlay<int>> callStack =
-            new Stack<LocalFlowVariableOverlay<int>>();
+        private readonly Stack<LocalFlowVariableOverlay<int>> callStack;
 
-        private readonly FlowGraphsVariableOverlay<VariableVersionInfo> variableVersions =
-            new FlowGraphsVariableOverlay<VariableVersionInfo>(() => new VariableVersionInfo());
+        private readonly FlowGraphsVariableOverlay<VariableVersionInfo> variableVersions;
 
-        protected PathVariableVersionHandler(Path path)
+        public PathVariableVersionHandler(Path path)
         {
+            this.callStack = new Stack<LocalFlowVariableOverlay<int>>();
+            this.variableVersions = new FlowGraphsVariableOverlay<VariableVersionInfo>(() => new VariableVersionInfo());
             this.Path = path;
         }
 
+        protected PathVariableVersionHandler(PathVariableVersionHandler other)
+        {
+            this.callStack = new Stack<LocalFlowVariableOverlay<int>>(
+                other.callStack.Select(overlay => overlay.Clone()));
+            this.variableVersions = other.variableVersions.Clone(varInfo => varInfo.Clone());
+            this.Path = other.Path;
+        }
+
         public Path Path { get; private set; }
+
+        public PathVariableVersionHandler Clone() => new PathVariableVersionHandler(this);
 
         public int GetVariableVersion(FlowVariable variable) => this.variableVersions[variable].CurrentVersion;
 
@@ -309,9 +319,20 @@ namespace AskTheCode.PathExploration
                 this.versions.Push(this.LastUsedVersion);
             }
 
+            private VariableVersionInfo(VariableVersionInfo other)
+            {
+                this.LastUsedVersion = other.LastUsedVersion;
+                this.versions = new Stack<int>(other.versions);
+            }
+
             public int LastUsedVersion { get; private set; }
 
             public int CurrentVersion => this.versions.Peek();
+
+            public VariableVersionInfo Clone()
+            {
+                return new VariableVersionInfo(this);
+            }
 
             public void PushVersion(int version)
             {
