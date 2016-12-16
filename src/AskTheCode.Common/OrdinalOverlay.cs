@@ -42,6 +42,28 @@ namespace AskTheCode.Common
             }
         }
 
+        public OrdinalOverlay<TId, TReferenced, TValue> Clone(Func<TValue, TValue> valueCloner = null)
+        {
+            var clone = new OrdinalOverlay<TId, TReferenced, TValue>();
+            return this.CloneImpl(clone, valueCloner);
+        }
+
+        protected TOverlay CloneImpl<TOverlay>(TOverlay clone, Func<TValue, TValue> valueCloner = null)
+            where TOverlay : OrdinalOverlay<TId, TReferenced, TValue>
+        {
+            clone.DefaultValueFactory = this.DefaultValueFactory;
+            if (valueCloner == null)
+            {
+                clone.values.AddRange(this.values);
+            }
+            else
+            {
+                clone.values.AddRange(this.values.Select(valueCloner));
+            }
+
+            return clone;
+        }
+
         private void ExtendIfNeeded(int index)
         {
             if (index + 1 > this.values.Count)

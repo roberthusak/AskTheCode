@@ -11,5 +11,10 @@ namespace AskTheCode.ControlFlowGraphs.Overlays
             : base(defaultValueFactory)
         {
         }
+
+        public new LocalFlowVariableOverlay<T> Clone(Func<T, T> valueCloner = null)
+        {
+            return this.CloneImpl(new LocalFlowVariableOverlay<T>(), valueCloner);
+        }
     }
 }

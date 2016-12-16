@@ -23,6 +23,12 @@ namespace AskTheCode.ControlFlowGraphs.Overlays
                 () => new LocalFlowVariableOverlay<T>(defaultValueFactory));
         }
 
+        private FlowGraphsVariableOverlay(FlowGraphsVariableOverlay<T> other, Func<T, T> valueCloner)
+        {
+            this.globalVariableOverlay = other.globalVariableOverlay.Clone(valueCloner);
+            this.localVariableOverlay = other.localVariableOverlay.Clone(overlay => overlay.Clone(valueCloner));
+        }
+
         public Func<T> DefaultValueFactory
         {
             get { return this.globalVariableOverlay.DefaultValueFactory; }
@@ -92,6 +98,11 @@ namespace AskTheCode.ControlFlowGraphs.Overlays
                     this[(GlobalFlowVariable)variable] = value;
                 }
             }
+        }
+
+        public FlowGraphsVariableOverlay<T> Clone(Func<T, T> valueCloner = null)
+        {
+            return new FlowGraphsVariableOverlay<T>(this, valueCloner);
         }
     }
 }

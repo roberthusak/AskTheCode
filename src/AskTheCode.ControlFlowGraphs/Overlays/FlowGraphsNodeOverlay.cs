@@ -19,5 +19,10 @@ namespace AskTheCode.ControlFlowGraphs.Overlays
             get { return this[node.Graph][node]; }
             set { this[node.Graph][node] = value; }
         }
+
+        public FlowGraphsNodeOverlay<T> Clone(Func<T, T> valueCloner = null)
+        {
+            return this.CloneImpl(new FlowGraphsNodeOverlay<T>(), overlay => overlay.Clone(valueCloner));
+        }
     }
 }
