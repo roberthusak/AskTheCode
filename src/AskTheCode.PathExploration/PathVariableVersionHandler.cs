@@ -54,8 +54,15 @@ namespace AskTheCode.PathExploration
                     popCount++;
 
                     // TODO: Handle merged nodes
-                    this.RetractVersions(currentRetracting.LeadingEdges.Single());
+                    var retractingEdge = currentRetracting.LeadingEdges.Single();
+                    this.OnBeforePathStepRetracted(retractingEdge);
+
+                    this.RetractVersions(retractingEdge);
                     currentRetracting = currentRetracting.Preceeding.Single();
+
+                    this.Path = currentRetracting;
+
+                    this.OnAfterPathStepRetracted();
                 }
                 else
                 {
@@ -66,7 +73,6 @@ namespace AskTheCode.PathExploration
                 }
             }
 
-            this.Path = currentRetracting;
             this.OnAfterPathRetracted(popCount);
 
             while (pathStack.Count > 0)
@@ -83,6 +89,20 @@ namespace AskTheCode.PathExploration
             }
         }
 
+        public void RetractToRoot()
+        {
+            // TODO: Consider making it faster by creating a simplified version of Update() instead
+            var path = this.Path;
+            while (!path.IsRoot)
+            {
+                path = path.Preceeding.First();
+            }
+
+            this.Update(path);
+        }
+
+        // TODO: Also RetractStartingNode
+        // TODO: Consider storing the instance of StartingNodeInfo in a field
         protected void ProcessStartingNode(StartingNodeInfo startingNode)
         {
             var innerNode = startingNode.Node as InnerFlowNode;
@@ -102,11 +122,19 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        protected virtual void OnAfterPathRetracted(int popCount)
+        protected virtual void OnBeforePathStepExtended()
         {
         }
 
-        protected virtual void OnBeforePathStepExtended()
+        protected virtual void OnBeforePathStepRetracted(FlowEdge retractingEdge)
+        {
+        }
+
+        protected virtual void OnAfterPathStepRetracted()
+        {
+        }
+
+        protected virtual void OnAfterPathRetracted(int popCount)
         {
         }
 
@@ -115,6 +143,17 @@ namespace AskTheCode.PathExploration
         }
 
         protected virtual void OnVariableAssigned(FlowVariable variable, int lastVersion, Expression value)
+        {
+        }
+
+        /// <remarks>
+        /// Beware that when this method is invoked, the version of the variable is already retracted to the one on the
+        /// left side of the assignment.
+        /// </remarks>
+        protected virtual void OnVariableAssignmentRetracted(
+            FlowVariable variable,
+            int assignedVersion,
+            Expression value)
         {
         }
 
@@ -226,6 +265,13 @@ namespace AskTheCode.PathExploration
             }
 
             this.callStack.Push(frame);
+
+            var enterNode = (EnterFlowNode)outerEdge.To;
+            foreach (var param in enterNode.Parameters)
+            {
+                // TODO: Consider passing also the values instead of null
+                this.OnVariableAssignmentRetracted(param, this.variableVersions[param].CurrentVersion, null);
+            }
         }
 
         private void ExtendReturn(OuterFlowEdge outerEdge)
@@ -280,7 +326,10 @@ namespace AskTheCode.PathExploration
             // Retract assignments after the return
             foreach (var assignedVariable in callNode.ReturnAssignments)
             {
-                this.variableVersions[assignedVariable].PopVersion();
+                var versionInfo = this.variableVersions[assignedVariable];
+                versionInfo.PopVersion();
+                // TODO: Consider passing also the values instead of null (or removing the parameter)
+                this.OnVariableAssignmentRetracted(assignedVariable, versionInfo.CurrentVersion, null);
             }
 
             this.callStack.Pop();
@@ -303,8 +352,12 @@ namespace AskTheCode.PathExploration
         {
             foreach (var assignment in assignments)
             {
-                var versionInfo = this.variableVersions[assignment.Variable];
+                var variable = assignment.Variable;
+                var versionInfo = this.variableVersions[variable];
                 versionInfo.PopVersion();
+                int assignedVersion = versionInfo.CurrentVersion;
+
+                this.OnVariableAssignmentRetracted(variable, assignedVersion, assignment.Value);
             }
         }
 
@@ -322,7 +375,7 @@ namespace AskTheCode.PathExploration
             private VariableVersionInfo(VariableVersionInfo other)
             {
                 this.LastUsedVersion = other.LastUsedVersion;
-                this.versions = new Stack<int>(other.versions);
+                this.versions = new Stack<int>(other.versions.Reverse());
             }
 
             public int LastUsedVersion { get; private set; }
