@@ -13,12 +13,14 @@ namespace AskTheCode.PathExploration
 {
     internal class PathVariableVersionHandler
     {
-        private readonly Stack<LocalFlowVariableOverlay<int>> callStack;
+        private readonly StartingNodeInfo startingNode;
 
+        private readonly Stack<LocalFlowVariableOverlay<int>> callStack;
         private readonly FlowGraphsVariableOverlay<VariableVersionInfo> variableVersions;
 
-        public PathVariableVersionHandler(Path path)
+        public PathVariableVersionHandler(Path path, StartingNodeInfo startingNode)
         {
+            this.startingNode = startingNode;
             this.callStack = new Stack<LocalFlowVariableOverlay<int>>();
             this.variableVersions = new FlowGraphsVariableOverlay<VariableVersionInfo>(() => new VariableVersionInfo());
             this.Path = path;
@@ -26,6 +28,7 @@ namespace AskTheCode.PathExploration
 
         protected PathVariableVersionHandler(PathVariableVersionHandler other)
         {
+            this.startingNode = other.startingNode;
             this.callStack = new Stack<LocalFlowVariableOverlay<int>>(
                 other.callStack.Select(overlay => overlay.Clone()));
             this.variableVersions = other.variableVersions.Clone(varInfo => varInfo.Clone());
@@ -101,24 +104,33 @@ namespace AskTheCode.PathExploration
             this.Update(path);
         }
 
-        // TODO: Also RetractStartingNode
         // TODO: Consider storing the instance of StartingNodeInfo in a field
-        protected void ProcessStartingNode(StartingNodeInfo startingNode)
+        protected void ProcessStartingNode()
         {
-            var innerNode = startingNode.Node as InnerFlowNode;
-            if (innerNode != null && startingNode.AssignmentIndex != null)
+            var innerNode = this.startingNode.Node as InnerFlowNode;
+            if (innerNode != null && this.startingNode.AssignmentIndex != null)
             {
-                if (startingNode.IsAssertionChecked)
+                if (this.startingNode.IsAssertionChecked)
                 {
-                    var assertionVar = innerNode.Assignments[startingNode.AssignmentIndex.Value].Variable;
+                    var assertionVar = innerNode.Assignments[this.startingNode.AssignmentIndex.Value].Variable;
                     this.OnConditionAsserted(!(BoolHandle)assertionVar);
                 }
 
-                int assignmentsCount = startingNode.AssignmentIndex.Value + 1;
+                int assignmentsCount = this.startingNode.AssignmentIndex.Value + 1;
                 var initialAssignments = innerNode.Assignments
                     .Take(assignmentsCount)
                     .Reverse();
                 this.AssertAssignments(initialAssignments);
+            }
+        }
+
+        protected void RetractStartingNode()
+        {
+            var innerNode = this.startingNode.Node as InnerFlowNode;
+            if (innerNode != null && this.startingNode.AssignmentIndex != null)
+            {
+                int assignmentCount = this.startingNode.AssignmentIndex.Value + 1;
+                this.RetractAssignmentVersions(innerNode.Assignments.Take(assignmentCount));
             }
         }
 

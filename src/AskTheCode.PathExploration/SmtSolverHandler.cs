@@ -192,6 +192,10 @@ namespace AskTheCode.PathExploration
                 }
 
                 this.RetractToRoot();
+
+                this.NodeStack.Push(this.Path.Node);
+                this.RetractStartingNode();
+                this.OnAfterPathStepRetracted();
             }
 
             protected override void OnBeforePathStepRetracted(FlowEdge retractingEdge)

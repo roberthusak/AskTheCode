@@ -82,6 +82,14 @@ namespace AskTheCode.ViewModel
                             string type = null;
                             if (displayRecord.Type != null)
                             {
+                                // Hide the remaining portion of the inner CFG node where the exploration started from
+                                if (i == 0
+                                    && displayRecord.FlowNode is InnerFlowNode
+                                    && displayRecord.FirstVariableIndex >= nodeInterpretations.Length)
+                                {
+                                    continue;
+                                }
+
                                 var modelFactory = toolView.GraphProvider.ModelManager.TryGetFactory(displayRecord.Type);
                                 var sortRequirements = modelFactory.GetExpressionSortRequirements(displayRecord.Type);
                                 var interpretations = nodeInterpretations
@@ -90,7 +98,8 @@ namespace AskTheCode.ViewModel
                                     .Take(sortRequirements.Count)
                                     .ToArray();
 
-                                if (interpretations.All(interpretation => interpretation != null))
+                                if (interpretations.Length != 0
+                                    && interpretations.All(interpretation => interpretation != null))
                                 {
                                     var valueModel = modelFactory.GetValueModel(displayRecord.Type, interpretations);
                                     Contract.Assert(valueModel != null);

@@ -21,25 +21,21 @@ namespace AskTheCode.PathExploration
             ISolver smtSolver,
             Path path,
             StartingNodeInfo startingNode)
-            : this(contextHandler, smtSolver, path)
+            : base(path, startingNode)
         {
             Contract.Requires(contextHandler != null);
             Contract.Requires(smtSolver != null);
             Contract.Requires(path != null);
             Contract.Requires(startingNode != null);
 
-            this.smtSolver.Push();
-
-            this.ProcessStartingNode(startingNode);
-        }
-
-        private PathConditionHandler(SmtContextHandler contextHandler, ISolver smtSolver, Path path)
-            : base(path)
-        {
             this.contextHandler = contextHandler;
             this.smtSolver = smtSolver;
 
             this.nameProvider = new VersionedNameProvider(this);
+
+            this.smtSolver.Push();
+
+            this.ProcessStartingNode();
         }
 
         protected override void OnAfterPathRetracted(int popCount)
