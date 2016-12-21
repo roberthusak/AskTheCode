@@ -31,7 +31,10 @@ namespace AskTheCode.PathExploration
         {
         }
 
-        private SmtSolverHandler(SmtContextHandler contextHandler, ISolver smtSolver, PathConditionHandler pathConditionHandler)
+        private SmtSolverHandler(
+            SmtContextHandler contextHandler,
+            ISolver smtSolver,
+            PathConditionHandler pathConditionHandler)
         {
             this.contextHandler = contextHandler;
             this.smtSolver = smtSolver;
@@ -130,78 +133,101 @@ namespace AskTheCode.PathExploration
         {
             Contract.Requires(this.smtSolver.Model != null);
 
-            var smtModel = this.smtSolver.Model;
-            var pathNodes = new List<FlowNode>();
+            var creator = new ExecutionModelCreator(
+                this.pathConditionHandler,
+                this.contextHandler,
+                this.smtSolver.Model);
+            creator.CreateExecutionModel();
+            return new ExecutionModel(
+                creator.NodeStack.ToImmutableArray(),
+                creator.InterpretationStack.ToImmutableArray());
+        }
 
-            // TODO: Include root
-            for (var path = this.Path; !path.IsRoot; path = path.Preceeding.Single())
+        private class ExecutionModelCreator : PathVariableVersionHandler
+        {
+            private readonly SmtContextHandler smtContextHandler;
+            private readonly IModel smtModel;
+
+            private Stack<Interpretation> currentNodeInterpretations = new Stack<Interpretation>();
+            private Stack<Interpretation> nextNodeInterpretations = new Stack<Interpretation>();
+            private bool areAssignmentsPostponedToNextNode = false;
+
+            public ExecutionModelCreator(
+                PathConditionHandler pathConditionHandler,
+                SmtContextHandler smtContextHandler,
+                IModel smtModel)
+                : base(pathConditionHandler)
             {
-                pathNodes.Add(path.Node);
+                this.smtContextHandler = smtContextHandler;
+                this.smtModel = smtModel;
             }
 
-            pathNodes.Reverse();
+            public Stack<FlowNode> NodeStack { get; private set; }
 
-            // TODO: Use the same version management as in PathConditionHandler
-            var variableVersions = new FlowGraphsVariableOverlay<int>();
-            var nodeInterpretations = new List<ImmutableArray<Interpretation>>();
+            public Stack<ImmutableArray<Interpretation>> InterpretationStack { get; private set; }
 
-            foreach (var node in pathNodes)
+            /// <remarks>
+            /// This function is expected to be called only once.
+            /// </remarks>
+            public void CreateExecutionModel()
             {
-                List<Interpretation> interpretations = null;
+                if (this.NodeStack != null)
+                {
+                    throw new InvalidOperationException();
+                }
 
-                var innerNode = node as InnerFlowNode;
-                if (innerNode != null)
+                this.NodeStack = new Stack<FlowNode>();
+                this.InterpretationStack = new Stack<ImmutableArray<Interpretation>>();
+
+                var enterNode = this.Path.Node as EnterFlowNode;
+                if (enterNode != null)
                 {
-                    interpretations = new List<Interpretation>();
-                    foreach (var assignment in innerNode.Assignments.Reverse())
+                    foreach (var param in enterNode.Parameters)
                     {
-                        var interpretation = this.GetVariableInterpretation(variableVersions, assignment.Variable);
-                        interpretations.Add(interpretation);
-                        variableVersions[assignment.Variable]++;
-                    }
-                }
-                else if (node is EnterFlowNode)
-                {
-                    var enterNode = node as EnterFlowNode;
-                    interpretations = new List<Interpretation>();
-                    foreach (var param in enterNode.Parameters.Reverse())
-                    {
-                        var interpretation = this.GetVariableInterpretation(variableVersions, param);
-                        interpretations.Add(interpretation);
-                    }
-                }
-                else if (node is CallFlowNode)
-                {
-                    var callNode = node as CallFlowNode;
-                    interpretations = new List<Interpretation>();
-                    foreach (var assignedVariable in callNode.ReturnAssignments.Reverse())
-                    {
-                        var interpretation = this.GetVariableInterpretation(variableVersions, assignedVariable);
-                        interpretations.Add(interpretation);
-                        variableVersions[assignedVariable]++;
+                        int version = this.GetVariableVersion(param);
+                        var symbolName = this.smtContextHandler.GetVariableVersionSymbol(param, version);
+                        var interpretation = this.smtModel.GetInterpretation(symbolName);
+                        this.nextNodeInterpretations.Push(interpretation);
                     }
                 }
 
-                if (interpretations != null)
+                this.RetractToRoot();
+            }
+
+            protected override void OnBeforePathStepRetracted(FlowEdge retractingEdge)
+            {
+                this.NodeStack.Push(retractingEdge.From);
+                this.areAssignmentsPostponedToNextNode = retractingEdge is OuterFlowEdge;
+
+                // Swap the next node interpretations with the emptied stack of the current one making it ready for the
+                // current node
+                var hlp = this.currentNodeInterpretations;
+                this.currentNodeInterpretations = this.nextNodeInterpretations;
+                this.nextNodeInterpretations = hlp;
+            }
+
+            protected override void OnVariableAssignmentRetracted(
+                FlowVariable variable,
+                int assignedVersion,
+                Expression value)
+            {
+                var symbolName = this.smtContextHandler.GetVariableVersionSymbol(variable, assignedVersion);
+                var interpretation = this.smtModel.GetInterpretation(symbolName);
+                if (this.areAssignmentsPostponedToNextNode)
                 {
-                    nodeInterpretations.Add(interpretations.ToImmutableArray());
+                    this.nextNodeInterpretations.Push(interpretation);
                 }
                 else
                 {
-                    nodeInterpretations.Add(ImmutableArray<Interpretation>.Empty);
+                    this.currentNodeInterpretations.Push(interpretation);
                 }
             }
 
-            return new ExecutionModel(pathNodes.ToImmutableArray(), nodeInterpretations.ToImmutableArray());
-        }
-
-        private Interpretation GetVariableInterpretation(FlowGraphsVariableOverlay<int> variableVersions, FlowVariable variable)
-        {
-            int version = variableVersions[variable];
-            var symbolName = this.contextHandler.GetVariableVersionSymbol(variable, version);
-
-            var interpretation = this.smtSolver.Model.GetInterpretation(symbolName);
-            return interpretation;
+            protected override void OnAfterPathStepRetracted()
+            {
+                this.InterpretationStack.Push(this.currentNodeInterpretations.ToImmutableArray());
+                this.currentNodeInterpretations.Clear();
+            }
         }
     }
 }
