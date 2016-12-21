@@ -60,7 +60,7 @@ namespace AskTheCode.PathExploration
                     var retractingEdge = currentRetracting.LeadingEdges.Single();
                     this.OnBeforePathStepRetracted(retractingEdge);
 
-                    this.RetractVersions(retractingEdge);
+                    this.Retract(retractingEdge);
                     currentRetracting = currentRetracting.Preceeding.Single();
 
                     this.Path = currentRetracting;
@@ -130,7 +130,7 @@ namespace AskTheCode.PathExploration
             if (innerNode != null && this.startingNode.AssignmentIndex != null)
             {
                 int assignmentCount = this.startingNode.AssignmentIndex.Value + 1;
-                this.RetractAssignmentVersions(innerNode.Assignments.Take(assignmentCount));
+                this.RetractAssignments(innerNode.Assignments.Take(assignmentCount));
             }
         }
 
@@ -201,14 +201,14 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        private void RetractVersions(FlowEdge edge)
+        private void Retract(FlowEdge edge)
         {
             if (edge is InnerFlowEdge)
             {
                 var innerNode = edge.From as InnerFlowNode;
                 if (innerNode != null)
                 {
-                    this.RetractAssignmentVersions(innerNode.Assignments);
+                    this.RetractAssignments(innerNode.Assignments);
                 }
             }
             else
@@ -217,12 +217,12 @@ namespace AskTheCode.PathExploration
                 var outerEdge = (OuterFlowEdge)edge;
                 if (outerEdge.Kind == OuterFlowEdgeKind.Return)
                 {
-                    this.RetractReturnVersions(outerEdge);
+                    this.RetractReturn(outerEdge);
                 }
                 else
                 {
                     Contract.Assert(outerEdge.Kind == OuterFlowEdgeKind.MethodCall);
-                    this.RetractCallVersions(outerEdge);
+                    this.RetractCall(outerEdge);
                 }
             }
         }
@@ -267,7 +267,7 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        private void RetractCallVersions(OuterFlowEdge outerEdge)
+        private void RetractCall(OuterFlowEdge outerEdge)
         {
             var callerGraph = outerEdge.From.Graph;
             var frame = new LocalFlowVariableOverlay<int>();
@@ -324,7 +324,7 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        private void RetractReturnVersions(OuterFlowEdge outerEdge)
+        private void RetractReturn(OuterFlowEdge outerEdge)
         {
             var callNode = (CallFlowNode)outerEdge.To;
             var callerGraph = callNode.Graph;
@@ -360,7 +360,7 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        private void RetractAssignmentVersions(IEnumerable<Assignment> assignments)
+        private void RetractAssignments(IEnumerable<Assignment> assignments)
         {
             foreach (var assignment in assignments)
             {
