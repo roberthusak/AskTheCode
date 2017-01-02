@@ -105,7 +105,10 @@ namespace AskTheCode.ViewModel
             var flowNodeRecord = info.SelectedDisplayNode.Records.Last();
 
             // TODO: Handle also assertion verification (not just reachability) and type models with multiple variables
-            var startNode = new StartingNodeInfo(flowNodeRecord.FlowNode, flowNodeRecord.FirstVariableIndex, false);
+            var startNode = new StartingNodeInfo(
+                flowNodeRecord.FlowNode,
+                flowNodeRecord.FirstVariableIndex,
+                info.IsAssertion);
             var z3ContextFactory = new ContextFactory();
             var options = new ExplorationOptions();
             options.FinalNodeRecognizer = new PublicMethodEntryRecognizer();
@@ -143,7 +146,7 @@ namespace AskTheCode.ViewModel
 
         private async Task<CaretPositionInformation> GatherInformationForCurrentCaretPosition()
         {
-            var info = default(CaretPositionInformation);
+            var info = new CaretPositionInformation();
 
             if (!this.ideServices.TryGetCaretPosition(out info.Document, out info.Position))
             {
@@ -187,12 +190,22 @@ namespace AskTheCode.ViewModel
             if (info.SelectedDisplayNode != null)
             {
                 info.IsComplete = true;
+
+                var syntaxNode = root.FindNode(info.SelectedDisplayNode.Span);
+                if (syntaxNode != null)
+                {
+                    var selectedMethodSymbol = semanticModel.GetSymbolInfo(syntaxNode).Symbol as IMethodSymbol;
+                    if (selectedMethodSymbol != null)
+                    {
+                        info.IsAssertion = AssertionMethodRecognizer.IsAssertionMethod(selectedMethodSymbol);
+                    }
+                }
             }
 
             return info;
         }
 
-        private struct CaretPositionInformation
+        private class CaretPositionInformation
         {
             public bool IsComplete;
 
@@ -202,6 +215,7 @@ namespace AskTheCode.ViewModel
             public FlowGraph FlowGraph;
             public DisplayGraph DisplayGraph;
             public DisplayNode SelectedDisplayNode;
+            public bool IsAssertion;
         }
     }
 }

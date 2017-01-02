@@ -12,7 +12,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
     {
         public static bool IsAssertionMethod(IMethodSymbol method)
         {
-            return method.Name.EndsWith("Assert");
+            var parameters = method.Parameters;
+            return parameters.Length >= 1
+                && parameters[0].Type.SpecialType == SpecialType.System_Boolean
+                && method.Name.EndsWith("Assert");
         }
     }
 }

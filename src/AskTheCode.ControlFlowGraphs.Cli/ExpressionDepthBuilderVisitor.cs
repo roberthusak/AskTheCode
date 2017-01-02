@@ -157,12 +157,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return;
             }
 
-            // Assertions are simplified to a simple assignment
+            // Assertions are simplified to a simple assignment to a boolean temporary variable
             if (AssertionMethodRecognizer.IsAssertionMethod(expressionSymbol))
             {
-                Contract.Assert(expressionSymbol.Parameters.Length >= 1);
-                Contract.Assert(expressionSymbol.Parameters[0].Type.SpecialType == SpecialType.System_Boolean);
-
                 // Display the whole call of the assertion method
                 this.Context.CurrentNode.LabelOverride = expressionSyntax;
 
