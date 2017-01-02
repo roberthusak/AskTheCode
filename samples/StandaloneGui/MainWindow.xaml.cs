@@ -93,7 +93,15 @@ namespace StandaloneGui
 
             public void HighlightText(SourceText text, IDictionary<HighlightType, IEnumerable<TextSpan>> highlights)
             {
-                throw new NotImplementedException();
+                if (highlights.Count > 0)
+                {
+                    // TODO: Highlight also the rest if possible
+                    this.SelectText(text, highlights.First().Value.First());
+                }
+                else
+                {
+                    this.window.code.SelectionLength = 0;
+                }
             }
 
             public async void OpenDocument(Document document)
@@ -103,7 +111,8 @@ namespace StandaloneGui
 
             public void SelectText(SourceText text, TextSpan selectedSpan)
             {
-                throw new NotImplementedException();
+                this.window.code.Focus();
+                this.window.code.Select(selectedSpan.Start, selectedSpan.Length);
             }
 
             public bool TryGetCaretPosition(out Document document, out int position)

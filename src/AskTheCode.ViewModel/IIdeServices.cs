@@ -29,6 +29,7 @@ namespace AskTheCode.ViewModel
 
         bool TryGetCaretPosition(out Document document, out int position);
 
+        // TODO: Create custom class type for highlights
         void HighlightText(
             SourceText text,
             IDictionary<HighlightType, IEnumerable<TextSpan>> highlights);

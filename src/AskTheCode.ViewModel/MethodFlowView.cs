@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
+using Microsoft.CodeAnalysis.Text;
 
 namespace AskTheCode.ViewModel
 {
@@ -128,5 +129,28 @@ namespace AskTheCode.ViewModel
         }
 
         internal PathView PathView { get; private set; }
+
+        protected override void OnPropertyChanged<T>(string propertyName, T previousValue)
+        {
+            if (propertyName == nameof(this.SelectedStatementFlow))
+            {
+                this.UpdateSelectedStatement();
+            }
+        }
+
+        private async void UpdateSelectedStatement()
+        {
+            var methodLocation = this.location.Method.Locations.Single();
+            Contract.Assert(methodLocation.IsInSource);
+            var text = await methodLocation.SourceTree.GetTextAsync();
+
+            var highlights = new Dictionary<HighlightType, IEnumerable<TextSpan>>();
+            if (this.SelectedStatementFlow != null)
+            {
+                highlights.Add(HighlightType.Standard, new[] { this.SelectedStatementFlow.DisplayRecord.Span });
+            }
+
+            this.PathView.ToolView.IdeServices.HighlightText(text, highlights);
+        }
     }
 }

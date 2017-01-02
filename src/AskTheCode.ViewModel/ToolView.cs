@@ -63,6 +63,9 @@ namespace AskTheCode.ViewModel
 
         public Command ExploreCommand { get; private set; }
 
+        // TODO: Implement highlighting centrally and remove this
+        internal IIdeServices IdeServices => this.ideServices;
+
         internal Solution CurrentSolution { get; private set; }
 
         internal CSharpFlowGraphProvider GraphProvider { get; private set; }
