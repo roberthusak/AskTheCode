@@ -9,6 +9,8 @@ namespace AskTheCode.PathExploration
 {
     public class BorderEntryPointRecognizer : IEntryPointRecognizer
     {
+        public IFlowGraphProvider FlowGraphProvider { get; set; }
+
         public bool IsFinalNode(FlowNode node)
         {
             return (node is EnterFlowNode);

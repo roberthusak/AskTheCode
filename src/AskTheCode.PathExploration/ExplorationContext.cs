@@ -24,6 +24,7 @@ namespace AskTheCode.PathExploration
             this.SmtContextFactory = smtContextFactory;
             this.StartingNode = startingNode;
             this.Options = options;
+            this.Options.FinalNodeRecognizer.FlowGraphProvider = flowGraphProvider;
         }
 
         public ExplorationContext(

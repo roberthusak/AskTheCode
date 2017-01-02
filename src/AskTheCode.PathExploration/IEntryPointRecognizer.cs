@@ -7,6 +7,8 @@ namespace AskTheCode.PathExploration
 {
     public interface IEntryPointRecognizer
     {
+        IFlowGraphProvider FlowGraphProvider { get; set; }
+
         bool IsFinalNode(FlowNode node);
     }
 }
