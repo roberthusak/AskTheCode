@@ -26,8 +26,6 @@ namespace AskTheCode.Vsix
     [Guid("b681790b-5809-4896-972c-6bc5b293c1ca")]
     public class MainWindow : ToolWindowPane
     {
-        private readonly ControlView viewModel;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
         /// </summary>
@@ -49,14 +47,14 @@ namespace AskTheCode.Vsix
             Contract.Assert(workspace != null);
 
             var ideServices = new VisualStudioIdeServices(dte2, highlightService, workspace);
-            this.viewModel = new ControlView(ideServices, InspectionContextProvider.Default);
+            var viewModel = new ToolView(ideServices);
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on
             // the object returned by the Content property.
             this.Content = new MainWindowControl()
             {
-                DataContext = this.viewModel
+                DataContext = viewModel
             };
         }
     }

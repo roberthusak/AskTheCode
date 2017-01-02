@@ -16,12 +16,5 @@
         {
             this.InitializeComponent();
         }
-
-        // TODO: Replace with a behaviour eventually
-        private void SelectedTreeNodeChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            var controlView = this.DataContext as ViewModel.ControlView;
-            controlView.SelectedTreeNode = e.NewValue as ViewModel.TreeNodeView;
-        }
     }
 }

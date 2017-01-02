@@ -3,46 +3,52 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:AskTheCode.Vsix"
              xmlns:vm="clr-namespace:AskTheCode.ViewModel;assembly=AskTheCode.ViewModel"
              Background="{DynamicResource VsBrush.Window}"
              Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
              d:DesignHeight="242" d:DesignWidth="786"
-             Name="MyToolWindow">
+             Name="MyToolWindow" Padding="5,0,5,5">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Grid.ColumnSpan="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBox Text="{Binding SearchedExpression}" Margin="2" />
-            <Button Grid.Column="1" Command="{Binding SearchCommand}" Content="Search" Width="60" Margin="2" />
-        </Grid>
-        <TreeView Grid.Row="1" ItemsSource="{Binding TreeNodes}" SelectedItemChanged="SelectedTreeNodeChanged" Margin="2">
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate DataType="{x:Type vm:TreeNodeView}" ItemsSource="{Binding Children}">
-                    <TextBlock Text="{Binding Name}" />
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
-        <Grid Grid.Row="1" Grid.Column="1" DataContext="{Binding SelectedTreeNode}" Margin="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" Margin="0,0,2,2">
-                <Button Command="{Binding ShowCommand}" Content="Show" Width="60" />
-                <Button Command="{Binding InspectCommand}" Content="Inspect" Width="60" Margin="2,0,0,0" />
-            </StackPanel>
-            <TextBlock Grid.Row="1" Text="{Binding Description}" FontFamily="{DynamicResource VsFont.EnvironmentFontFamily}" />
-        </Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Label Content="Call graph:" Padding="0,5,5,5" />
+        <Button Grid.Column="1" Content="Display in large window" Margin="5" />
+        <local:MsaglGraphPresenter Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,5,0" />
+        <Button Grid.Row="2" Content="Explore" Command="{Binding ExploreCommand}" Margin="0,5,0,0" />
+        <ProgressBar Grid.Row="2" Grid.Column="1" Margin="5" IsIndeterminate="{Binding IsExploring}" />
+
+        <Label Grid.Column="2" Content="Related paths:" Padding="0,5,5,5" />
+        <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,5,0"
+                         ItemsSource="{Binding Paths}" SelectedItem="{Binding SelectedPath}" DisplayMemberPath="Name" />
+
+        <Label Grid.Column="3" Content="Path control flow:" Padding="0,5,5,5" />
+        <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="0,0,5,0"
+                         ItemsSource="{Binding SelectedPath.MethodFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow}" DisplayMemberPath="Name" />
+
+        <Label Grid.Column="4" Grid.ColumnSpan="2" Content="Method control flow:" Padding="0,5,5,5" />
+        <Button Grid.Column="6" Content="Show control flow graph" Margin="5" />
+        <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3" AutoGenerateColumns="False" IsReadOnly="True"
+                          ItemsSource="{Binding SelectedPath.SelectedMethodFlow.StatementFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow.SelectedStatementFlow}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Statement" Binding="{Binding Statement}" Width="2*" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>

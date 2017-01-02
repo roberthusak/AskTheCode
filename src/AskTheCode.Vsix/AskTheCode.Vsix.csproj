@@ -152,14 +152,21 @@
     <Compile Include="MainWindowControl.xaml.cs">
       <DependentUpon>MainWindowControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MsaglGraphPresenter.xaml.cs">
+      <DependentUpon>MsaglGraphPresenter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VisualStudioIdeServices.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="AskTheCode.Vsix.ruleset" />
     <None Include="Key.snk" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -211,6 +218,17 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Msagl, Version=3.0.0.0, Culture=neutral, PublicKeyToken=640c57aa40e7ae7d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Microsoft.Msagl.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Msagl.Drawing, Version=3.0.0.0, Culture=neutral, PublicKeyToken=8a3d7c21d5fa1306, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Microsoft.Msagl.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Msagl.WpfGraphControl">
+      <HintPath>..\..\lib\Microsoft.Msagl.WpfGraphControl.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.CommandBars, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
@@ -415,6 +433,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="MsaglGraphPresenter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="MainWindowPackage.vsct">
@@ -431,11 +453,35 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AskTheCode.Common\AskTheCode.Common.csproj">
+      <Project>{b2e80b5e-5d6d-4e5c-abd7-9bc39e0c5a7e}</Project>
+      <Name>AskTheCode.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj">
+      <Project>{a1a0861d-1d52-4f19-9782-96443d7f37f6}</Project>
+      <Name>AskTheCode.ControlFlowGraphs.Cli</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj">
+      <Project>{c39b0a93-11c6-4cf1-b0b8-31bd15d6a7f5}</Project>
+      <Name>AskTheCode.ControlFlowGraphs</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AskTheCode.Core\AskTheCode.Core.csproj">
       <Project>{9ddf533a-c7fa-454e-9efd-39305819ce04}</Project>
       <Name>AskTheCode.Core</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.PathExploration\AskTheCode.PathExploration.csproj">
+      <Project>{3e566315-ad9d-4794-86f1-3353792e66ff}</Project>
+      <Name>AskTheCode.PathExploration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.SmtLibStandard.Z3\AskTheCode.SmtLibStandard.Z3.csproj">
+      <Project>{dccaf6a8-0f39-415b-b5e6-76658f314ee2}</Project>
+      <Name>AskTheCode.SmtLibStandard.Z3</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj">
+      <Project>{2a814f35-9b19-4487-9e85-c9d1a2ffc955}</Project>
+      <Name>AskTheCode.SmtLibStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\AskTheCode.ViewModel\AskTheCode.ViewModel.csproj">
       <Project>{d3713ce8-935f-4b88-a281-efe7ae07903b}</Project>

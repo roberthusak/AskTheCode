@@ -78,7 +78,9 @@ namespace AskTheCode.Vsix
             }
 
             var selectionPoint = selection.AnchorPoint;
-            position = selectionPoint.AbsoluteCharOffset;
+
+            // TODO: Replace this hack or verify it by finding the reason for the DTE-Roslyn position mismatch
+            position = selectionPoint.AbsoluteCharOffset + selectionPoint.Line;
             return true;
         }
 
