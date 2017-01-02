@@ -104,7 +104,6 @@ namespace AskTheCode.PathExploration
             this.Update(path);
         }
 
-        // TODO: Consider storing the instance of StartingNodeInfo in a field
         protected void ProcessStartingNode()
         {
             var innerNode = this.startingNode.Node as InnerFlowNode;

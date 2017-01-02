@@ -17,6 +17,11 @@ namespace ControlFlowGraphViewer
             }
         }
 
+        public ILocation GetLocation(FlowGraphId graphId)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<FlowGraph> GetFlowGraphAsync(ILocation location)
         {
             throw new NotImplementedException();

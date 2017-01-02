@@ -22,7 +22,7 @@ namespace AskTheCode.PathExploration.Heuristics
 
         public bool DoSolve(ExplorationState state)
         {
-            return true;
+            return state.Path.Node.IngoingEdges.Count > 1;
         }
 
         public SmtSolverHandler SelectMergedSolverHandler(ExplorationState current, ExplorationState existing)

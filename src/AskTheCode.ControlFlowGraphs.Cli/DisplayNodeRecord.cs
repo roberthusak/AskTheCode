@@ -11,7 +11,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 {
     public class DisplayNodeRecord
     {
-        // TODO: Consider storing also the particular type (or store it instead of the factory and load it lazily)
         public DisplayNodeRecord(
             FlowNode flowNode,
             TextSpan span,

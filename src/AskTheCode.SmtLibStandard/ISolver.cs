@@ -5,6 +5,7 @@ using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.SmtLibStandard
 {
+    // TODO: Base on IDisposable, as the underlying solvers might use it (such as Z3)
     public interface ISolver
     {
         IContext Context { get; }

@@ -20,7 +20,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
         }
 
-
         public sealed override void VisitExpressionStatement(ExpressionStatementSyntax syntax)
         {
             this.Context.CurrentNode.Syntax = syntax.Expression;
