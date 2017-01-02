@@ -48,6 +48,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             return this.generatedGraphs[graphId].Location;
         }
 
+        ILocation IFlowGraphProvider.GetLocation(FlowGraphId graphId) => this.GetLocation(graphId);
+
         public async Task<FlowGraph> GetFlowGraphAsync(ILocation location)
         {
             Contract.Requires<ArgumentException>(location is MethodLocation, nameof(location));
@@ -68,6 +70,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public OuterFlowEdge GetCallEdge(CallFlowNode callNode, EnterFlowNode enterNode)
         {
+            // TODO: Perform the proper comparison
+            ////Contract.Requires(callNode.Location.Equals(this.GetLocation(enterNode.Graph.Id)));
+
             // TODO: Store outer edges instead of recreating them every time
             return OuterFlowEdge.CreateMethodCall(new OuterFlowEdgeId(-1), callNode, enterNode);
         }
