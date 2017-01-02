@@ -443,6 +443,10 @@
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
+    <Content Include="..\..\packages\z3x86win.4.5.0.1\lib\libz3.dll">
+      <Link>libz3.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Resources\MainWindowCommand.png" />
     <Content Include="Resources\MainWindowPackage.ico" />
   </ItemGroup>
