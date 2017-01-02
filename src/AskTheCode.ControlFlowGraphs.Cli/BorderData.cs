@@ -10,13 +10,13 @@ using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
-    // TODO: Consider adding also Enter kind (in order not to be handled separately in the translation)
     internal enum BorderDataKind
     {
         Enter,
         Return,
         MethodCall,
         ExceptionThrow,
+        Assertion,
     }
 
     internal class BorderData
@@ -24,10 +24,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public BorderData(BorderDataKind kind, IMethodSymbol method, IEnumerable<ITypeModel> arguments)
         {
             Contract.Requires<ArgumentNullException>(
-                kind != BorderDataKind.MethodCall || method != null,
+                (kind != BorderDataKind.MethodCall && kind != BorderDataKind.Assertion) || method != null,
                 nameof(method));
             Contract.Requires<ArgumentNullException>(
-                kind != BorderDataKind.MethodCall || arguments != null,
+                (kind != BorderDataKind.MethodCall && kind != BorderDataKind.Assertion) || arguments != null,
                 nameof(arguments));
 
             this.Kind = kind;

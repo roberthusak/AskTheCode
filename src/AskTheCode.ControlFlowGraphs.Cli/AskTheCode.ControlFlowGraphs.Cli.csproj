@@ -235,6 +235,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssertionMethodRecognizer.cs" />
     <Compile Include="BorderData.cs" />
     <Compile Include="BuildEdge.cs" />
     <Compile Include="BuilderVisitor.cs" />

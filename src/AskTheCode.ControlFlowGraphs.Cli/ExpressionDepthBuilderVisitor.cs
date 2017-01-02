@@ -157,6 +157,20 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 return;
             }
 
+            // Assertions are simplified to a simple assignment
+            if (AssertionMethodRecognizer.IsAssertionMethod(expressionSymbol))
+            {
+                Contract.Assert(expressionSymbol.Parameters.Length >= 1);
+                Contract.Assert(expressionSymbol.Parameters[0].Type.SpecialType == SpecialType.System_Boolean);
+
+                // Display the whole call of the assertion method
+                this.Context.CurrentNode.LabelOverride = expressionSyntax;
+
+                this.Context.CurrentNode.VariableModel = this.Context.TryCreateTemporaryVariableModel(arguments[0]);
+                this.Context.ReenqueueCurrentNode(arguments[0]);
+                return;
+            }
+
             var argumentModels = new List<ITypeModel>();
             foreach (var argument in arguments)
             {

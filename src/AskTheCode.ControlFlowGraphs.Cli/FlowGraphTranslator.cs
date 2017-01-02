@@ -50,7 +50,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             var edgeQueue = new Queue<EdgeInfo>();
             var visitedNodes = new OrdinalOverlay<BuildNodeId, BuildNode, bool>();
 
-            var buildParameters = this.BuildGraph.Variables.Where(variable => variable.Origin == VariableOrigin.Parameter);
+            var buildParameters = this.BuildGraph.Variables
+                .Where(variable => variable.Origin == VariableOrigin.Parameter);
             var flowParameters = new List<FlowVariable>();
             foreach (var parameter in buildParameters)
             {
@@ -258,7 +259,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private FlowNode TryTranslateBorderNode(BuildNode buildNode)
         {
             var borderData = buildNode.BorderData;
-            if (borderData == null)
+            if (borderData == null || borderData.Kind == BorderDataKind.Assertion)
             {
                 return null;
             }
@@ -319,8 +320,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             while (true)
             {
-                var nodeAssignments = this.TranslateAssignments(curNode.VariableModel, curNode.ValueModel);
-                assignments.AddRange(nodeAssignments);
+                if (curNode.BorderData != null)
+                {
+                    Contract.Assert(curNode.BorderData.Kind == BorderDataKind.Assertion);
+                }
+                else
+                {
+                    var nodeAssignments = this.TranslateAssignments(curNode.VariableModel, curNode.ValueModel);
+                    assignments.AddRange(nodeAssignments);
+                }
 
                 if (curNode.OutgoingEdges.Count != 1)
                 {
@@ -329,7 +337,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 var nextNode = curNode.OutgoingEdges.Single().To;
 
-                if (nextNode.BorderData != null || this.ingoingEdges[nextNode].Count > 1)
+                if ((nextNode.BorderData != null && nextNode.BorderData.Kind != BorderDataKind.Assertion)
+                    || this.ingoingEdges[nextNode].Count > 1)
                 {
                     break;
                 }
