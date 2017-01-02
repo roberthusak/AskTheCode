@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
-using AskTheCode.Core;
 using AskTheCode.ViewModel;
 using AskTheCode.Vsix.Highlighting;
 using Microsoft.VisualStudio.ComponentModelHost;

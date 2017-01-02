@@ -251,7 +251,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
-    <Compile Include="ControlView.cs" />
     <Compile Include="FlowGraphView.cs" />
     <Compile Include="IGraphViewerConsumer.cs" />
     <Compile Include="IIdeServices.cs" />
@@ -261,7 +260,6 @@
     <Compile Include="PublicMethodEntryRecognizer.cs" />
     <Compile Include="StatementFlowView.cs" />
     <Compile Include="ToolView.cs" />
-    <Compile Include="TreeNodeView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
