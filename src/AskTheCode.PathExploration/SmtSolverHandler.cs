@@ -210,10 +210,26 @@ namespace AskTheCode.PathExploration
                 this.nextNodeInterpretations = hlp;
             }
 
+            protected override void OnRandomVariableRetracted(FlowVariable variable, int version)
+            {
+                this.PushInterpretation(variable, version);
+            }
+
             protected override void OnVariableAssignmentRetracted(
                 FlowVariable variable,
                 int assignedVersion,
                 Expression value)
+            {
+                this.PushInterpretation(variable, assignedVersion);
+            }
+
+            protected override void OnAfterPathStepRetracted()
+            {
+                this.InterpretationStack.Push(this.currentNodeInterpretations.ToImmutableArray());
+                this.currentNodeInterpretations.Clear();
+            }
+
+            private void PushInterpretation(FlowVariable variable, int assignedVersion)
             {
                 var symbolName = this.smtContextHandler.GetVariableVersionSymbol(variable, assignedVersion);
                 var interpretation = this.smtModel.GetInterpretation(symbolName);
@@ -225,12 +241,6 @@ namespace AskTheCode.PathExploration
                 {
                     this.currentNodeInterpretations.Push(interpretation);
                 }
-            }
-
-            protected override void OnAfterPathStepRetracted()
-            {
-                this.InterpretationStack.Push(this.currentNodeInterpretations.ToImmutableArray());
-                this.currentNodeInterpretations.Clear();
             }
         }
     }

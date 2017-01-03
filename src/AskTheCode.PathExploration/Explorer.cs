@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
-using AskTheCode.Common;
 
 namespace AskTheCode.PathExploration
 {
@@ -94,18 +94,11 @@ namespace AskTheCode.PathExploration
                         edges = edge.ToSingular();
                     }
                 }
-                else if (currentNode is CallFlowNode)
+                else if ((currentNode as CallFlowNode)?.Location.CanBeExplored == true
+                    && !(currentState.Path.Preceeding.FirstOrDefault()?.Node is EnterFlowNode))
                 {
-                    // TODO: Handle merged nodes
-                    if (currentState.Path.Preceeding.FirstOrDefault()?.Node is EnterFlowNode)
-                    {
-                        // We have already returned from the call
-                        edges = currentNode.IngoingEdges;
-                    }
-                    else
-                    {
-                        edges = Task.Run(() => graphProvider.GetReturnEdgesToAsync((CallFlowNode)currentNode)).Result;
-                    }
+                    // If we can model the call and we haven't returned from that method yet
+                    edges = Task.Run(() => graphProvider.GetReturnEdgesToAsync((CallFlowNode)currentNode)).Result;
                 }
                 else
                 {
@@ -192,7 +185,8 @@ namespace AskTheCode.PathExploration
                     {
                         var resultKind = branchedState.SolverHandler.Solve(branchedState.Path);
 
-                        if (resultKind != ExplorationResultKind.Reachable || this.finalNodeRecognizer.IsFinalNode(branchedState.Path.Node))
+                        if (resultKind != ExplorationResultKind.Reachable
+                            || this.finalNodeRecognizer.IsFinalNode(branchedState.Path.Node))
                         {
                             this.RemoveState(branchedState);
                             var result = branchedState.SolverHandler.LastResult;

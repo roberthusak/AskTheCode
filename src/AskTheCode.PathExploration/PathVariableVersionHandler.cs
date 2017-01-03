@@ -153,6 +153,10 @@ namespace AskTheCode.PathExploration
         {
         }
 
+        protected virtual void OnRandomVariableRetracted(FlowVariable variable, int version)
+        {
+        }
+
         protected virtual void OnVariableAssigned(FlowVariable variable, int lastVersion, Expression value)
         {
         }
@@ -183,6 +187,10 @@ namespace AskTheCode.PathExploration
                 {
                     this.AssertAssignments(innerNode.Assignments.Reverse());
                 }
+                else if ((edge.From as CallFlowNode)?.Location.CanBeExplored == false)
+                {
+                    this.ExtendUnmodelledCall((CallFlowNode)edge.From);
+                }
             }
             else
             {
@@ -209,6 +217,10 @@ namespace AskTheCode.PathExploration
                 {
                     this.RetractAssignments(innerNode.Assignments);
                 }
+                else if ((edge.From as CallFlowNode)?.Location.CanBeExplored == false)
+                {
+                    this.RetractUnmodelledCall((CallFlowNode)edge.From);
+                }
             }
             else
             {
@@ -223,6 +235,28 @@ namespace AskTheCode.PathExploration
                     Contract.Assert(outerEdge.Kind == OuterFlowEdgeKind.MethodCall);
                     this.RetractCall(outerEdge);
                 }
+            }
+        }
+
+        private void ExtendUnmodelledCall(CallFlowNode callNode)
+        {
+            Contract.Requires(!callNode.Location.CanBeExplored);
+
+            foreach (var returnedVariable in callNode.ReturnAssignments)
+            {
+                this.variableVersions[returnedVariable].PushNewVersion();
+            }
+        }
+
+        private void RetractUnmodelledCall(CallFlowNode callNode)
+        {
+            Contract.Requires(!callNode.Location.CanBeExplored);
+
+            foreach (var returnedVariable in callNode.ReturnAssignments)
+            {
+                var versionInfo = this.variableVersions[returnedVariable];
+                versionInfo.PopVersion();
+                this.OnRandomVariableRetracted(returnedVariable, versionInfo.CurrentVersion);
             }
         }
 
