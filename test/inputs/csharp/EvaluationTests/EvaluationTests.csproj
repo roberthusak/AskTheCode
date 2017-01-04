@@ -204,7 +204,6 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Annotations\Evaluation.cs" />
-    <Compile Include="Annotations\LinearlyParametrizedEvaluationAttribute.cs" />
     <Compile Include="AssemblySettings.cs" />
     <Compile Include="BankAccount.cs" />
     <Compile Include="FloatArithmetic.cs" />

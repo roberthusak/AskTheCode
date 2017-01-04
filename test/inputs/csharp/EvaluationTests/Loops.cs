@@ -15,9 +15,6 @@ namespace EvaluationTests
     [PexClass(Timeout = 30, MaxRunsWithoutNewTests = 2000, MaxConditions = 2000)]
     public partial class Loops
     {
-        private const int SimpleLoopTarget = 64;
-        private const int LoopedModuloTarget = 512;
-
         /// <remarks>
         /// When unwinding the loop condition backwards, AskTheCode does not have any information about the initial value
         /// of i. Therefore, it leads to an infinite cycle stopping after the timeout has passed.
@@ -38,7 +35,6 @@ namespace EvaluationTests
 
         [PexMethod]
         [ContractVerification(true)]
-        [LinearlyParametrizedEvaluation(nameof(SimpleLoopTarget), 64, 64, 64)]
         public static void SimpleLoop(int i)
         {
             int j = 10;
@@ -50,7 +46,7 @@ namespace EvaluationTests
                 Evaluation.ValidAssert(j > 0);  // CC
             }
 
-            Evaluation.InvalidAssert(j != 2048 /*SimpleLoopTarget*/);   // Nothing
+            Evaluation.InvalidAssert(j != 2048);   // Nothing
         }
 
         [PexMethod]
@@ -68,11 +64,9 @@ namespace EvaluationTests
                 x = x - 1;
             }
 
-            //Evaluation.InvalidAssert(c != 30);
-
             if (c == 30)
             {
-                Evaluation.InvalidUnreachable(); //Evaluation.InvalidAssert(c != 30);  // AskTheCode, Pex
+                Evaluation.InvalidUnreachable();        // AskTheCode, Pex
                 PexAssert.ReachEventually("location");
             }
         }
@@ -106,7 +100,6 @@ namespace EvaluationTests
 
         [PexMethod]
         [ContractVerification(true)]
-        [LinearlyParametrizedEvaluation(nameof(LoopedModuloTarget), 64, 64, 64)]
         public void LoopedModulo(int x)
         {
             int res = 0;
@@ -126,11 +119,10 @@ namespace EvaluationTests
                 i = i + 1;
             }
 
-            Evaluation.InvalidAssert(res != 2048 /*LoopedModuloTarget*/);   // Pex
+            Evaluation.InvalidAssert(res != 2048);   // Pex
         }
 
         [PexMethod]
-        //[PexAssertReachEventually]
         [ContractVerification(true)]
         public void ConcolicInefficientLoop(int x)
         {
@@ -157,8 +149,6 @@ namespace EvaluationTests
 
                 int count = CountOfSomething();
                 Evaluation.ValidAssert(y + count != 0);     // AskTheCode, CC (with hints)
-
-                //PexAssert.ReachEventually();
             }
         }
 
