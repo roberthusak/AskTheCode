@@ -255,6 +255,7 @@
     <Compile Include="FlowGraphTranslator.cs" />
     <Compile Include="FlowNodeMappedInfo.cs" />
     <Compile Include="GeneratedGraphs.cs" />
+    <Compile Include="IBuildingContext.cs" />
     <Compile Include="MethodLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatementDepthBuilderVisitor.cs" />

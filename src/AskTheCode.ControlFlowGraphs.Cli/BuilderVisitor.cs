@@ -4,11 +4,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 {
     internal class BuilderVisitor : CSharpSyntaxVisitor
     {
-        public BuilderVisitor(CSharpGraphBuilder.BuildingContext context)
+        public BuilderVisitor(IBuildingContext context)
         {
             this.Context = context;
         }
 
-        protected CSharpGraphBuilder.BuildingContext Context { get; private set; }
+        protected IBuildingContext Context { get; private set; }
     }
 }

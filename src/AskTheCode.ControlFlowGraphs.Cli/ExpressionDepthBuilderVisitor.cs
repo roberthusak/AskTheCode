@@ -15,7 +15,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 {
     internal class ExpressionDepthBuilderVisitor : StatementDepthBuilderVisitor
     {
-        public ExpressionDepthBuilderVisitor(CSharpGraphBuilder.BuildingContext context)
+        public ExpressionDepthBuilderVisitor(IBuildingContext context)
             : base(context)
         {
         }

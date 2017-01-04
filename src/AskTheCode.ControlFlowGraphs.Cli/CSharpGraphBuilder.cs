@@ -121,7 +121,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         }
 
         // TODO: Extract to interface (+ extension methods) and make private, change in the documentation otherwise
-        public class BuildingContext
+        public class BuildingContext : IBuildingContext
         {
             private CSharpGraphBuilder builder;
 
