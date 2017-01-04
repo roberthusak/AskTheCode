@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.Common
 {
+    /// <summary>
+    /// An overlay implemented using a <see cref="List{T}"/>.
+    /// </summary>
     public class OrdinalOverlay<TId, TReferenced, TValue> :
         IOverlay<TId, TReferenced, TValue>,
         IReadOnlyOverlay<TId, TReferenced, TValue>

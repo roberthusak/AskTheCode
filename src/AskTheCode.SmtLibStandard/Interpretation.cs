@@ -5,6 +5,9 @@ using System.Text;
 
 namespace AskTheCode.SmtLibStandard
 {
+    /// <summary>
+    /// Represents a particular value of the given sort in SMT-LIB.
+    /// </summary>
     public sealed class Interpretation : Expression
     {
         public Interpretation(Sort sort, object value)

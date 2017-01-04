@@ -4,6 +4,13 @@ using System.Text;
 
 namespace AskTheCode.SmtLibStandard
 {
+    /// <summary>
+    /// Denotes the kind of the expression.
+    /// </summary>
+    /// <remarks>
+    /// It is possible to recognize certain types of expressions by their runtime types. However, to exactly determine
+    /// the actual semantics, this enumeration is needed.
+    /// </remarks>
     public enum ExpressionKind
     {
         // TODO: Add bitvector, array and sequence theories functions (and finish the Bool, Int and Real, if anything

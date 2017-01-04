@@ -6,6 +6,9 @@ using System.Text;
 
 namespace AskTheCode.SmtLibStandard
 {
+    /// <summary>
+    /// The collection of methods to generate all the expressions.
+    /// </summary>
     public static class ExpressionFactory
     {
         static ExpressionFactory()

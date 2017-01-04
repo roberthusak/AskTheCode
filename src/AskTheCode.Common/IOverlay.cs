@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.Common
 {
+    /// <summary>
+    /// Provides a standard to reference objects by their identifiers.
+    /// </summary>
     public interface IOverlay<TId, TReferenced, TValue>
         where TId : IId<TId>
         where TReferenced : IIdReferenced<TId>

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.Common
 {
+    /// <summary>
+    /// An interface for objects adhering to freezable pattern.
+    /// </summary>
     public interface IFreezable<TSelf>
         where TSelf : IFreezable<TSelf>
     {
@@ -17,6 +20,9 @@ namespace AskTheCode.Common
         FrozenHandler<TSelf> Freeze();
     }
 
+    /// <summary>
+    /// Reference to an object that guarantees it is frozen.
+    /// </summary>
     public struct FrozenHandler<TFreezable>
         where TFreezable : IFreezable<TFreezable>
     {
@@ -41,6 +47,9 @@ namespace AskTheCode.Common
         }
     }
 
+    /// <summary>
+    /// Exception thrown in the case of modification of a frozen object.
+    /// </summary>
     [Serializable]
     public class FrozenObjectModificationException : InvalidOperationException
     {

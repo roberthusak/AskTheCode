@@ -5,6 +5,9 @@ using System.Text;
 
 namespace AskTheCode.SmtLibStandard
 {
+    /// <summary>
+    /// A variable with a constant name.
+    /// </summary>
     public class NamedVariable : Variable, INamedSymbol
     {
         internal NamedVariable(Sort sort, SymbolName name)

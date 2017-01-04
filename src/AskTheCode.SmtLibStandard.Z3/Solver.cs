@@ -10,6 +10,9 @@ using Microsoft.Z3;
 
 namespace AskTheCode.SmtLibStandard.Z3
 {
+    /// <summary>
+    /// Implementation of <see cref="ISolver"/> for Microsoft Z3.
+    /// </summary>
     public class Solver : ISolver
     {
         private Context context;

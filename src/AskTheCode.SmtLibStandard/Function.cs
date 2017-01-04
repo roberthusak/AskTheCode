@@ -5,6 +5,13 @@ using System.Text;
 
 namespace AskTheCode.SmtLibStandard
 {
+    /// <summary>
+    /// Represents an SMT-LIB function.
+    /// </summary>
+    /// <remarks>
+    /// The arity and sorts of the children depend on the particular <see cref="ExpressionKind"/>. To create an
+    /// instance of this class, use <see cref="ExpressionFactory"/>.
+    /// </remarks>
     public sealed class Function : Expression
     {
         private readonly Expression[] children;

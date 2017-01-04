@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.Common
 {
+    /// <summary>
+    /// Structure that mimics the behaviour of an immutable list with one element.
+    /// </summary>
     public struct Singular<T> : IReadOnlyList<T>
     {
         public readonly T Value;
@@ -45,6 +48,9 @@ namespace AskTheCode.Common
         }
     }
 
+    /// <summary>
+    /// Helper static methods for <see cref="Singular{T}"/>.
+    /// </summary>
     public static class Singular
     {
         public static Singular<T> Create<T>(T value)

@@ -5,6 +5,9 @@ using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.SmtLibStandard
 {
+    /// <summary>
+    /// A unified interface for all SMT solvers.
+    /// </summary>
     // TODO: Base on IDisposable, as the underlying solvers might use it (such as Z3)
     public interface ISolver
     {

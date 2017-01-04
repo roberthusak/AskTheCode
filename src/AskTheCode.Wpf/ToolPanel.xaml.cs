@@ -5,7 +5,7 @@
     using System.Windows.Controls;
 
     /// <summary>
-    /// Interaction logic for MainWindowControl.
+    /// Interaction logic for ToolPanel.
     /// </summary>
     public partial class ToolPanel : UserControl
     {

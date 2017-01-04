@@ -15,11 +15,17 @@ using Microsoft.VisualStudio.Text;
 
 namespace AskTheCode.Vsix
 {
+    /// <summary>
+    /// Implementation of <see cref="IIdeServices"/> for Visual Studio.
+    /// </summary>
     internal sealed class VisualStudioIdeServices : IIdeServices
     {
         private readonly EnvDTE80.DTE2 dte2;
         private readonly IHighlightService highlightService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VisualStudioIdeServices"/> class.
+        /// </summary>
         public VisualStudioIdeServices(EnvDTE80.DTE2 dte2, IHighlightService highlightService, Workspace workspace)
         {
             Contract.Requires<ArgumentNullException>(dte2 != null, nameof(dte2));
@@ -31,8 +37,14 @@ namespace AskTheCode.Vsix
             this.Workspace = workspace;
         }
 
+        /// <summary>
+        /// Gets the current Roslyn workspace we are operating on.
+        /// </summary>
         public Workspace Workspace { get; private set; }
 
+        /// <summary>
+        /// Queries the currently active document.
+        /// </summary>
         public Document GetOpenedDocument()
         {
             var activeDteDocument = this.dte2.ActiveDocument;
@@ -44,6 +56,9 @@ namespace AskTheCode.Vsix
             return this.GetCodeAnalysisDocumentFromDteDocument(activeDteDocument);
         }
 
+        /// <summary>
+        /// Opens a document and display it to the user.
+        /// </summary>
         public void OpenDocument(Document document)
         {
             Contract.Requires<ArgumentNullException>(document != null, nameof(document));
@@ -51,6 +66,9 @@ namespace AskTheCode.Vsix
             this.OpenDocumentGetFrame(document);
         }
 
+        /// <summary>
+        /// Selects a text span in a document.
+        /// </summary>
         public void SelectText(SourceText text, TextSpan selectedSpan)
         {
             Contract.Requires<ArgumentNullException>(text != null, nameof(text));
@@ -68,6 +86,9 @@ namespace AskTheCode.Vsix
                 lineSpan.End.Character);
         }
 
+        /// <summary>
+        /// Queries the current position of the text editor caret.
+        /// </summary>
         public bool TryGetCaretPosition(out Document document, out int position)
         {
             EnvDTE.TextSelection selection;
@@ -84,6 +105,9 @@ namespace AskTheCode.Vsix
             return true;
         }
 
+        /// <summary>
+        /// Queries the current text selection.
+        /// </summary>
         public bool TryGetSelectedText(out Document document, out TextSpan selectedSpan)
         {
             EnvDTE.TextSelection selection;
@@ -100,6 +124,9 @@ namespace AskTheCode.Vsix
             return true;
         }
 
+        /// <summary>
+        /// Displays highlights at the given locations.
+        /// </summary>
         public void HighlightText(
             SourceText text,
             IDictionary<HighlightType, IEnumerable<TextSpan>> highlights)

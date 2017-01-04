@@ -8,6 +8,13 @@ using System.Threading;
 
 namespace AskTheCode.SmtLibStandard
 {
+    /// <summary>
+    /// Represents the type of an SMT-LIB symbol.
+    /// </summary>
+    /// <remarks>
+    /// The class is thread safe and all the instances are immutable. It also assures that at a time there is at most
+    /// one instance of each sort. Therefore, it is possible to compare them by reference.
+    /// </remarks>
     public sealed class Sort
     {
         private static ConcurrentDictionary<string, Sort> sortMap = new ConcurrentDictionary<string, Sort>();
