@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:StandaloneGui;assembly=AskTheCode.Wpf"
+        xmlns:local="clr-namespace:StandaloneGui"
         xmlns:vm="clr-namespace:AskTheCode.ViewModel;assembly=AskTheCode.ViewModel"
         xmlns:controls="clr-namespace:AskTheCode.Wpf;assembly=AskTheCode.Wpf"
         mc:Ignorable="d"
@@ -38,7 +38,7 @@
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>
                     <DataTemplate DataType="vm:FlowGraphView">
-                        <local:MsaglGraphPresenter GraphViewerConsumer="{Binding .}" />
+                        <controls:MsaglGraphPresenter GraphViewerConsumer="{Binding .}" />
                     </DataTemplate>
                 </TabControl.ContentTemplate>
             </TabControl>

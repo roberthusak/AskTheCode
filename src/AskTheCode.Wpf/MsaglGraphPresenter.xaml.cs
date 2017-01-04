@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 using Microsoft.Msagl.WpfGraphControl;
 using AskTheCode.ViewModel;
 
-namespace StandaloneGui
+namespace AskTheCode.Wpf
 {
     /// <summary>
     /// Interaction logic for MsaglGraphPresenter.xaml
