@@ -1,18 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive.Subjects;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
-using System.Threading;
 
 namespace AskTheCode.PathExploration
 {
     public class ExplorationContext
     {
         // TODO: Consider enforcing it to be read-only
-        private List<ExecutionModel> executionModels = new List<ExecutionModel>();
+        private Subject<ExecutionModel> executionModels = new Subject<ExecutionModel>();
 
         public ExplorationContext(
             IFlowGraphProvider flowGraphProvider,
@@ -35,12 +36,7 @@ namespace AskTheCode.PathExploration
         {
         }
 
-        public event EventHandler<ExecutionModelEventArgs> ExecutionModelFound;
-
-        public IReadOnlyList<ExecutionModel> ExecutionModels
-        {
-            get { return this.executionModels; }
-        }
+        public IObservable<ExecutionModel> ExecutionModels => this.executionModels;
 
         internal IFlowGraphProvider FlowGraphProvider { get; private set; }
 
@@ -93,12 +89,10 @@ namespace AskTheCode.PathExploration
 
         private void ExplorerResultCallback(ExplorationResult result)
         {
-            // TODO: Implement locking when multiple explorers are implemented
+            // TODO: Implement locking or some intelligent sequencing when multiple explorers are implemented
             if (result?.ExecutionModel != null)
             {
-                this.executionModels.Add(result.ExecutionModel);
-
-                this.ExecutionModelFound?.Invoke(this, new ExecutionModelEventArgs(result.ExecutionModel));
+                this.executionModels.OnNext(result.ExecutionModel);
             }
             else if (result?.PathCounterExample != null)
             {

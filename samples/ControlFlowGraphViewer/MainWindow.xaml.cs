@@ -322,20 +322,20 @@ namespace ControlFlowGraphViewer
             }
 
             var explorationContext = new ExplorationContext(graphProvider, z3Factory, startNode, options);
-            explorationContext.ExecutionModelFound += this.ExplorationContext_ExecutionModelFound;
+            explorationContext.ExecutionModels.Subscribe(this.ExecutionModelFound);
             await explorationContext.ExploreAsync();
 
             this.exploreButton.IsEnabled = true;
             this.exploreProgress.IsIndeterminate = false;
         }
 
-        private async void ExplorationContext_ExecutionModelFound(object sender, ExecutionModelEventArgs e)
+        private async void ExecutionModelFound(ExecutionModel executionModel)
         {
             var modelList = new List<string>();
-            for (int i = 0; i < e.ExecutionModel.NodeInterpretations.Length; i++)
+            for (int i = 0; i < executionModel.NodeInterpretations.Length; i++)
             {
-                var node = e.ExecutionModel.PathNodes[i];
-                var interpretations = e.ExecutionModel.NodeInterpretations[i];
+                var node = executionModel.PathNodes[i];
+                var interpretations = executionModel.NodeInterpretations[i];
                 var innerNode = node as InnerFlowNode;
                 if (innerNode != null)
                 {

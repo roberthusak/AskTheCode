@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
@@ -114,20 +116,22 @@ namespace AskTheCode.ViewModel
             options.FinalNodeRecognizer = new PublicMethodEntryRecognizer();
             var explorationContext = new ExplorationContext(this.GraphProvider, z3ContextFactory, startNode, options);
 
-            // TODO: Make it run the handler in the same thread to prevent any race conditions in the whole ViewModel
-            explorationContext.ExecutionModelFound += this.OnExecutionModelFound;
-            this.IsExploring = true;
+            // TODO: Solve the situation when there is no dispatcher associated with the current thread
+            using (var subscription = explorationContext.ExecutionModels
+                .ObserveOn(DispatcherScheduler.Current)
+                .Subscribe(this.OnExecutionModelFound))
+            {
+                this.IsExploring = true;
 
-            explorationContext.Explore();
-            //await explorationContext.ExploreAsync();
+                await explorationContext.ExploreAsync();
 
-            explorationContext.ExecutionModelFound -= this.OnExecutionModelFound;
-            this.IsExploring = false;
+                this.IsExploring = false;
+            }
         }
 
-        private void OnExecutionModelFound(object sender, ExecutionModelEventArgs e)
+        private void OnExecutionModelFound(ExecutionModel executionModel)
         {
-            var pathView = new PathView(this, e.ExecutionModel);
+            var pathView = new PathView(this, executionModel);
             this.Paths.Add(pathView);
         }
 
