@@ -47,7 +47,7 @@ namespace StandaloneGui
         {
             Project project = null;
             var args = Environment.GetCommandLineArgs();
-            if (args.Length >= 2 && File.Exists(args[1]))
+            if (args.Length >= 3 && File.Exists(args[1]))
             {
                 string file = args[1];
                 string suffix = System.IO.Path.GetExtension(file);
@@ -58,11 +58,17 @@ namespace StandaloneGui
                 }
             }
 
-            var document = project?.Documents.FirstOrDefault();
+            Document document = null;
+
+            if (args.Length >= 3)
+            {
+                string documentName = args[2];
+                document = project?.Documents.FirstOrDefault(doc => doc.Name.EndsWith(documentName));
+            }
 
             if (document == null)
             {
-                MessageBox.Show("Please pass the project to open as an argument of the program");
+                MessageBox.Show("Please pass a valid project and document to open as an argument of the program");
                 this.Close();
                 return;
             }
