@@ -3,6 +3,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using AskTheCode.ViewModel;
 using AskTheCode.Vsix.Highlighting;
+using AskTheCode.Wpf;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Shell;
@@ -51,7 +52,7 @@ namespace AskTheCode.Vsix
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on
             // the object returned by the Content property.
-            this.Content = new MainWindowControl()
+            this.Content = new ToolPanel()
             {
                 DataContext = viewModel
             };

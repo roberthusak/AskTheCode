@@ -1,4 +1,4 @@
-﻿namespace AskTheCode.Vsix
+﻿namespace AskTheCode.Wpf
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Windows;
@@ -7,12 +7,12 @@
     /// <summary>
     /// Interaction logic for MainWindowControl.
     /// </summary>
-    public partial class MainWindowControl : UserControl
+    public partial class ToolPanel : UserControl
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MainWindowControl"/> class.
+        /// Initializes a new instance of the <see cref="ToolPanel"/> class.
         /// </summary>
-        public MainWindowControl()
+        public ToolPanel()
         {
             this.InitializeComponent();
         }

@@ -149,9 +149,6 @@
     <Compile Include="Highlighting\IHighlightService.cs" />
     <Compile Include="MainWindow.cs" />
     <Compile Include="MainWindowCommand.cs" />
-    <Compile Include="MainWindowControl.xaml.cs">
-      <DependentUpon>MainWindowControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MsaglGraphPresenter.xaml.cs">
       <DependentUpon>MsaglGraphPresenter.xaml</DependentUpon>
     </Compile>
@@ -429,10 +426,6 @@
     <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="MainWindowControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MsaglGraphPresenter.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -486,6 +479,10 @@
       <Name>AskTheCode.ViewModel</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\AskTheCode.Wpf\AskTheCode.Wpf.csproj">
+      <Project>{610dae9a-4124-4bb9-a75b-1a316b567ed6}</Project>
+      <Name>AskTheCode.Wpf</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -190,15 +190,8 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="MsaglGraphPresenter.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MsaglGraphPresenter.xaml.cs">
-      <DependentUpon>MsaglGraphPresenter.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -266,6 +259,10 @@
     <ProjectReference Include="..\..\src\AskTheCode.ViewModel\AskTheCode.ViewModel.csproj">
       <Project>{d3713ce8-935f-4b88-a281-efe7ae07903b}</Project>
       <Name>AskTheCode.ViewModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\AskTheCode.Wpf\AskTheCode.Wpf.csproj">
+      <Project>{610dae9a-4124-4bb9-a75b-1a316b567ed6}</Project>
+      <Name>AskTheCode.Wpf</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\test\AskTheCode.ControlFlowGraphs.Cli.Tests\AskTheCode.ControlFlowGraphs.Cli.Tests.csproj">
       <Project>{d9a2266f-7b36-4d9e-b0a8-f5fc0acd7433}</Project>

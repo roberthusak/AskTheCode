@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:StandaloneGui"
+        xmlns:local="clr-namespace:StandaloneGui;assembly=AskTheCode.Wpf"
         xmlns:vm="clr-namespace:AskTheCode.ViewModel;assembly=AskTheCode.ViewModel"
+        xmlns:controls="clr-namespace:AskTheCode.Wpf;assembly=AskTheCode.Wpf"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800" WindowState="Maximized" Loaded="Window_Loaded">
     <Grid>
@@ -42,49 +43,7 @@
                 </TabControl.ContentTemplate>
             </TabControl>
         </Border>
-        
-        <Border x:Name="exploreWindow" Padding="5,0,5,5" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
 
-                <Label Content="Call graph:" Padding="0,5,5,5" />
-                <Button Grid.Column="1" Content="Display in large window" Margin="5" />
-                <local:MsaglGraphPresenter Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,5,0" />
-                <Button Grid.Row="2" Content="Explore" Command="{Binding ExploreCommand}" Margin="0,5,0,0" />
-                <ProgressBar Grid.Row="2" Grid.Column="1" Margin="5" IsIndeterminate="{Binding IsExploring}" />
-
-                <Label Grid.Column="2" Content="Related paths:" Padding="0,5,5,5" />
-                <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,5,0"
-                         ItemsSource="{Binding Paths}" SelectedItem="{Binding SelectedPath}" DisplayMemberPath="Name" />
-
-                <Label Grid.Column="3" Content="Path control flow:" Padding="0,5,5,5" />
-                <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="0,0,5,0"
-                         ItemsSource="{Binding SelectedPath.MethodFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow}" DisplayMemberPath="Name" />
-
-                <Label Grid.Column="4" Grid.ColumnSpan="2" Content="Method control flow:" Padding="0,5,5,5" />
-                <Button Grid.Column="6" Content="Show control flow graph" Margin="5" />
-                <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3" AutoGenerateColumns="False" IsReadOnly="True"
-                          ItemsSource="{Binding SelectedPath.SelectedMethodFlow.StatementFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow.SelectedStatementFlow}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Statement" Binding="{Binding Statement}" Width="2*" />
-                        <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
-                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </Border>
+        <controls:ToolPanel x:Name="explorerWindow" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1" />
     </Grid>
 </Window>
