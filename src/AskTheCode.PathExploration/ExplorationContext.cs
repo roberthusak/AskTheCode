@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
+using System.Diagnostics.Contracts;
 
 namespace AskTheCode.PathExploration
 {
@@ -56,17 +57,37 @@ namespace AskTheCode.PathExploration
             explorer.Explore(default(CancellationToken));
         }
 
-        public async Task ExploreAsync()
+        public async Task ExploreAsync(CancellationToken cancelToken)
+        {
+            Contract.Requires<InvalidOperationException>(this.Options.TimeoutSeconds == null);
+
+            await this.ExploreAsyncImpl(cancelToken);
+        }
+
+        public async Task ExploreAsync(CancellationTokenSource cancelTokenSource = null)
+        {
+            var cancelToken = cancelTokenSource?.Token ?? default(CancellationToken);
+
+            if (cancelTokenSource == null && this.Options.TimeoutSeconds != null)
+            {
+                cancelTokenSource = new CancellationTokenSource();
+                cancelToken = cancelTokenSource.Token;
+            }
+
+            if (this.Options.TimeoutSeconds != null)
+            {
+                cancelTokenSource.CancelAfter(this.Options.TimeoutSeconds.Value * 1000);
+            }
+
+            await this.ExploreAsyncImpl(cancelToken);
+        }
+
+        private async Task ExploreAsyncImpl(CancellationToken cancelToken)
         {
             // TODO: Implement exploration partitioning to multiple explorers
             var explorer = this.CreateExplorer();
-
-            var cancelSource = new CancellationTokenSource();
-
-            var explorationTask = new Task(() => explorer.Explore(cancelSource.Token));
+            var explorationTask = new Task(() => explorer.Explore(cancelToken));
             explorationTask.Start();
-
-            cancelSource.CancelAfter(this.Options.TimeoutSeconds * 1000);
 
             await explorationTask;
         }

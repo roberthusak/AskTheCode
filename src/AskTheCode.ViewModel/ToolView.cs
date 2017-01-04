@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
@@ -24,6 +25,7 @@ namespace AskTheCode.ViewModel
 
         private FlowGraphView selectedFlowGraph;
         private bool isExploring;
+        private CancellationTokenSource explorationCancelSource;
         private PathView selectedPath;
 
         public ToolView(IIdeServices ideServices)
@@ -33,6 +35,7 @@ namespace AskTheCode.ViewModel
             this.ideServices = ideServices;
             this.DisplayFlowGraphCommand = new Command(this.DisplayFlowGraph);
             this.ExploreCommand = new Command(this.Explore);
+            this.CancelCommand = new Command(this.Cancel);
 
             this.UpdateCurrentSolution();
         }
@@ -49,7 +52,7 @@ namespace AskTheCode.ViewModel
         public bool IsExploring
         {
             get { return this.isExploring; }
-            set { this.SetProperty(ref this.isExploring, value); }
+            private set { this.SetProperty(ref this.isExploring, value); }
         }
 
         public ObservableCollection<PathView> Paths { get; private set; } =
@@ -64,6 +67,8 @@ namespace AskTheCode.ViewModel
         public Command DisplayFlowGraphCommand { get; private set; }
 
         public Command ExploreCommand { get; private set; }
+
+        public Command CancelCommand { get; private set; }
 
         // TODO: Implement highlighting centrally and remove this
         internal IIdeServices IdeServices => this.ideServices;
@@ -106,7 +111,6 @@ namespace AskTheCode.ViewModel
             Contract.Assert(info.SelectedDisplayNode.Records.Any());
             var flowNodeRecord = info.SelectedDisplayNode.Records.Last();
 
-            // TODO: Handle also assertion verification (not just reachability) and type models with multiple variables
             var startNode = new StartingNodeInfo(
                 flowNodeRecord.FlowNode,
                 flowNodeRecord.FirstVariableIndex,
@@ -116,17 +120,36 @@ namespace AskTheCode.ViewModel
             options.FinalNodeRecognizer = new PublicMethodEntryRecognizer();
             var explorationContext = new ExplorationContext(this.GraphProvider, z3ContextFactory, startNode, options);
 
+            this.explorationCancelSource = new CancellationTokenSource();
+
             // TODO: Solve the situation when there is no dispatcher associated with the current thread
-            using (var subscription = explorationContext.ExecutionModels
+            explorationContext.ExecutionModels
                 .ObserveOn(DispatcherScheduler.Current)
-                .Subscribe(this.OnExecutionModelFound))
+                .Subscribe(this.OnExecutionModelFound, this.explorationCancelSource.Token);
+
+            this.IsExploring = true;
+            await explorationContext.ExploreAsync(this.explorationCancelSource);
+
+            if (this.explorationCancelSource != null)
             {
-                this.IsExploring = true;
-
-                await explorationContext.ExploreAsync();
-
-                this.IsExploring = false;
+                // To remove the subscription
+                this.explorationCancelSource.Cancel();
+                this.explorationCancelSource = null;
             }
+
+            this.IsExploring = false;
+        }
+
+        public void Cancel()
+        {
+            if (!this.IsExploring)
+            {
+                return;
+            }
+
+            this.explorationCancelSource.Cancel();
+            this.explorationCancelSource = null;
+            this.IsExploring = false;
         }
 
         private void OnExecutionModelFound(ExecutionModel executionModel)

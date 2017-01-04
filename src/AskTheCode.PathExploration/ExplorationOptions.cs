@@ -20,6 +20,6 @@ namespace AskTheCode.PathExploration
         public IHeuristicFactory<ISmtHeuristic> SmtHeuristicFactory { get; set; } =
             new SimpleHeuristicFactory<SimpleSmtHeuristic>();
 
-        public int TimeoutSeconds { get; set; } = 30;
+        public int? TimeoutSeconds { get; set; } = 30;
     }
 }
