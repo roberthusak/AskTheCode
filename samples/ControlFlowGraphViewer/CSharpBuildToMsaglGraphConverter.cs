@@ -82,6 +82,10 @@ namespace ControlFlowGraphViewer
                 {
                     switch (buildNode.BorderData.Kind)
                     {
+                        case BorderDataKind.Enter:
+                            text.Append("enter");
+                            break;
+
                         case BorderDataKind.Return:
                             text.Append("return");
                             if (buildNode.ValueModel != null)
