@@ -13,7 +13,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public MethodLocation(IMethodSymbol method, bool isExplorationDisabled = false)
         {
             Contract.Requires<ArgumentNullException>(method != null, nameof(method));
-            Contract.Requires(method.Locations.Length == 1, nameof(method));
 
             this.Method = method;
 
@@ -23,7 +22,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
             else
             {
-                this.CanBeExplored = this.Method.Locations.Single().IsInSource;
+                // Methods such as built-in operators do not have locations
+                this.CanBeExplored = this.Method.Locations.SingleOrDefault()?.IsInSource == true;
             }
         }
 
