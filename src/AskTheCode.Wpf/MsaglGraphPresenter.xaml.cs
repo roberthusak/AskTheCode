@@ -33,6 +33,8 @@ namespace AskTheCode.Wpf
             typeof(MsaglGraphPresenter),
             new PropertyMetadata(GraphViewerConsumerChanged));
 
+        private bool isInitialized = false;
+
         public MsaglGraphPresenter()
         {
             this.InitializeComponent();
@@ -77,7 +79,11 @@ namespace AskTheCode.Wpf
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            this.GraphViewer.BindToPanel(this.graphViewerPanel);
+            if (!this.isInitialized)
+            {
+                this.GraphViewer.BindToPanel(this.graphViewerPanel);
+                this.isInitialized = true;
+            }
         }
     }
 }
