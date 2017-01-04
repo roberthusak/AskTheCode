@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,7 @@ namespace EvaluationTests
         public void OtherSimpleCaller(int x, int y)
         {
             int a = 1;
+            int c = x - y;
             int b = SimpleCallee(a);
         }
 
@@ -37,6 +39,12 @@ namespace EvaluationTests
             int b = -a;
 
             if (c == 0)
+            {
+                int d = c;
+                Debug.Assert(c != 0);
+                return;
+            }
+            else
             {
                 return;
             }

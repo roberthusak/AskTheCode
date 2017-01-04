@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace EvaluationTests
 {
     [TestClass]
-    [PexClass]
+    [PexClass(Timeout = 30, MaxRunsWithoutNewTests = 2000, MaxConditions = 2000)]
     public partial class Loops
     {
         private const int SimpleLoopTarget = 64;
@@ -33,7 +33,7 @@ namespace EvaluationTests
                 i = i + 1;
             }
 
-            Evaluation.InvalidAssert(x < 32);
+            Evaluation.InvalidAssert(x < 32);   // AskTheCode, Pex
         }
 
         [PexMethod]
@@ -47,38 +47,45 @@ namespace EvaluationTests
                 j = j + 1;
                 i = i - 1;
 
-                Evaluation.ValidAssert(j > 0);
+                Evaluation.ValidAssert(j > 0);  // CC
             }
 
-            Evaluation.InvalidAssert(j != SimpleLoopTarget);
+            Evaluation.InvalidAssert(j != 2048 /*SimpleLoopTarget*/);   // Nothing
         }
 
         [PexMethod]
+        [PexAssertReachEventually("location")]
         [ContractVerification(true)]
         public static void LoopAndIf(int x)
         {
             int c = 0, p = 0;
             while (x > 0)
             {
-                Evaluation.InvalidAssert(c != 50);
+                Evaluation.InvalidAssert(c != 50);  // AskTheCode, Pex
 
                 c = c + 1;
                 p = p + c;
                 x = x - 1;
             }
 
-            Evaluation.InvalidAssert(c != 30);
+            //Evaluation.InvalidAssert(c != 30);
+
+            if (c == 30)
+            {
+                Evaluation.InvalidUnreachable(); //Evaluation.InvalidAssert(c != 30);  // AskTheCode, Pex
+                PexAssert.ReachEventually("location");
+            }
         }
 
-        [PexMethod(MaxRunsWithoutNewTests = 1000)]
-        [PexAssertReachEventually]
+        [PexMethod]
+        [PexAssertReachEventually(1)]
         [ContractVerification(true)]
         public static void TwoLoops(int x, int y)
         {
             int c = 0, p = 0;
             while (x > 0)
             {
-                Evaluation.ValidAssert(c >= 0);
+                Evaluation.ValidAssert(c >= 0);     // Nothing
 
                 c = c + 1;
                 x = x - 1;
@@ -88,8 +95,8 @@ namespace EvaluationTests
             {
                 if (p == 50 && c == 2)
                 {
-                    PexAssert.ReachEventually();
-                    Evaluation.InvalidUnreachable();
+                    PexAssert.ReachEventually(0);
+                    Evaluation.InvalidUnreachable();    // AskTheCode, Pex
                 }
 
                 p = p + 1;
@@ -116,13 +123,14 @@ namespace EvaluationTests
                     res = res + 17;
                 }
 
-                i++;
+                i = i + 1;
             }
 
-            Evaluation.InvalidAssert(res != LoopedModuloTarget);
+            Evaluation.InvalidAssert(res != 2048 /*LoopedModuloTarget*/);   // Pex
         }
 
         [PexMethod]
+        //[PexAssertReachEventually]
         [ContractVerification(true)]
         public void ConcolicInefficientLoop(int x)
         {
@@ -145,10 +153,12 @@ namespace EvaluationTests
 
             if (y > 2048)
             {
-                Evaluation.ValidAssert(y != 0);
+                Evaluation.ValidAssert(y != 0);     // AskTheCode, CC
 
                 int count = CountOfSomething();
-                Evaluation.ValidAssert(y + count != 0);
+                Evaluation.ValidAssert(y + count != 0);     // AskTheCode, CC (with hints)
+
+                //PexAssert.ReachEventually();
             }
         }
 
