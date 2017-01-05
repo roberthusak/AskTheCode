@@ -104,32 +104,6 @@ public static class MethodSampleClass
         }
     }
 
-    public static int QuadraticFirstRoot(int a, int b, int c)
-    {
-        int D = b * b - 4 * a * c;
-        int dividend = 0;
-
-        if (D > 0)
-        {
-            dividend = -b;
-            dividend += (int)Math.Sqrt(D);
-        }
-        else if (D == 0)
-        {
-            dividend = -b;
-        }
-        else
-        {
-            Debug.Assert(D < 0);
-            Trace.WriteLine(-1);
-            throw new ArgumentException();
-        }
-
-        int divisor = (2 * a);
-        Debug.Assert(divisor != 0);
-        return dividend / divisor;
-    }
-
     public static int ComplexExample(int a, int b, bool c)
     {
         if (a == 0)

@@ -27,7 +27,7 @@ namespace EvaluationTests
             int balance = startBalance;
             int withdrawalsCount = 0;
 
-            while (Evaluation.Choose<bool>("operationLoop"))
+            while (PexChoose.Value<bool>("operationLoop"))
             {
                 bool operation = PexChoose.Value<bool>("operationType");
                 int amount = PexChoose.Value<int>("amount");

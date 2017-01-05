@@ -10,31 +10,41 @@ namespace EvaluationTests.Annotations
 {
     public static class Evaluation
     {
+        /// <summary>
+        /// Symbol used to conditionally add contract hints.
+        /// </summary>
         public const string ContractsHintsSymbol = "EVALUATION_CC_HINTS";
 
+        /// <remarks>
+        /// During the contract checking, the precondition is propagated to the call site as an assertion.
+        /// </remarks>
         public static void ValidAssert(bool condition)
         {
             Contract.Requires(condition);
         }
 
+        /// <remarks>
+        /// During the contract checking, the precondition is propagated to the call site as an assertion.
+        /// </remarks>
         public static void InvalidAssert(bool condition)
         {
             Contract.Requires(condition);
         }
 
+        /// <remarks>
+        /// This precondition is satisfied only if the call site is not reachable.
+        /// </remarks>
         public static void ValidUnreachable()
         {
             Contract.Requires(false);
         }
 
+        /// <remarks>
+        /// This precondition is satisfied only if the call site is not reachable.
+        /// </remarks>
         public static void InvalidUnreachable()
         {
             Contract.Requires(false);
-        }
-
-        public static T Choose<T>(string name)
-        {
-            return PexChoose.Value<T>(name);
         }
     }
 }
