@@ -65,7 +65,7 @@ namespace AskTheCode.PathExploration
         public ISmtHeuristic SmtHeuristic { get; internal set; }
 
         // TODO: Divide into submethods to make more readable
-        internal void Explore(CancellationToken cancelToken)
+        internal async Task<bool> ExploreAsync(CancellationToken cancelToken)
         {
             for (
                 var currentState = this.ExplorationHeuristic.PickNextState();
@@ -75,7 +75,6 @@ namespace AskTheCode.PathExploration
                 // TODO: Consider reusing the state instead of discarding
                 this.RemoveState(currentState);
 
-                // TODO: Properly use the asynchronous operations instead of .Result
                 IReadOnlyList<FlowEdge> edges;
                 var currentNode = currentState.Path.Node;
                 var graphProvider = this.context.FlowGraphProvider;
@@ -83,7 +82,7 @@ namespace AskTheCode.PathExploration
                 {
                     if (currentState.CallSiteStack == CallSiteStack.Empty)
                     {
-                        edges = Task.Run(() => graphProvider.GetCallEdgesToAsync((EnterFlowNode)currentNode)).Result;
+                        edges = await graphProvider.GetCallEdgesToAsync((EnterFlowNode)currentNode);
                     }
                     else
                     {
@@ -98,7 +97,7 @@ namespace AskTheCode.PathExploration
                     && !(currentState.Path.Preceeding.FirstOrDefault()?.Node is EnterFlowNode))
                 {
                     // If we can model the call and we haven't returned from that method yet
-                    edges = Task.Run(() => graphProvider.GetReturnEdgesToAsync((CallFlowNode)currentNode)).Result;
+                    edges = await graphProvider.GetReturnEdgesToAsync((CallFlowNode)currentNode);
                 }
                 else
                 {
@@ -202,6 +201,9 @@ namespace AskTheCode.PathExploration
                     break;
                 }
             }
+
+            // If there are any exploration states left, the results are not exhaustive
+            return this.States.Count == 0;
         }
 
         private static CallSiteStack GetNewCallSiteStack(ExplorationState currentState, FlowEdge edge)

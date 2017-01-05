@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
@@ -7,7 +8,6 @@ using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
-using System.Diagnostics.Contracts;
 
 namespace AskTheCode.PathExploration
 {
@@ -51,20 +51,14 @@ namespace AskTheCode.PathExploration
 
         internal ExplorationOptions Options { get; private set; }
 
-        public void Explore()
-        {
-            var explorer = this.CreateExplorer();
-            explorer.Explore(default(CancellationToken));
-        }
-
-        public async Task ExploreAsync(CancellationToken cancelToken)
+        public async Task<bool> ExploreAsync(CancellationToken cancelToken)
         {
             Contract.Requires<InvalidOperationException>(this.Options.TimeoutSeconds == null);
 
-            await this.ExploreAsyncImpl(cancelToken);
+            return await this.ExploreAsyncImpl(cancelToken);
         }
 
-        public async Task ExploreAsync(CancellationTokenSource cancelTokenSource = null)
+        public async Task<bool> ExploreAsync(CancellationTokenSource cancelTokenSource = null)
         {
             var cancelToken = cancelTokenSource?.Token ?? default(CancellationToken);
 
@@ -79,17 +73,19 @@ namespace AskTheCode.PathExploration
                 cancelTokenSource.CancelAfter(this.Options.TimeoutSeconds.Value * 1000);
             }
 
-            await this.ExploreAsyncImpl(cancelToken);
+            return await this.ExploreAsyncImpl(cancelToken);
         }
 
-        private async Task ExploreAsyncImpl(CancellationToken cancelToken)
+        /// <summary>
+        /// Creates an instance of <see cref="Explorer"/> and runs the exploration on the ThreadPool.
+        /// </summary>
+        /// <remarks>
+        /// In the future, it is expected to create multiple explorers and distribute the work among them.
+        /// </remarks>
+        private async Task<bool> ExploreAsyncImpl(CancellationToken cancelToken)
         {
-            // TODO: Implement exploration partitioning to multiple explorers
             var explorer = this.CreateExplorer();
-            var explorationTask = new Task(() => explorer.Explore(cancelToken));
-            explorationTask.Start();
-
-            await explorationTask;
+            return await Task.Run(() => explorer.ExploreAsync(cancelToken));
         }
 
         private Explorer CreateExplorer()
