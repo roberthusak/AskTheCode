@@ -277,7 +277,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 }
                 else
                 {
-                    location = new MethodLocation(borderData.Method);
+                    // TODO: Enable a configurable and extensible approach instead of this hack
+                    // Disable exploring the methods from the tool evaluation
+                    bool isExplorationDisabled =
+                        borderData.Method.ContainingType.ToString() == "EvaluationTests.Annotations.Evaluation";
+
+                    location = new MethodLocation(borderData.Method, isExplorationDisabled);
                     var buildArguments = borderData.Arguments.SelectMany(typeModel => typeModel.AssignmentRight);
                     flowArguments = buildArguments.Select(expression => this.TranslateExpression(expression));
                 }
