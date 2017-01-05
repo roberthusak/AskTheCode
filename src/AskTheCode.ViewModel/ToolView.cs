@@ -129,6 +129,7 @@ namespace AskTheCode.ViewModel
             if (!info.IsComplete)
             {
                 this.Messages.Add("Unable to start the exploration from the selected statement. Ensure the caret is on a valid position and the method contains only supported constructs.");
+                this.Messages.Add("Note: The tool is currently unable to recognize the statement when its trailing semicolon is selected, please place the cursor in the middle of it.");
                 return;
             }
             else if (isAssertCheck && !info.IsAssertion)
