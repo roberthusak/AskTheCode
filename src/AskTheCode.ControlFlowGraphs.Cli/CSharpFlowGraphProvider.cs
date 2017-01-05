@@ -144,7 +144,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         }
 
         // TODO: Implement proper exception handling
-        private GeneratedGraphs GenerateGraphsImpl(MethodLocation location, FlowGraphId graphId)
+        private async Task<GeneratedGraphs> GenerateGraphsImpl(MethodLocation location, FlowGraphId graphId)
         {
             var declarationLocation = location.Method.Locations.FirstOrDefault();
             Contract.Assert(declarationLocation != null);
@@ -164,8 +164,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 semanticModel,
                 methodSyntax);
 
-            // TODO: Handle the continuation in a logic way (consider making BuildAsync() synchronous)
-            var buildGraph = builder.BuildAsync().Result;
+            var buildGraph = await builder.BuildAsync();
 
             var flowGraphTranslator = new FlowGraphTranslator(buildGraph, builder.DisplayGraph, graphId);
             var result = flowGraphTranslator.Translate();
