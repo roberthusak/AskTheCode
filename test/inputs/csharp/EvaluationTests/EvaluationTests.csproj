@@ -208,7 +208,6 @@
     <Compile Include="BankAccount.cs" />
     <Compile Include="IntegerArithmetic.cs" />
     <Compile Include="Loops.cs" />
-    <Compile Include="Interprocedural.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TriangleClassification.cs" />
     <Compile Include="TriangleClassificationTest.cs" />
