@@ -153,8 +153,7 @@ namespace AskTheCode.PathExploration
                             this.AddState(branchedState);
                         }
 
-                        if (this.finalNodeRecognizer.IsFinalNode(branchedState.Path.Node)
-                            || this.SmtHeuristic.DoSolve(branchedState))
+                        if (this.IsFinalState(branchedState) || this.SmtHeuristic.DoSolve(branchedState))
                         {
                             toSolve.Add(branchedState);
                         }
@@ -184,8 +183,7 @@ namespace AskTheCode.PathExploration
                     {
                         var resultKind = branchedState.SolverHandler.Solve(branchedState.Path);
 
-                        if (resultKind != ExplorationResultKind.Reachable
-                            || this.finalNodeRecognizer.IsFinalNode(branchedState.Path.Node))
+                        if (resultKind != ExplorationResultKind.Reachable || this.IsFinalState(branchedState))
                         {
                             this.RemoveState(branchedState);
                             var result = branchedState.SolverHandler.LastResult;
@@ -230,6 +228,12 @@ namespace AskTheCode.PathExploration
             }
 
             return callSiteStack;
+        }
+
+        private bool IsFinalState(ExplorationState branchedState)
+        {
+            return branchedState.CallSiteStack == CallSiteStack.Empty
+                && this.finalNodeRecognizer.IsFinalNode(branchedState.Path.Node);
         }
 
         private void AddState(ExplorationState state)
