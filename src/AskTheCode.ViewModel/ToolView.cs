@@ -34,7 +34,8 @@ namespace AskTheCode.ViewModel
 
             this.ideServices = ideServices;
             this.DisplayFlowGraphCommand = new Command(this.DisplayFlowGraph);
-            this.ExploreCommand = new Command(this.Explore);
+            this.ExploreReachabilityCommand = new Command(() => this.Explore(false));
+            this.ExploreCorrectnessCommand = new Command(() => this.Explore(true));
             this.CancelCommand = new Command(this.Cancel);
 
             this.UpdateCurrentSolution();
@@ -58,6 +59,9 @@ namespace AskTheCode.ViewModel
         public ObservableCollection<PathView> Paths { get; private set; } =
             new ObservableCollection<PathView>();
 
+        public ObservableCollection<string> Messages { get; private set; } =
+            new ObservableCollection<string>();
+
         public PathView SelectedPath
         {
             get { return this.selectedPath; }
@@ -66,7 +70,9 @@ namespace AskTheCode.ViewModel
 
         public Command DisplayFlowGraphCommand { get; private set; }
 
-        public Command ExploreCommand { get; private set; }
+        public Command ExploreReachabilityCommand { get; private set; }
+
+        public Command ExploreCorrectnessCommand { get; private set; }
 
         public Command CancelCommand { get; private set; }
 
@@ -91,7 +97,19 @@ namespace AskTheCode.ViewModel
             this.SelectedFlowGraph = graphView;
         }
 
-        public async void Explore()
+        public void Cancel()
+        {
+            if (!this.IsExploring)
+            {
+                return;
+            }
+
+            this.explorationCancelSource.Cancel();
+            this.explorationCancelSource = null;
+            this.IsExploring = false;
+        }
+
+        private async void Explore(bool isAssertCheck)
         {
             if (this.IsExploring)
             {
@@ -100,13 +118,14 @@ namespace AskTheCode.ViewModel
 
             this.UpdateCurrentSolution();
             var info = await this.GatherInformationForCurrentCaretPosition();
-            if (!info.IsComplete)
+            if (!info.IsComplete || (isAssertCheck && !info.IsAssertion))
             {
                 return;
             }
 
             this.SelectedPath = null;
             this.Paths.Clear();
+            this.Messages.Clear();
 
             Contract.Assert(info.SelectedDisplayNode.Records.Any());
             var flowNodeRecord = info.SelectedDisplayNode.Records.Last();
@@ -114,7 +133,7 @@ namespace AskTheCode.ViewModel
             var startNode = new StartingNodeInfo(
                 flowNodeRecord.FlowNode,
                 flowNodeRecord.FirstVariableIndex,
-                info.IsAssertion);
+                isAssertCheck);
             var z3ContextFactory = new ContextFactory();
             var options = new ExplorationOptions();
             options.FinalNodeRecognizer = new PublicMethodEntryRecognizer();
@@ -128,6 +147,7 @@ namespace AskTheCode.ViewModel
                 .Subscribe(this.OnExecutionModelFound, this.explorationCancelSource.Token);
 
             this.IsExploring = true;
+            this.Messages.Add("Exploration started");
             await explorationContext.ExploreAsync(this.explorationCancelSource);
 
             if (this.explorationCancelSource != null)
@@ -137,18 +157,7 @@ namespace AskTheCode.ViewModel
                 this.explorationCancelSource = null;
             }
 
-            this.IsExploring = false;
-        }
-
-        public void Cancel()
-        {
-            if (!this.IsExploring)
-            {
-                return;
-            }
-
-            this.explorationCancelSource.Cancel();
-            this.explorationCancelSource = null;
+            this.Messages.Add("Exploration ended");
             this.IsExploring = false;
         }
 
