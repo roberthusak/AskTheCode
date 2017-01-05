@@ -150,6 +150,8 @@ namespace AskTheCode.ViewModel
                 highlights.Add(HighlightType.Standard, new[] { this.SelectedStatementFlow.DisplayRecord.Span });
             }
 
+            var document = this.PathView.ToolView.CurrentSolution.GetDocument(methodLocation.SourceTree);
+            this.PathView.ToolView.IdeServices.OpenDocument(document);
             this.PathView.ToolView.IdeServices.HighlightText(text, highlights);
         }
     }
