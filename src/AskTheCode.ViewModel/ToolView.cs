@@ -28,6 +28,7 @@ namespace AskTheCode.ViewModel
         private bool isExploring;
         private CancellationTokenSource explorationCancelSource;
         private PathView selectedPath;
+        private HashSet<ExecutionModel> foundModels = new HashSet<ExecutionModel>();
 
         public ToolView(IIdeServices ideServices)
         {
@@ -119,6 +120,7 @@ namespace AskTheCode.ViewModel
 
             this.SelectedPath = null;
             this.Paths.Clear();
+            this.foundModels.Clear();
             this.Messages.Clear();
             this.Messages.Add("Analyzing the code on the caret position...");
 
@@ -170,13 +172,19 @@ namespace AskTheCode.ViewModel
             this.explorationCancelSource = new CancellationTokenSource();
 
             // TODO: Solve the situation when there is no dispatcher associated with the current thread
-            explorationContext.ExecutionModels
+            explorationContext.ExecutionModelsObservable
                 .ObserveOn(DispatcherScheduler.Current)
                 .Subscribe(this.OnExecutionModelFound, this.explorationCancelSource.Token);
 
             this.IsExploring = true;
             this.Messages.Add(isAssertCheck ? "Verifying the assertion..." : "Exploring the reachability...");
             bool wasExhaustive = await explorationContext.ExploreAsync(this.explorationCancelSource);
+
+            // Amend any found results that may have not yet reach the dispatching handler
+            foreach (var executionModel in explorationContext.ExecutionModels)
+            {
+                this.OnExecutionModelFound(executionModel);
+            }
 
             if (this.explorationCancelSource != null)
             {
@@ -222,8 +230,11 @@ namespace AskTheCode.ViewModel
 
         private void OnExecutionModelFound(ExecutionModel executionModel)
         {
-            var pathView = new PathView(this, executionModel);
-            this.Paths.Add(pathView);
+            if (this.foundModels.Add(executionModel))
+            {
+                var pathView = new PathView(this, executionModel);
+                this.Paths.Add(pathView);
+            }
         }
 
         private void UpdateCurrentSolution()

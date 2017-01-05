@@ -14,7 +14,8 @@ namespace AskTheCode.PathExploration
     public class ExplorationContext
     {
         // TODO: Consider enforcing it to be read-only
-        private Subject<ExecutionModel> executionModels = new Subject<ExecutionModel>();
+        private List<ExecutionModel> executionModels = new List<ExecutionModel>();
+        private Subject<ExecutionModel> executionModelsSubject = new Subject<ExecutionModel>();
 
         public ExplorationContext(
             IFlowGraphProvider flowGraphProvider,
@@ -37,7 +38,9 @@ namespace AskTheCode.PathExploration
         {
         }
 
-        public IObservable<ExecutionModel> ExecutionModels => this.executionModels;
+        public IReadOnlyList<ExecutionModel> ExecutionModels => this.executionModels;
+
+        public IObservable<ExecutionModel> ExecutionModelsObservable => this.executionModelsSubject;
 
         internal IFlowGraphProvider FlowGraphProvider { get; private set; }
 
@@ -109,7 +112,8 @@ namespace AskTheCode.PathExploration
             // TODO: Implement locking or some intelligent sequencing when multiple explorers are implemented
             if (result?.ExecutionModel != null)
             {
-                this.executionModels.OnNext(result.ExecutionModel);
+                this.executionModels.Add(result.ExecutionModel);
+                this.executionModelsSubject.OnNext(result.ExecutionModel);
             }
             else if (result?.PathCounterExample != null)
             {

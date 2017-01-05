@@ -322,7 +322,7 @@ namespace ControlFlowGraphViewer
             }
 
             var explorationContext = new ExplorationContext(graphProvider, z3Factory, startNode, options);
-            explorationContext.ExecutionModels.Subscribe(this.ExecutionModelFound);
+            explorationContext.ExecutionModelsObservable.Subscribe(this.ExecutionModelFound);
             await explorationContext.ExploreAsync();
 
             this.exploreButton.IsEnabled = true;
