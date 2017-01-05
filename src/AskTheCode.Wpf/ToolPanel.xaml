@@ -31,7 +31,13 @@
         <ProgressBar Grid.Row="1" Grid.Column="0" Margin="0,0,5,5" IsIndeterminate="{Binding IsExploring}" />
         <Button Grid.Row="1" Grid.Column="1" Content="Cancel" Command="{Binding CancelCommand}" Margin="5,0,10,5" IsEnabled="{Binding IsExploring}" />
 
-        <ListBox Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="2" Margin="0,5,10,0" ItemsSource="{Binding Messages}" />
+        <ListBox Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="2" Margin="0,5,10,0" ItemsSource="{Binding Messages}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" ToolTip="{Binding}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <Label Grid.Column="2" Content="Related paths:" Padding="0,5,5,5" />
         <ListBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="0,0,5,0"
@@ -42,7 +48,7 @@
                          ItemsSource="{Binding SelectedPath.MethodFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow}" DisplayMemberPath="Name" />
 
         <Label Grid.Column="4" Grid.ColumnSpan="2" Content="Method control flow:" Padding="0,5,5,5" />
-        <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3" AutoGenerateColumns="False" IsReadOnly="True"
+        <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False"
                           ItemsSource="{Binding SelectedPath.SelectedMethodFlow.StatementFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow.SelectedStatementFlow}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Statement" Binding="{Binding Statement}" Width="2*" />

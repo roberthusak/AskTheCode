@@ -56,7 +56,7 @@
         <Parent guid="guidAskTheCodePackageCmdSet" id="AskTheCodeMenuGroup"/>
         <Icon guid="guidImages" id="bmpPicSearch" />
         <Strings>
-          <ButtonText>Ask The Code</ButtonText>
+          <ButtonText>AskTheCode</ButtonText>
         </Strings>
       </Button>
     </Buttons>
