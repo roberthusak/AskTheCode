@@ -58,7 +58,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             if (returnSyntax.Expression != null)
             {
-                this.Context.ReenqueueCurrentNode(returnSyntax.Expression);
+                var expressionNode = this.Context.PrependCurrentNode(returnSyntax.Expression);
+
+                expressionNode.VariableModel = this.Context.TryCreateTemporaryVariableModel(returnSyntax.Expression);
+                this.Context.CurrentNode.ValueModel = expressionNode.VariableModel;
+
                 this.Context.CurrentNode.LabelOverride = returnSyntax;
             }
         }
