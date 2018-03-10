@@ -5,9 +5,8 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EvaluationTests.Annotations;
 
-namespace EvaluationTests
+namespace Sample
 {
     public class Interprocedural
     {
