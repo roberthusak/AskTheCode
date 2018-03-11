@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Vsix", "src\AskTheCode.Vsix\AskTheCode.Vsix.csproj", "{B5DC00A9-F9A3-4577-8E59-195162DA79C4}"
 EndProject
@@ -141,5 +141,8 @@ Global
 		{8268B9E2-442C-4444-8A4C-34EC534AB65A} = {2CB9758F-B2A5-4686-A0EB-7666E4145A7A}
 		{610DAE9A-4124-4BB9-A75B-1A316B567ED6} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 		{E3FE4BBE-846F-45CE-9420-5EB0A5D8FB75} = {2CB9758F-B2A5-4686-A0EB-7666E4145A7A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C06CFE83-3B8F-4354-A534-4211FF66B568}
 	EndGlobalSection
 EndGlobal
