@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Text;
 using AskTheCode.Common;
 using AskTheCode.SmtLibStandard.Handles;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs
 {

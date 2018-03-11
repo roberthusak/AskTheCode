@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Text;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.SmtLibStandard.Handles
 {

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using AskTheCode.Common;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs
 {
@@ -42,11 +42,18 @@ namespace AskTheCode.ControlFlowGraphs
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires(this.Graph.Builder == this);
             Contract.Requires(this.Graph.CanFreeze);
-            Contract.Ensures(this.Graph == null);
-            Contract.Ensures(Contract.Result<FrozenHandler<FlowGraph>>().Value != null);
-            Contract.Ensures(Contract.Result<FrozenHandler<FlowGraph>>().Value.Builder == null);
 
-            return this.Graph.Freeze();
+            // TODO: Convert back to this when supported
+            ////Contract.Ensures(this.Graph == null);
+            ////Contract.Ensures(Contract.Result<FrozenHandler<FlowGraph>>().Value != null);
+            ////Contract.Ensures(Contract.Result<FrozenHandler<FlowGraph>>().Value.Builder == null);
+
+            var result = this.Graph.Freeze();
+
+            Contract.Assert(this.Graph == null);
+            Contract.Assert(result.Value != null);
+            Contract.Assert(result.Value.Builder == null);
+            return result;
         }
 
         public EnterFlowNode AddEnterNode(IEnumerable<FlowVariable> parameters = null)

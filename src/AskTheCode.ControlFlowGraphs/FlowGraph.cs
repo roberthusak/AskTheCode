@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using AskTheCode.Common;
-using System.Diagnostics.Contracts;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs
 {
