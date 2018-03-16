@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
+using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 

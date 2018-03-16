@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.SmtLibStandard.Handles;
+using CodeContractsRevival.Runtime;
 using Microsoft.Z3;
 
 namespace AskTheCode.SmtLibStandard.Z3

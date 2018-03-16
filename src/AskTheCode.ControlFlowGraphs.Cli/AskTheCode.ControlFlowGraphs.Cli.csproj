@@ -301,6 +301,10 @@
       <Project>{2a814f35-9b19-4487-9e85-c9d1a2ffc955}</Project>
       <Name>AskTheCode.SmtLibStandard</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj">
+      <Project>{05f6ebc4-04a9-482d-a442-70b251a7ff87}</Project>
+      <Name>CodeContractsRevival.Runtime</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

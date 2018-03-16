@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
+using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels

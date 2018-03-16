@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -13,6 +12,7 @@ using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.PathExploration;
 using AskTheCode.SmtLibStandard.Z3;
+using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

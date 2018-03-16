@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
+using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 using Microsoft.Msagl.Drawing;
 

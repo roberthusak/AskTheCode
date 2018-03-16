@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.SmtLibStandard;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration
 {

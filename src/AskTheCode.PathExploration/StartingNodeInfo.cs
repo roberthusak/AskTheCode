@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration
 {

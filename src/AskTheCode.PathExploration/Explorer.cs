@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,6 +10,7 @@ using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration
 {

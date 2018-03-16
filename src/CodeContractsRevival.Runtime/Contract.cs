@@ -19,6 +19,12 @@ namespace CodeContractsRevival.Runtime
             Debug.Assert(condition);
         }
 
+        [Conditional("DEBUG")]
+        public static void Requires(bool condition, string userMessage)
+        {
+            Debug.Assert(condition, userMessage);
+        }
+
         public static void Requires<TException>(bool condition) where TException : Exception
         {
             if (!condition)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration
 {
@@ -44,7 +44,6 @@ namespace AskTheCode.PathExploration
         public void Update(Path path)
         {
             Contract.Requires(path != null);
-            Contract.Ensures(this.Path == path);
 
             int popCount = 0;
             var pathStack = new Stack<Path>();
@@ -90,6 +89,9 @@ namespace AskTheCode.PathExploration
 
                 this.Path = currentPath;
             }
+
+            // TODO: Turn back to Contract.Ensures when possible
+            Contract.Assert(this.Path == path);
         }
 
         public void RetractToRoot()

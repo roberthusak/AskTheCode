@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration
 {
@@ -64,8 +64,6 @@ namespace AskTheCode.PathExploration
         public ExplorationResultKind Solve(Path path)
         {
             Contract.Requires(path != null);
-            Contract.Ensures(this.Path == path);
-            Contract.Ensures(this.LastResultKind != null);
 
             this.pathConditionHandler.Update(path);
             Contract.Assert(this.Path == path);
@@ -89,6 +87,10 @@ namespace AskTheCode.PathExploration
 
             // Force to recreate it next time
             this.lastResult = null;
+
+            // TODO: Turn back to Contract.Ensures when possible
+            Contract.Assert(this.Path == path);
+            Contract.Assert(this.LastResultKind != null);
 
             return this.LastResultKind.Value;
         }

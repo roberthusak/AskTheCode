@@ -8,12 +8,21 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ViewModel", "src\AskTheCode.ViewModel\AskTheCode.ViewModel.csproj", "{D3713CE8-935F-4B88-A281-EFE7AE07903B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard", "src\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj", "{2A814F35-9B19-4487-9E85-C9D1A2FFC955}"
+	ProjectSection(ProjectDependencies) = postProject
+		{05F6EBC4-04A9-482D-A442-70B251A7FF87} = {05F6EBC4-04A9-482D-A442-70B251A7FF87}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.SmtLibStandard.Tests", "test\AskTheCode.SmtLibStandard.Tests\AskTheCode.SmtLibStandard.Tests.csproj", "{6F1AC3CA-3708-41FA-BCE6-F5E328EE4D2E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Common", "src\AskTheCode.Common\AskTheCode.Common.csproj", "{B2E80B5E-5D6D-4E5C-ABD7-9BC39E0C5A7E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{05F6EBC4-04A9-482D-A442-70B251A7FF87} = {05F6EBC4-04A9-482D-A442-70B251A7FF87}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraphs", "src\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj", "{C39B0A93-11C6-4CF1-B0B8-31BD15D6A7F5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{05F6EBC4-04A9-482D-A442-70B251A7FF87} = {05F6EBC4-04A9-482D-A442-70B251A7FF87}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{920D7616-3325-46F1-9171-0C17FEAEA66E}"
 EndProject
@@ -26,6 +35,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlFlowGraphViewer", "samples\ControlFlowGraphViewer\ControlFlowGraphViewer.csproj", "{555E5794-603C-4F4F-8EF0-1DE8BBE8031C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraphs.Cli", "src\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj", "{A1A0861D-1D52-4F19-9782-96443D7F37F6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{05F6EBC4-04A9-482D-A442-70B251A7FF87} = {05F6EBC4-04A9-482D-A442-70B251A7FF87}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ControlFlowGraphs.Cli.Tests", "test\AskTheCode.ControlFlowGraphs.Cli.Tests\AskTheCode.ControlFlowGraphs.Cli.Tests.csproj", "{D9A2266F-7B36-4D9E-B0A8-F5FC0ACD7433}"
 EndProject
@@ -48,7 +60,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Wpf", "src\AskTh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "test\inputs\csharp\Sample\Sample.csproj", "{E3FE4BBE-846F-45CE-9420-5EB0A5D8FB75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeContractsRevival.Runtime", "src\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj", "{05F6EBC4-04A9-482D-A442-70B251A7FF87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeContractsRevival.Runtime", "src\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj", "{05F6EBC4-04A9-482D-A442-70B251A7FF87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
 using System.Text;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs
 {

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
+using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis.Text;
 
 namespace AskTheCode.ViewModel

@@ -494,6 +494,10 @@
       <Project>{610dae9a-4124-4bb9-a75b-1a316b567ed6}</Project>
       <Name>AskTheCode.Wpf</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj">
+      <Project>{05f6ebc4-04a9-482d-a442-70b251a7ff87}</Project>
+      <Name>CodeContractsRevival.Runtime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
