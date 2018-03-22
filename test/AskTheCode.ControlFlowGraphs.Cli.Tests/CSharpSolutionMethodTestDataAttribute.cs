@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -19,7 +20,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
 
         public CSharpSolutionMethodTestDataAttribute(string projectLocation)
         {
-            this.projectLocation = projectLocation;
+            this.projectLocation = Path.GetFullPath(projectLocation);
         }
 
         public string ClassNameFilter { get; set; }
@@ -71,7 +72,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
                 {
                     foreach (var method in type.GetMembers().OfType<IMethodSymbol>())
                     {
-                        if (this.MethodNameFilter == null || method.Name == this.MethodNameFilter)
+                        // Skip implicitly declared and filtered methods
+                        if (!method.IsImplicitlyDeclared
+                            && (this.MethodNameFilter == null || method.Name == this.MethodNameFilter))
                         {
                             var location = new MethodLocation(method);
                             yield return new object[] { this.workspace.CurrentSolution, location };
