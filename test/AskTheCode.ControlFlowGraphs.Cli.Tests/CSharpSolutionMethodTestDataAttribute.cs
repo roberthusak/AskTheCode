@@ -12,13 +12,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
 {
     public class CSharpSolutionMethodTestDataAttribute : Attribute, ITestDataSource
     {
-        private readonly MSBuildWorkspace csharpWorkspace;
-        private readonly Project project;
+        private readonly string projectLocation;
+
+        private MSBuildWorkspace workspace;
+        private Project project;
 
         public CSharpSolutionMethodTestDataAttribute(string projectLocation)
         {
-            this.csharpWorkspace = MSBuildWorkspace.Create();
-            this.project = this.csharpWorkspace.OpenProjectAsync(projectLocation).Result;
+            this.projectLocation = projectLocation;
         }
 
         public string ClassNameFilter { get; set; }
@@ -33,6 +34,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
         /// and an instance of <see cref="MethodLocation"/>.</returns>
         public IEnumerable<object[]> GetData(MethodInfo methodInfo)
         {
+            this.EnsureWorkspaceAndProject();
+
             var compilation = this.project.GetCompilationAsync().Result;
 
             var namespaceQueue = new Queue<INamespaceSymbol>();
@@ -71,7 +74,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
                         if (this.MethodNameFilter == null || method.Name == this.MethodNameFilter)
                         {
                             var location = new MethodLocation(method);
-                            yield return new object[] { this.csharpWorkspace.CurrentSolution, location };
+                            yield return new object[] { this.workspace.CurrentSolution, location };
                         }
                     }
                 }
@@ -81,6 +84,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
         public string GetDisplayName(MethodInfo methodInfo, object[] data)
         {
             return ((MethodLocation)data[1]).Method.ToDisplayString();
+        }
+
+        private void EnsureWorkspaceAndProject()
+        {
+            this.workspace = MSBuildWorkspace.Create();
+            this.project = this.workspace.OpenProjectAsync(this.projectLocation).Result;
         }
     }
 }
