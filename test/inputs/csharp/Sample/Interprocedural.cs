@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Sample
 {
-    public class Interprocedural
+    public static class Interprocedural
     {
-        public void SimpleCaller(int x, int y)
+        public static void SimpleCaller(int x, int y)
         {
             int a = x + y;
             int z = SimpleCallee(a);
@@ -18,7 +18,7 @@ namespace Sample
             int c = b;
         }
 
-        public void OtherSimpleCaller(int x, int y)
+        public static void OtherSimpleCaller(int x, int y)
         {
             int a = 1;
             int c = x - y;
@@ -31,7 +31,7 @@ namespace Sample
             return -y;
         }
 
-        public void BranchedCaller(int x, int y)
+        public static void BranchedCaller(int x, int y)
         {
             int a = x + y;
             int c = BranchedCallee(x);
