@@ -82,19 +82,9 @@ namespace AskTheCode.SmtLibStandard.Z3
                 z3symbol = this.context.MkSymbol(symbolName.Number.Value);
             }
 
-            if (variable.Sort == Sort.Bool)
-            {
-                return this.context.MkBoolConst(z3symbol);
-            }
-            else if (variable.Sort == Sort.Int)
-            {
-                return this.context.MkIntConst(z3symbol);
-            }
-            else
-            {
-                // TODO: Implement also other sorts
-                throw new InvalidOperationException();
-            }
+            var z3sort = this.TranslateSort(variable.Sort);
+
+            return this.context.MkConst(z3symbol, z3sort);
         }
 
         public override Expr VisitFunction(Function function)
@@ -169,11 +159,44 @@ namespace AskTheCode.SmtLibStandard.Z3
                         this.VisitChild(function, 1),
                         this.VisitChild(function, 2));
 
+                case ExpressionKind.Select:
+                    return this.context.MkSelect(
+                        this.VisitArrayChild(function, 0),
+                        this.VisitChild(function, 1));
+                case ExpressionKind.Store:
+                    return this.context.MkStore(
+                        this.VisitArrayChild(function, 0),
+                        this.VisitChild(function, 1),
+                        this.VisitChild(function, 2));
+
                 case ExpressionKind.Interpretation:
                 case ExpressionKind.Variable:
                     throw new InvalidOperationException();
                 default:
                     throw new NotImplementedException();
+            }
+        }
+
+        private Microsoft.Z3.Sort TranslateSort(Sort sort)
+        {
+            if (sort == Sort.Bool)
+            {
+                return this.context.BoolSort;
+            }
+            else if (sort == Sort.Int)
+            {
+                return this.context.IntSort;
+            }
+            else if (sort.IsArray)
+            {
+                return this.context.MkArraySort(
+                    this.TranslateSort(sort.SortArguments[0]),
+                    this.TranslateSort(sort.SortArguments[1]));
+            }
+            else
+            {
+                // TODO: Implement also other sorts
+                throw new NotImplementedException();
             }
         }
 
@@ -215,6 +238,14 @@ namespace AskTheCode.SmtLibStandard.Z3
             Contract.Requires(expression.GetChild(childIndex).Sort == Sort.Int);
 
             return (IntExpr)this.Visit(expression.GetChild(childIndex));
+        }
+
+        private ArrayExpr VisitArrayChild(Expression expression, int childIndex)
+        {
+            this.CheckVisitChildArguments(expression, childIndex);
+            Contract.Requires(expression.GetChild(childIndex).Sort.IsArray);
+
+            return (ArrayExpr)this.Visit(expression.GetChild(childIndex));
         }
 
         private Expr VisitChild(Expression expression, int childIndex)
