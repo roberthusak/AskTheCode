@@ -39,6 +39,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -54,6 +58,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ExpressionTestHelper.cs" />
+    <Compile Include="Handles\ArrayHandleTest.cs" />
     <Compile Include="Handles\BoolHandleTest.cs" />
     <Compile Include="Handles\IntHandleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
