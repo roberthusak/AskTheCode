@@ -77,6 +77,11 @@ namespace AskTheCode.SmtLibStandard
                 case ExpressionKind.IfThenElse:
                     return "ite";
 
+                case ExpressionKind.Select:
+                    return "select";
+                case ExpressionKind.Store:
+                    return "store";
+
                 case ExpressionKind.Interpretation:
                 case ExpressionKind.Variable:
                 default:

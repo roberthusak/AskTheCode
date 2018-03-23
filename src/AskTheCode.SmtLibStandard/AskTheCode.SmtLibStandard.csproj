@@ -140,6 +140,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -169,8 +173,6 @@
     <Compile Include="Handles\RealHandle.cs" />
     <Compile Include="Handles\ArrayHandle.cs" />
     <Compile Include="Handles\SequenceHandle.cs" />
-    <Compile Include="Handles\ArrayHandle[TKeyHandle].cs" />
-    <Compile Include="Handles\ArrayHandle[TKeyHandle, TValueHandle].cs" />
     <Compile Include="Handles\SequenceHandle[THandle].cs" />
     <Compile Include="Handles\StringHandle.cs" />
     <Compile Include="SolverResult.cs" />
@@ -187,7 +189,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AskTheCode.SmtLibStandard.ruleset" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj">

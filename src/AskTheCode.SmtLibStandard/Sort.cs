@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -70,7 +71,7 @@ namespace AskTheCode.SmtLibStandard
 
         public bool IsSequence { get; private set; }
 
-        public IEnumerable<Sort> SortArguments { get; private set; } = Array.Empty<Sort>();
+        public ImmutableArray<Sort> SortArguments { get; private set; } = ImmutableArray<Sort>.Empty;
 
         public static Sort GetBitvector(int length)
         {
@@ -96,10 +97,10 @@ namespace AskTheCode.SmtLibStandard
 
             return GetOrAddSort(
                 expectedName,
-                (Sort sequenceSort) =>
+                (Sort arraySort) =>
                 {
-                    sequenceSort.IsArray = true;
-                    sequenceSort.SortArguments = new[] { keySort, valueSort };
+                    arraySort.IsArray = true;
+                    arraySort.SortArguments = ImmutableArray.Create(keySort, valueSort);
                 });
         }
 
@@ -114,7 +115,7 @@ namespace AskTheCode.SmtLibStandard
                 (Sort sequenceSort) =>
                 {
                     sequenceSort.IsSequence = true;
-                    sequenceSort.SortArguments = new[] { sort };
+                    sequenceSort.SortArguments = ImmutableArray.Create(sort);
                 });
         }
 

@@ -40,6 +40,9 @@ namespace AskTheCode.SmtLibStandard
 
         Equal,
         Distinct,
-        IfThenElse
+        IfThenElse,
+
+        Select,
+        Store
     }
 }

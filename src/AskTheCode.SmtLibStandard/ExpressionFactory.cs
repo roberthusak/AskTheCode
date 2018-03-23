@@ -237,6 +237,28 @@ namespace AskTheCode.SmtLibStandard
             return TernaryFunction(ExpressionKind.IfThenElse, valueTrue.Sort, condition, valueTrue, valueFalse);
         }
 
+        public static Function Select(Expression array, Expression key)
+        {
+            Contract.Requires(array != null);
+            Contract.Requires(key != null);
+            Contract.Requires(array.Sort.IsArray);
+            Contract.Requires(key.Sort == array.Sort.SortArguments[0]);
+
+            return BinaryFunction(ExpressionKind.Select, array.Sort.SortArguments[1], array, key);
+        }
+
+        public static Function Store(Expression array, Expression key, Expression value)
+        {
+            Contract.Requires(array != null);
+            Contract.Requires(key != null);
+            Contract.Requires(value != null);
+            Contract.Requires(array.Sort.IsArray);
+            Contract.Requires(key.Sort == array.Sort.SortArguments[0]);
+            Contract.Requires(value.Sort == array.Sort.SortArguments[1]);
+
+            return TernaryFunction(ExpressionKind.Store, array.Sort, array, key, value);
+        }
+
         /// <remarks>
         /// Kind and sort validation is up to the caller.
         /// </remarks>
