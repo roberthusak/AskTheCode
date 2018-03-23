@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
+using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
@@ -85,11 +86,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 }
                 else
                 {
-                    List<Assignment> assignments;
+                    List<Operation> operations;
 
-                    this.ProcessInnerNodesSequence(buildNode, out firstBuildNode, out lastBuildNode, out assignments);
+                    this.ProcessInnerNodesSequence(buildNode, out firstBuildNode, out lastBuildNode, out operations);
 
-                    flowNode = this.builder.AddInnerNode(assignments);
+                    flowNode = this.builder.AddInnerNode(operations);
                     int assignmentOffset = 0;
                     foreach (var processedNode in this.GetBuildNodesSequenceRange(firstBuildNode, lastBuildNode))
                     {
@@ -317,9 +318,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             BuildNode buildNode,
             out BuildNode firstBuildNode,
             out BuildNode lastBuildNode,
-            out List<Assignment> assignments)
+            out List<Operation> operations)
         {
-            assignments = new List<Assignment>();
+            operations = new List<Operation>();
             var curNode = buildNode;
             firstBuildNode = curNode;
 
@@ -332,7 +333,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 else
                 {
                     var nodeAssignments = this.TranslateAssignments(curNode.VariableModel, curNode.ValueModel);
-                    assignments.AddRange(nodeAssignments);
+                    operations.AddRange(nodeAssignments);
                 }
 
                 if (curNode.OutgoingEdges.Count != 1)

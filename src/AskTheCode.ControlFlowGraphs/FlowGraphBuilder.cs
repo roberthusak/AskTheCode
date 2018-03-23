@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AskTheCode.Common;
+using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
@@ -69,23 +70,21 @@ namespace AskTheCode.ControlFlowGraphs
         }
 
         // TODO: Add even more overloads (for example, consider directly using immutable array) and optimize their calls
-        public InnerFlowNode AddInnerNode(FlowVariable assignmentVariable, Expression assignmentValue)
-        {
-            Contract.Requires<InvalidOperationException>(this.Graph != null);
-
-            return this.AddInnerNode(new[] { new Assignment(assignmentVariable, assignmentValue) });
-        }
-
-        public InnerFlowNode AddInnerNode(IEnumerable<Assignment> assignments = null)
+        public InnerFlowNode AddInnerNode(IEnumerable<Operation> operations = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new InnerFlowNode(this.Graph, nodeId, assignments ?? Enumerable.Empty<Assignment>());
+            var node = new InnerFlowNode(this.Graph, nodeId, operations ?? Enumerable.Empty<Operation>());
             this.Graph.MutableNodes.Add(node);
             Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
             return node;
+        }
+
+        public InnerFlowNode AddInnerNode(params Operation[] operations)
+        {
+            return this.AddInnerNode(operations.AsEnumerable());
         }
 
         public CallFlowNode AddCallNode(

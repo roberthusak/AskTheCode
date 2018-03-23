@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
+using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.ControlFlowGraphs.Overlays;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
@@ -18,7 +19,11 @@ namespace AskTheCode.PathExploration
         private readonly Stack<LocalFlowVariableOverlay<int>> callStack;
         private readonly FlowGraphsVariableOverlay<VariableVersionInfo> variableVersions;
 
+        private readonly OperationAssertionHandler operationAssertionHandler;
+        private readonly OperationRetractionHandler operationRetractionHandler;
+
         public PathVariableVersionHandler(Path path, StartingNodeInfo startingNode)
+            : this()
         {
             this.startingNode = startingNode;
             this.callStack = new Stack<LocalFlowVariableOverlay<int>>();
@@ -27,12 +32,19 @@ namespace AskTheCode.PathExploration
         }
 
         protected PathVariableVersionHandler(PathVariableVersionHandler other)
+            : this()
         {
             this.startingNode = other.startingNode;
             this.callStack = new Stack<LocalFlowVariableOverlay<int>>(
                 other.callStack.Select(overlay => overlay.Clone()));
             this.variableVersions = other.variableVersions.Clone(varInfo => varInfo.Clone());
             this.Path = other.Path;
+        }
+
+        private PathVariableVersionHandler()
+        {
+            this.operationAssertionHandler = new OperationAssertionHandler(this);
+            this.operationRetractionHandler = new OperationRetractionHandler(this);
         }
 
         public Path Path { get; private set; }
@@ -113,15 +125,22 @@ namespace AskTheCode.PathExploration
             {
                 if (this.startingNode.IsAssertionChecked)
                 {
-                    var assertionVar = innerNode.Assignments[this.startingNode.AssignmentIndex.Value].Variable;
-                    this.OnConditionAsserted(!(BoolHandle)assertionVar);
+                    if (this.startingNode.Operation is Assignment assignment)
+                    {
+                        var assertionVar = assignment.Variable;
+                        this.OnConditionAsserted(!(BoolHandle)assertionVar);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
                 }
 
-                int assignmentsCount = this.startingNode.AssignmentIndex.Value + 1;
-                var initialAssignments = innerNode.Assignments
-                    .Take(assignmentsCount)
+                int operationCount = this.startingNode.AssignmentIndex.Value + 1;
+                var initialOperations = innerNode.Operations
+                    .Take(operationCount)
                     .Reverse();
-                this.AssertAssignments(initialAssignments);
+                this.AssertOperations(initialOperations);
             }
         }
 
@@ -130,8 +149,8 @@ namespace AskTheCode.PathExploration
             var innerNode = this.startingNode.Node as InnerFlowNode;
             if (innerNode != null && this.startingNode.AssignmentIndex != null)
             {
-                int assignmentCount = this.startingNode.AssignmentIndex.Value + 1;
-                this.RetractAssignments(innerNode.Assignments.Take(assignmentCount));
+                int operationCount = this.startingNode.AssignmentIndex.Value + 1;
+                this.RetractOperations(innerNode.Operations.Take(operationCount));
             }
         }
 
@@ -187,7 +206,7 @@ namespace AskTheCode.PathExploration
                 var innerNode = edge.From as InnerFlowNode;
                 if (innerNode != null)
                 {
-                    this.AssertAssignments(innerNode.Assignments.Reverse());
+                    this.AssertOperations(innerNode.Operations.Reverse());
                 }
                 else if ((edge.From as CallFlowNode)?.Location.CanBeExplored == false)
                 {
@@ -217,7 +236,7 @@ namespace AskTheCode.PathExploration
                 var innerNode = edge.From as InnerFlowNode;
                 if (innerNode != null)
                 {
-                    this.RetractAssignments(innerNode.Assignments);
+                    this.RetractOperations(innerNode.Operations);
                 }
                 else if ((edge.From as CallFlowNode)?.Location.CanBeExplored == false)
                 {
@@ -382,29 +401,59 @@ namespace AskTheCode.PathExploration
             this.callStack.Pop();
         }
 
-        private void AssertAssignments(IEnumerable<Assignment> assignments)
+        private void AssertOperations(IEnumerable<Operation> operations)
         {
-            foreach (var assignment in assignments)
+            foreach (var operation in operations)
             {
-                var variable = assignment.Variable;
-                var versionInfo = this.variableVersions[variable];
-                int lastVersion = versionInfo.CurrentVersion;
-                versionInfo.PushNewVersion();
-
-                this.OnVariableAssigned(variable, lastVersion, assignment.Value);
+                this.operationAssertionHandler.Visit(operation);
             }
         }
 
-        private void RetractAssignments(IEnumerable<Assignment> assignments)
+        private void RetractOperations(IEnumerable<Operation> operations)
         {
-            foreach (var assignment in assignments)
+            foreach (var operation in operations)
+            {
+                this.operationRetractionHandler.Visit(operation);
+            }
+        }
+
+        private class OperationAssertionHandler : OperationVisitor
+        {
+            private readonly PathVariableVersionHandler parent;
+
+            public OperationAssertionHandler(PathVariableVersionHandler parent)
+            {
+                this.parent = parent;
+            }
+
+            public override void VisitAssignment(Assignment assignment)
             {
                 var variable = assignment.Variable;
-                var versionInfo = this.variableVersions[variable];
+                var versionInfo = this.parent.variableVersions[variable];
+                int lastVersion = versionInfo.CurrentVersion;
+                versionInfo.PushNewVersion();
+
+                this.parent.OnVariableAssigned(variable, lastVersion, assignment.Value);
+            }
+        }
+
+        private class OperationRetractionHandler : OperationVisitor
+        {
+            private readonly PathVariableVersionHandler parent;
+
+            public OperationRetractionHandler(PathVariableVersionHandler parent)
+            {
+                this.parent = parent;
+            }
+
+            public override void VisitAssignment(Assignment assignment)
+            {
+                var variable = assignment.Variable;
+                var versionInfo = this.parent.variableVersions[variable];
                 versionInfo.PopVersion();
                 int assignedVersion = versionInfo.CurrentVersion;
 
-                this.OnVariableAssignmentRetracted(variable, assignedVersion, assignment.Value);
+                this.parent.OnVariableAssignmentRetracted(variable, assignedVersion, assignment.Value);
             }
         }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
+using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.SmtLibStandard;
 using Microsoft.Msagl.Drawing;
 
@@ -11,6 +12,8 @@ namespace ControlFlowGraphViewer
 {
     public class FlowToMsaglGraphConverter
     {
+        private static OperationToTextConverter operationToText = new OperationToTextConverter();
+
         public Graph Convert(FlowGraph flowGraph)
         {
             var aglGraph = new Graph();
@@ -64,7 +67,7 @@ namespace ControlFlowGraphViewer
                 var innerNode = (InnerFlowNode)flowNode;
                 label.Text = string.Join(
                     "\n",
-                    innerNode.Assignments.Select(assignment => $"{assignment.Variable} \u2190 {assignment.Value}"));
+                    innerNode.Operations.Select(operation => operationToText.Visit(operation)));
             }
             else if (flowNode is CallFlowNode)
             {
@@ -77,7 +80,7 @@ namespace ControlFlowGraphViewer
                     labelBuild.Append(string.Join(", ", callNode.ReturnAssignments));
                     if (callNode.Location.CanBeExplored)
                     {
-                        labelBuild.Append(") \u2190 "); 
+                        labelBuild.Append(") \u2190 ");
                     }
                     else
                     {
@@ -127,6 +130,14 @@ namespace ControlFlowGraphViewer
             }
 
             aglEdge.LabelText = flowEdge.Condition.ToString();
+        }
+
+        private class OperationToTextConverter : OperationVisitor<string>
+        {
+            public override string VisitAssignment(Assignment assignment)
+            {
+                return $"{assignment.Variable} \u2190 {assignment.Value}";
+            }
         }
     }
 }

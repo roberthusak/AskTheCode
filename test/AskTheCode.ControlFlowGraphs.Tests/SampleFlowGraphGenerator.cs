@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 
@@ -49,7 +50,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var ifResult = builder.AddLocalVariable(Sort.Bool, "ifResult");
             var ifResultHandle = (BoolHandle)ifResult;
-            var checkNode = builder.AddInnerNode(ifResult, a > b);
+            var checkNode = builder.AddInnerNode(new Assignment(ifResult, a > b));
 
             var retANode = builder.AddReturnNode(new[] { aParam });
             var retBNode = builder.AddReturnNode(new[] { bParam });
@@ -75,7 +76,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var if1Var = builder.AddLocalVariable(Sort.Bool, "if!1");
             var if1 = (BoolHandle)if1Var;
-            var if1Node = builder.AddInnerNode(if1Var, a == 0);
+            var if1Node = builder.AddInnerNode(new Assignment(if1Var, a == 0));
 
             var ret1Node = builder.AddReturnNode(new[] { ExpressionFactory.IntInterpretation(-1) });
 
@@ -86,22 +87,22 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var if22CheckVar = builder.AddLocalVariable(Sort.Bool, "if!2!2!check");
             var if22Check = (BoolHandle)if22CheckVar;
-            var if22CheckNode = builder.AddInnerNode(if22CheckVar, b != 0);
+            var if22CheckNode = builder.AddInnerNode(new Assignment(if22CheckVar, b != 0));
 
             var exceptionLocation = new TestLocation("DivisionByZeroException");
             var if22ThrowNode = builder.AddThrowExceptionNode(exceptionLocation);
 
             var if22Var = builder.AddLocalVariable(Sort.Bool, "if!2!2");
             var if22 = (BoolHandle)if22Var;
-            var if22Node = builder.AddInnerNode(if22Var, a / b > 2 && b != -1);
+            var if22Node = builder.AddInnerNode(new Assignment(if22Var, a / b > 2 && b != -1));
 
             var dVar = builder.AddLocalVariable(Sort.Int, "d");
             var d = (IntHandle)dVar;
-            var dEqualsBNode = builder.AddInnerNode(dVar, bVar);
+            var dEqualsBNode = builder.AddInnerNode(new Assignment(dVar, bVar));
 
             var while1Var = builder.AddLocalVariable(Sort.Bool, "while!1");
             var while1 = (BoolHandle)while1Var;
-            var while1Node = builder.AddInnerNode(while1Var, a < b);
+            var while1Node = builder.AddInnerNode(new Assignment(while1Var, a < b));
 
             var assert1Var = builder.AddLocalVariable(Sort.Bool, "assert!1");
             var assert1 = (BoolHandle)assert1Var;
@@ -112,7 +113,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
                     new Assignment(assert1Var, a != 0)
                 });
 
-            var elseBodyNode = builder.AddInnerNode(aVar, a + b);
+            var elseBodyNode = builder.AddInnerNode(new Assignment(aVar, a + b));
 
             var ret2Node = builder.AddReturnNode(new[] { aVar });
 

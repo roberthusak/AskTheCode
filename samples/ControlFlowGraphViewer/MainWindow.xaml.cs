@@ -20,6 +20,7 @@ using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.Tests;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
+using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.ControlFlowGraphs.Tests;
 using AskTheCode.PathExploration;
 using AskTheCode.SmtLibStandard;
@@ -137,8 +138,9 @@ namespace ControlFlowGraphViewer
                 this.nodeIdLabel.Content = id.ToString();
                 this.exploreButton.IsEnabled = true;
 
-                var assignments = (this.currentFlowNode as InnerFlowNode)?.Assignments;
-                if (assignments != null && assignments.Count > 0 && assignments.Last().Variable.Sort == Sort.Bool)
+                var operations = (this.currentFlowNode as InnerFlowNode)?.Operations;
+                if (operations != null && operations.Count > 0
+                    && operations.Last() is Assignment assignment && assignment.Variable.Sort == Sort.Bool)
                 {
                     this.assertionCheckBox.IsEnabled = true;
                 }
@@ -309,7 +311,7 @@ namespace ControlFlowGraphViewer
 
             bool isAssertChecked = (this.assertionCheckBox.IsEnabled && this.assertionCheckBox.IsChecked == true);
             int? assignmentIndex = isAssertChecked ?
-                ((InnerFlowNode)this.currentFlowNode).Assignments.Count - 1 : (int?)null;
+                ((InnerFlowNode)this.currentFlowNode).Operations.Count - 1 : (int?)null;
             var startNode = new StartingNodeInfo(this.currentFlowNode, assignmentIndex, isAssertChecked);
             var graphProvider = new DummyFlowGraphProvider();
             var z3Factory = new ContextFactory();
@@ -339,7 +341,13 @@ namespace ControlFlowGraphViewer
                 var innerNode = node as InnerFlowNode;
                 if (innerNode != null)
                 {
-                    this.AddNodeModels(modelList, interpretations, (j) => innerNode.Assignments[j].Variable);
+                    // Reference assignments must be separately handled by a heap model
+                    var valueAssignments = innerNode.Operations
+                        .OfType<Assignment>()
+                        .Where(a => !a.IsReference)
+                        .ToArray();
+
+                    this.AddNodeModels(modelList, interpretations, (j) => valueAssignments[j].Variable);
                 }
                 else if (node is EnterFlowNode)
                 {

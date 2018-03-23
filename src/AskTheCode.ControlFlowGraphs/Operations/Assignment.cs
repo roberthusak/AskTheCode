@@ -4,9 +4,9 @@ using System.Text;
 using AskTheCode.SmtLibStandard;
 using CodeContractsRevival.Runtime;
 
-namespace AskTheCode.ControlFlowGraphs
+namespace AskTheCode.ControlFlowGraphs.Operations
 {
-    public struct Assignment
+    public class Assignment : Operation
     {
         public Assignment(FlowVariable variable, Expression value)
         {
@@ -21,5 +21,17 @@ namespace AskTheCode.ControlFlowGraphs
         public FlowVariable Variable { get; private set; }
 
         public Expression Value { get; private set; }
+
+        public bool IsReference => false;
+
+        public override void Accept(OperationVisitor visitor)
+        {
+            visitor.VisitAssignment(this);
+        }
+
+        public override TResult Accept<TResult>(OperationVisitor<TResult> visitor)
+        {
+            return visitor.VisitAssignment(this);
+        }
     }
 }

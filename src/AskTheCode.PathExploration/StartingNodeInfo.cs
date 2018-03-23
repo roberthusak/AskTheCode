@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
+using AskTheCode.ControlFlowGraphs.Operations;
 using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration
@@ -23,7 +24,7 @@ namespace AskTheCode.PathExploration
 
         public bool IsAssertionChecked { get; private set; }
 
-        public Assignment? Assignment
+        public Operation Operation
         {
             get
             {
@@ -38,7 +39,7 @@ namespace AskTheCode.PathExploration
                     return null;
                 }
 
-                return innerNode.Assignments[this.AssignmentIndex.Value];
+                return innerNode.Operations[this.AssignmentIndex.Value];
             }
         }
     }

@@ -40,12 +40,12 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             FlowGraph graph,
             int ingoingCount,
             int outgoingCount,
-            int assignmentsCount)
+            int operationCount)
         {
             CheckNode(node, graph, ingoingCount, outgoingCount);
 
-            Assert.AreNotEqual(null, node.Assignments);
-            Assert.AreEqual(assignmentsCount, node.Assignments.Count);
+            Assert.AreNotEqual(null, node.Operations);
+            Assert.AreEqual(operationCount, node.Operations.Count);
         }
 
         internal static void CheckCallNode(

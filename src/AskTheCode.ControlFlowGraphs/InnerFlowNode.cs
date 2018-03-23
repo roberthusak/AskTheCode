@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
+using AskTheCode.ControlFlowGraphs.Operations;
 using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs
 {
     public class InnerFlowNode : FlowNode
     {
-        internal InnerFlowNode(FlowGraph graph, FlowNodeId id, IEnumerable<Assignment> assignments)
+        internal InnerFlowNode(FlowGraph graph, FlowNodeId id, IEnumerable<Operation> operations)
             : base(graph, id)
         {
-            Contract.Requires(assignments != null);
+            Contract.Requires(operations != null);
 
-            this.Assignments = assignments.ToImmutableArray();
+            this.Operations = operations.ToImmutableArray();
         }
 
-        public IReadOnlyList<Assignment> Assignments { get; private set; }
+        public IReadOnlyList<Operation> Operations { get; private set; }
     }
 }
