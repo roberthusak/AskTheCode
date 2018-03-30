@@ -17,7 +17,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private BuildNodeId.Provider nodeIdProvider = new BuildNodeId.Provider();
         private BuildVariableId.Provider variableIdProvider = new BuildVariableId.Provider();
 
-        public BuildGraph(DocumentId documentId, MethodDeclarationSyntax methodSyntax)
+        public BuildGraph(DocumentId documentId, BaseMethodDeclarationSyntax methodSyntax)
         {
             this.DocumentId = documentId;
 

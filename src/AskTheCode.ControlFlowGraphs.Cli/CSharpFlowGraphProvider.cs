@@ -151,7 +151,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             Contract.Assert(declarationLocation.IsInSource);
 
             var root = declarationLocation.SourceTree.GetRoot();
-            var methodSyntax = root.FindNode(declarationLocation.SourceSpan) as MethodDeclarationSyntax;
+            var methodSyntax = root.FindNode(declarationLocation.SourceSpan) as BaseMethodDeclarationSyntax;
             Contract.Assert(methodSyntax != null);
 
             // TODO: Handle the continuation in a logic way

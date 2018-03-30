@@ -48,7 +48,7 @@ namespace ControlFlowGraphViewer
         private Workspace csharpWorkspace;
         private Document csharpDocument;
         private SemanticModel csharpSemanticModel;
-        private MethodDeclarationSyntax[] csharpMethodSyntaxes;
+        private BaseMethodDeclarationSyntax[] csharpMethodSyntaxes;
         private TypeModelManager cliModelManager;
         private bool csharpIntermediate = true;
         private GraphDepth csharpGraphDepth;
@@ -222,7 +222,7 @@ namespace ControlFlowGraphViewer
                 this.csharpDocument = document;
                 var root = await this.csharpDocument.GetSyntaxRootAsync();
 
-                this.csharpMethodSyntaxes = root.DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
+                this.csharpMethodSyntaxes = root.DescendantNodes().OfType<BaseMethodDeclarationSyntax>().ToArray();
                 this.csharpSemanticModel = await this.csharpDocument.GetSemanticModelAsync();
                 this.methodSelectionCombo.ItemsSource = this.csharpMethodSyntaxes;
             }

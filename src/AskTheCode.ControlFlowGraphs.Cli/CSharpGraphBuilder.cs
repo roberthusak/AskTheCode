@@ -34,7 +34,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         // TODO: Move modelManager to CSharpFlowGraphProvider
         private readonly TypeModelManager modelManager;
         private readonly SemanticModel semanticModel;
-        private readonly MethodDeclarationSyntax methodSyntax;
+        private readonly BaseMethodDeclarationSyntax methodSyntax;
 
         private readonly Queue<BuildNode> readyQueue = new Queue<BuildNode>();
         private readonly HashSet<BuildingContext> pending = new HashSet<BuildingContext>();
@@ -44,7 +44,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             TypeModelManager modelManager,
             DocumentId documentId,
             SemanticModel semanticModel,
-            MethodDeclarationSyntax methodSyntax)
+            BaseMethodDeclarationSyntax methodSyntax)
         {
             Contract.Requires<ArgumentNullException>(modelManager != null, nameof(modelManager));
             Contract.Requires<ArgumentNullException>(documentId != null, nameof(documentId));
