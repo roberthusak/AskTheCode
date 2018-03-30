@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Boolean.cs" />
     <Compile Include="Combinations.cs" />
+    <Compile Include="Heap.cs" />
     <Compile Include="Integers.cs" />
     <Compile Include="Interprocedural.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -72,8 +72,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
                 {
                     foreach (var method in type.GetMembers().OfType<IMethodSymbol>())
                     {
-                        // Skip implicitly declared and filtered methods
-                        if (!method.IsImplicitlyDeclared
+                        // Skip implicitly declared, filtered methods and constructors
+                        if (!method.IsImplicitlyDeclared && method.MethodKind != MethodKind.Constructor
                             && (this.MethodNameFilter == null || method.Name == this.MethodNameFilter))
                         {
                             var location = new MethodLocation(method);
