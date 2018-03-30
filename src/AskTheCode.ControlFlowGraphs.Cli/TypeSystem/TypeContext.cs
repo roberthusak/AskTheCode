@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,11 +28,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
 
         public ClassDefinition GetClassDefinition(ITypeSymbol symbol)
         {
+            Contract.Requires(symbol != null);
+
             return this.typeSymbolToDefinitionMap.GetOrAdd(symbol, this.CreateClassDefinition);
         }
 
         public ImmutableArray<FieldDefinition> GetFieldDefinitions(IFieldSymbol symbol)
         {
+            Contract.Requires(symbol != null);
+
             return this.fieldSymbolToDefinitionsMap.GetOrAdd(symbol, this.CreateFieldDefinitions);
         }
 

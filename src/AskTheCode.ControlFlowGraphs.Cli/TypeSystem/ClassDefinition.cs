@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.TypeSystem;
+using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
@@ -17,6 +18,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
 
         internal ClassDefinition(TypeContext context, ITypeSymbol symbol)
         {
+            Contract.Requires(context != null);
+            Contract.Requires(symbol != null);
+
             this.context = context;
             this.Symbol = symbol;
 

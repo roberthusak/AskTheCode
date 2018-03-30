@@ -1,5 +1,6 @@
 ﻿using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.SmtLibStandard;
+using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
@@ -10,6 +11,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
 
         internal FieldDefinition(IFieldSymbol symbol, Sort sort, int? orderNumber = null)
         {
+            Contract.Requires(symbol != null);
+            Contract.Requires(sort != null);
+
             this.Symbol = symbol;
             this.Sort = sort;
             this.orderNumber = orderNumber;
@@ -17,6 +21,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
 
         internal FieldDefinition(IFieldSymbol symbol, IClassDefinition referencedClass)
         {
+            Contract.Requires(symbol != null);
+            Contract.Requires(referencedClass != null);
+
             this.Symbol = symbol;
             this.Sort = CustomSorts.Reference;
             this.ReferencedClass = referencedClass;
