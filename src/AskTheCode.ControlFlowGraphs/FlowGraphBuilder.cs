@@ -88,7 +88,7 @@ namespace AskTheCode.ControlFlowGraphs
         }
 
         public CallFlowNode AddCallNode(
-            ILocation location,
+            IRoutineLocation location,
             IEnumerable<Expression> arguments = null,
             IEnumerable<FlowVariable> returnAssignments = null)
         {
@@ -121,7 +121,7 @@ namespace AskTheCode.ControlFlowGraphs
         }
 
         public ThrowExceptionFlowNode AddThrowExceptionNode(
-            ILocation constructorLocation,
+            IRoutineLocation constructorLocation,
             IEnumerable<Expression> arguments = null)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);

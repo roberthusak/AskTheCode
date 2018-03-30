@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public interface ILocation
+    public interface IRoutineLocation
     {
         bool CanBeExplored { get; }
     }

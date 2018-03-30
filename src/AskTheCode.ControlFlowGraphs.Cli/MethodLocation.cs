@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
-    public class MethodLocation : ILocation
+    public class MethodLocation : IRoutineLocation
     {
         public MethodLocation(IMethodSymbol method, bool isExplorationDisabled = false)
         {

@@ -59,7 +59,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var graphId = new FlowGraphId(1);
             var builder = new FlowGraphBuilder(graphId);
 
-            var location = new TestLocation(0);
+            var location = new TestRoutineLocation(0);
 
             var node = builder.AddCallNode(location);
             FlowGraphTestHelper.CheckCallNode(node, builder.Graph, 0, 0, location, 0, 0);
@@ -81,7 +81,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var graphId = new FlowGraphId(1);
             var builder = new FlowGraphBuilder(graphId);
 
-            var location = new TestLocation(0);
+            var location = new TestRoutineLocation(0);
 
             var node = builder.AddThrowExceptionNode(location);
             FlowGraphTestHelper.CheckThrowExceptionNode(node, builder.Graph, 0, 0, location, 0);

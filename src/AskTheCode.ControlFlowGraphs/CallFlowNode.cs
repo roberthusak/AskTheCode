@@ -12,7 +12,7 @@ namespace AskTheCode.ControlFlowGraphs
         internal CallFlowNode(
             FlowGraph graph,
             FlowNodeId id,
-            ILocation location,
+            IRoutineLocation location,
             IEnumerable<Expression> arguments,
             IEnumerable<FlowVariable> returnAssignments)
             : base(graph, id)
@@ -26,7 +26,7 @@ namespace AskTheCode.ControlFlowGraphs
             this.ReturnAssignments = returnAssignments.ToImmutableArray();
         }
 
-        public ILocation Location { get; private set; }
+        public IRoutineLocation Location { get; private set; }
 
         public IReadOnlyList<Expression> Arguments { get; private set; }
 

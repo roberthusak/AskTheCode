@@ -131,6 +131,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IRoutineLocation.cs" />
     <Compile Include="Operations\Operation.cs" />
     <Compile Include="Operations\Assignment.cs" />
     <Compile Include="CallFlowNode.cs" />
@@ -145,7 +146,6 @@
     <Compile Include="GlobalFlowVariable.cs" />
     <Compile Include="GlobalFlowVariableId.cs" />
     <Compile Include="IFlowGraphProvider.cs" />
-    <Compile Include="ILocation.cs" />
     <Compile Include="Operations\OperationVisitor[TResult].cs" />
     <Compile Include="Operations\OperationVisitor.cs" />
     <Compile Include="OuterFlowEdge.cs" />

@@ -80,7 +80,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var ret1Node = builder.AddReturnNode(new[] { ExpressionFactory.IntInterpretation(-1) });
 
-            var isNiceNumberLocation = new TestLocation("IsNiceNumber");
+            var isNiceNumberLocation = new TestRoutineLocation("IsNiceNumber");
             var if21Var = builder.AddLocalVariable(Sort.Bool, "if!2!1");
             var if21 = (BoolHandle)if21Var;
             var if21Node = builder.AddCallNode(isNiceNumberLocation, new[] { aVar }, new[] { if21Var });
@@ -89,7 +89,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var if22Check = (BoolHandle)if22CheckVar;
             var if22CheckNode = builder.AddInnerNode(new Assignment(if22CheckVar, b != 0));
 
-            var exceptionLocation = new TestLocation("DivisionByZeroException");
+            var exceptionLocation = new TestRoutineLocation("DivisionByZeroException");
             var if22ThrowNode = builder.AddThrowExceptionNode(exceptionLocation);
 
             var if22Var = builder.AddLocalVariable(Sort.Bool, "if!2!2");

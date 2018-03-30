@@ -53,7 +53,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             FlowGraph graph,
             int ingoingCount,
             int outgoingCount,
-            ILocation location,
+            IRoutineLocation location,
             int argumentsCount,
             int returnAssignmentsCount)
         {
@@ -86,7 +86,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             FlowGraph graph,
             int ingoingCount,
             int outgoingCount,
-            ILocation constructorLocation,
+            IRoutineLocation constructorLocation,
             int argumentsCount)
         {
             CheckNode(node, graph, ingoingCount, outgoingCount);

@@ -56,7 +56,7 @@
     <Compile Include="FlowGraphTestHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleFlowGraphGenerator.cs" />
-    <Compile Include="TestLocation.cs" />
+    <Compile Include="TestRoutineLocation.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\AskTheCode.Common\AskTheCode.Common.csproj">

@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.ControlFlowGraphs.Tests
 {
-    public class TestLocation : ILocation
+    public class TestRoutineLocation : IRoutineLocation
     {
-        public TestLocation(int value)
+        public TestRoutineLocation(int value)
         {
-            this.Name = $"TestLocation#{value}";
+            this.Name = $"TestRoutineLocation#{value}";
         }
 
-        public TestLocation(string name)
+        public TestRoutineLocation(string name)
         {
             this.Name = name;
         }

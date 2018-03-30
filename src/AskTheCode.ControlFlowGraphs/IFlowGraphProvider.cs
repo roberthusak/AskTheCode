@@ -10,9 +10,9 @@ namespace AskTheCode.ControlFlowGraphs
     {
         FlowGraph this[FlowGraphId graphId] { get; }
 
-        ILocation GetLocation(FlowGraphId graphId);
+        IRoutineLocation GetLocation(FlowGraphId graphId);
 
-        Task<FlowGraph> GetFlowGraphAsync(ILocation location);
+        Task<FlowGraph> GetFlowGraphAsync(IRoutineLocation location);
 
         OuterFlowEdge GetCallEdge(CallFlowNode callNode, EnterFlowNode enterNode);
 

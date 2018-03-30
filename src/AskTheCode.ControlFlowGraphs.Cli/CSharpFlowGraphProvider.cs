@@ -48,9 +48,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             return this.generatedGraphs[graphId].Location;
         }
 
-        ILocation IFlowGraphProvider.GetLocation(FlowGraphId graphId) => this.GetLocation(graphId);
+        IRoutineLocation IFlowGraphProvider.GetLocation(FlowGraphId graphId) => this.GetLocation(graphId);
 
-        public async Task<FlowGraph> GetFlowGraphAsync(ILocation location)
+        public async Task<FlowGraph> GetFlowGraphAsync(IRoutineLocation location)
         {
             Contract.Requires<ArgumentException>(location is MethodLocation, nameof(location));
 
@@ -59,7 +59,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             return graphs.FlowGraph;
         }
 
-        public async Task<DisplayGraph> GetDisplayGraphAsync(ILocation location)
+        public async Task<DisplayGraph> GetDisplayGraphAsync(IRoutineLocation location)
         {
             Contract.Requires<ArgumentException>(location is MethodLocation, nameof(location));
 

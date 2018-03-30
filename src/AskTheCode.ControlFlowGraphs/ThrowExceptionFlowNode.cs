@@ -12,7 +12,7 @@ namespace AskTheCode.ControlFlowGraphs
         internal ThrowExceptionFlowNode(
             FlowGraph graph,
             FlowNodeId id,
-            ILocation constructorLocation,
+            IRoutineLocation constructorLocation,
             IEnumerable<Expression> arguments)
             : base(graph, id)
         {
@@ -23,7 +23,7 @@ namespace AskTheCode.ControlFlowGraphs
             this.Arguments = arguments.ToImmutableArray();
         }
 
-        public ILocation ConstructorLocation { get; private set; }
+        public IRoutineLocation ConstructorLocation { get; private set; }
 
         public IReadOnlyList<Expression> Arguments { get; private set; }
     }
