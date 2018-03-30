@@ -259,6 +259,7 @@
     <Compile Include="IBuildingContext.cs" />
     <Compile Include="MethodLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RoslynExtensions.cs" />
     <Compile Include="StatementDepthBuilderVisitor.cs" />
     <Compile Include="TypeModels\BooleanModel.cs" />
     <Compile Include="TypeModels\BooleanModelFactory.cs" />
@@ -271,6 +272,9 @@
     <Compile Include="TypeModels\ITypeModelFactory.cs" />
     <Compile Include="TypeModels\IValueModel.cs" />
     <Compile Include="TypeModels\TypeModelManager.cs" />
+    <Compile Include="TypeSystem\ClassDefinition.cs" />
+    <Compile Include="TypeSystem\FieldDefinition.cs" />
+    <Compile Include="TypeSystem\TypeContext.cs" />
     <Compile Include="ValueDepthBuilderVisitor.cs" />
   </ItemGroup>
   <ItemGroup>
