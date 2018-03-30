@@ -130,6 +130,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncLazy.cs" />
     <Compile Include="DataHelper.cs" />
     <Compile Include="IFreezable.cs" />
     <Compile Include="IId.cs" />
