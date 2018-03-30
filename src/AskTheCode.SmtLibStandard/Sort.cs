@@ -71,6 +71,8 @@ namespace AskTheCode.SmtLibStandard
 
         public bool IsSequence { get; private set; }
 
+        public bool IsCustom { get; private set; }
+
         public ImmutableArray<Sort> SortArguments { get; private set; } = ImmutableArray<Sort>.Empty;
 
         public static Sort GetBitvector(int length)
@@ -119,11 +121,31 @@ namespace AskTheCode.SmtLibStandard
                 });
         }
 
+        /// <remarks>
+        /// The sort name musn't collide with an existing built-in sort. However, the created sort is not stored
+        /// anywhere, it is up to the caller not to create multiple sorts with the same names.
+        /// </remarks>
+        public static Sort CreateCustom(string name)
+        {
+            Contract.Requires<ArgumentOutOfRangeException>(!name.Any(c => char.IsWhiteSpace(c)));
+
+            if (sortMap.TryGetValue(name, out _))
+            {
+                throw new ArgumentException("Name collides with an existing built-in sort", nameof(name));
+            }
+
+            return new Sort(name)
+            {
+                IsCustom = true
+            };
+        }
+
         public override string ToString()
         {
             return this.Name;
         }
 
+        // TODO: Consider removing this, the original object.GetHashCode() should be faster.
         /// <summary>
         /// Serves as the default hash function.
         /// </summary>
