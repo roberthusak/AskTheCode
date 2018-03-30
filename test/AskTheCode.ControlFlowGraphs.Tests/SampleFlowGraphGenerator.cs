@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.Operations;
+using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 
@@ -11,6 +13,8 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 {
     public static class SampleFlowGraphGenerator
     {
+        private static SampleNodeClassDefinition nodeClass = new SampleNodeClassDefinition();
+
         public static FlowGraph TrivialGraph()
         {
             var builder = new FlowGraphBuilder(GetId());
@@ -135,9 +139,123 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
+        public static FlowGraph NodeConstructorGraph()
+        {
+            var builder = new FlowGraphBuilder(GetId());
+
+            var @this = builder.AddLocalVariable(CustomSorts.Reference, "this");
+            var value = builder.AddLocalVariable(Sort.Int, "value");
+            var next = builder.AddLocalVariable(CustomSorts.Reference, "next");
+
+            var enterNode = builder.AddEnterNode(new[] { @this, value, next });
+
+            var initNode = builder.AddInnerNode(new[]
+            {
+                new FieldWrite(@this, nodeClass.Value, value),
+                new FieldWrite(@this, nodeClass.Next, next)
+            });
+
+            var returnNode = builder.AddReturnNode(@this.ToSingular());
+
+            builder.AddEdge(enterNode, initNode);
+            builder.AddEdge(initNode, returnNode);
+
+            return builder.FreezeAndReleaseGraph();
+        }
+
+        public static FlowGraph HeapSimpleBranchingGraph()
+        {
+            var builder = new FlowGraphBuilder(GetId());
+
+            var n = builder.AddLocalVariable(CustomSorts.Reference, "n");
+            var @null = builder.AddLocalVariable(CustomSorts.Reference, "null");
+
+            var enterNode = builder.AddEnterNode(n.ToSingular());
+
+            var n_eq_null = builder.AddReferenceComparisonVariable(true, n, @null);
+            var n_neq_null = builder.AddReferenceComparisonVariable(false, n, @null);
+
+            var eqNewNode = builder.AddCallNode(
+                new TestRoutineLocation("Node.Node", true),
+                new Expression[] { ExpressionFactory.IntInterpretation(0), n },
+                n.ToSingular(),
+                true);
+
+            var n_next = builder.AddLocalVariable(CustomSorts.Reference, "n_next");
+            var eqAssertResult = builder.AddLocalVariable(Sort.Bool, "assert1");
+
+            var eqAssertNode = builder.AddInnerNode(new Operation[]
+            {
+                new FieldRead(n_next, n, nodeClass.Next),
+                new Assignment(eqAssertResult, builder.AddReferenceComparisonVariable(true, n_next, @null))
+            });
+
+            var val = builder.AddLocalVariable(Sort.Int, "val");
+            var neqAssertResult = builder.AddLocalVariable(Sort.Bool, "assert2");
+
+            var neqNode = builder.AddInnerNode(new Operation[]
+            {
+                new FieldRead(val, n, nodeClass.Value),
+                new Assignment(neqAssertResult, builder.AddReferenceComparisonVariable(false, n, @null))
+            });
+
+            var returnNode = builder.AddReturnNode();
+
+            builder.AddEdge(enterNode, eqNewNode, n_eq_null);
+            builder.AddEdge(eqNewNode, eqAssertNode);
+            builder.AddEdge(eqAssertNode, returnNode);
+            builder.AddEdge(enterNode, neqNode, n_neq_null);
+            builder.AddEdge(neqNode, returnNode);
+
+            return builder.FreezeAndReleaseGraph();
+        }
+
         private static FlowGraphId GetId()
         {
             return new FlowGraphId(0);
+        }
+
+        private class SampleNodeClassDefinition : IClassDefinition
+        {
+            public SampleNodeClassDefinition()
+            {
+                this.Value = new SampleFieldDefinition("value", Sort.Int, this);
+                this.Next = new SampleFieldDefinition("next", CustomSorts.Reference, this);
+
+                this.Fields = new AsyncLazy<IEnumerable<IFieldDefinition>>(
+                    () => Task.FromResult<IEnumerable<IFieldDefinition>>(
+                        new IFieldDefinition[]
+                        {
+                            this.Value,
+                            this.Next
+                        }));
+            }
+
+            public SampleFieldDefinition Value { get; }
+
+            public SampleFieldDefinition Next { get; }
+
+            public AsyncLazy<IEnumerable<IFieldDefinition>> Fields { get; }
+
+            public override string ToString() => "Node";
+        }
+
+        private class SampleFieldDefinition : IFieldDefinition
+        {
+            private readonly string name;
+
+            public SampleFieldDefinition(string name, Sort sort, IClassDefinition referencedClass)
+            {
+                this.name = name;
+                this.Sort = sort;
+                this.ReferencedClass = referencedClass;
+            }
+
+            public Sort Sort { get; }
+
+            public IClassDefinition ReferencedClass { get; }
+
+            public override string ToString() => this.name;
         }
     }
 }

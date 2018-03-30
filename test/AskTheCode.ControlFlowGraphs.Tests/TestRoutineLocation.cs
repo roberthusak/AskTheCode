@@ -8,14 +8,16 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 {
     public class TestRoutineLocation : IRoutineLocation
     {
-        public TestRoutineLocation(int value)
+        public TestRoutineLocation(int value, bool isConstructor = false)
         {
             this.Name = $"TestRoutineLocation#{value}";
+            this.IsConstructor = isConstructor;
         }
 
-        public TestRoutineLocation(string name)
+        public TestRoutineLocation(string name, bool isConstructor = false)
         {
             this.Name = name;
+            this.IsConstructor = isConstructor;
         }
 
         public string Name { get; private set; }
@@ -24,6 +26,8 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         {
             get { return false; }
         }
+
+        public bool IsConstructor { get; }
 
         public override string ToString()
         {

@@ -88,6 +88,11 @@ namespace ControlFlowGraphViewer
                     }
                 }
 
+                if (callNode.IsConstructorCall)
+                {
+                    labelBuild.Append("new ");
+                }
+
                 labelBuild.Append(callNode.Location.ToString());
                 labelBuild.Append('(');
                 labelBuild.Append(string.Join(", ", callNode.Arguments));
@@ -137,6 +142,16 @@ namespace ControlFlowGraphViewer
             public override string VisitAssignment(Assignment assignment)
             {
                 return $"{assignment.Variable} \u2190 {assignment.Value}";
+            }
+
+            public override string VisitFieldRead(FieldRead fieldRead)
+            {
+                return $"{fieldRead.ResultStore} \u2190 {fieldRead.Reference}.{fieldRead.Field}";
+            }
+
+            public override string VisitFieldWrite(FieldWrite fieldWrite)
+            {
+                return $"{fieldWrite.Reference}.{fieldWrite.Field} \u2190 {fieldWrite.Value}";
             }
         }
     }
