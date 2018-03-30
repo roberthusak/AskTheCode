@@ -31,6 +31,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public bool CanBeExplored { get; private set; }
 
+        public bool IsConstructor => this.Method.MethodKind == MethodKind.Constructor;
+
         public override string ToString()
         {
             return $"{this.Method.ContainingType.Name}.{this.Method.Name}";

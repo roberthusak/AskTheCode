@@ -132,6 +132,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomSorts.cs" />
+    <Compile Include="Operations\FieldRead.cs" />
+    <Compile Include="Operations\FieldWrite.cs" />
+    <Compile Include="ReferenceComparisonVariable.cs" />
     <Compile Include="TypeSystem\IClassDefinition.cs" />
     <Compile Include="TypeSystem\IFieldDefinition.cs" />
     <Compile Include="IRoutineLocation.cs" />

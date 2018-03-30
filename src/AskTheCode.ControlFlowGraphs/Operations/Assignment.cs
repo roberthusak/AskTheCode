@@ -22,7 +22,7 @@ namespace AskTheCode.ControlFlowGraphs.Operations
 
         public Expression Value { get; private set; }
 
-        public bool IsReference => false;
+        public bool IsReference => this.Variable.IsReference;
 
         public override void Accept(OperationVisitor visitor)
         {

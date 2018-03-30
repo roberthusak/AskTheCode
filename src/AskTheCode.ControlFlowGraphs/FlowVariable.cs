@@ -11,5 +11,7 @@ namespace AskTheCode.ControlFlowGraphs
             : base(sort)
         {
         }
+
+        public bool IsReference => this.Sort == CustomSorts.Reference;
     }
 }

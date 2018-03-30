@@ -27,5 +27,15 @@ namespace AskTheCode.ControlFlowGraphs.Operations
         {
             return this.DefaultVisit(assignment);
         }
+
+        public virtual TResult VisitFieldRead(FieldRead fieldRead)
+        {
+            return this.DefaultVisit(fieldRead);
+        }
+
+        public virtual TResult VisitFieldWrite(FieldWrite fieldWrite)
+        {
+            return this.DefaultVisit(fieldWrite);
+        }
     }
 }

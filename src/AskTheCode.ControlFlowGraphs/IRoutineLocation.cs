@@ -7,5 +7,7 @@ namespace AskTheCode.ControlFlowGraphs
     public interface IRoutineLocation
     {
         bool CanBeExplored { get; }
+
+        bool IsConstructor { get; }
     }
 }

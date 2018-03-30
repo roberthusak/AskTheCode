@@ -90,10 +90,12 @@ namespace AskTheCode.ControlFlowGraphs
         public CallFlowNode AddCallNode(
             IRoutineLocation location,
             IEnumerable<Expression> arguments = null,
-            IEnumerable<FlowVariable> returnAssignments = null)
+            IEnumerable<FlowVariable> returnAssignments = null,
+            bool isAllocationCall = false)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(location != null, nameof(location));
+            Contract.Requires<ArgumentException>(!isAllocationCall || location.IsConstructor, nameof(isAllocationCall));
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
             var node = new CallFlowNode(
@@ -101,7 +103,8 @@ namespace AskTheCode.ControlFlowGraphs
                 nodeId,
                 location,
                 arguments ?? Enumerable.Empty<Expression>(),
-                returnAssignments ?? Enumerable.Empty<FlowVariable>());
+                returnAssignments ?? Enumerable.Empty<FlowVariable>(),
+                isAllocationCall);
             this.Graph.MutableNodes.Add(node);
             Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
@@ -182,6 +185,18 @@ namespace AskTheCode.ControlFlowGraphs
             return this.AddLocalVariableImpl(sort, null, displayNameCallback);
         }
 
+        public ReferenceComparisonVariable AddReferenceComparisonVariable(
+            bool areEqual,
+            FlowVariable left,
+            FlowVariable right)
+        {
+            Contract.Requires<InvalidOperationException>(this.Graph != null);
+            Contract.Requires<ArgumentNullException>(left != null, nameof(left));
+            Contract.Requires<ArgumentNullException>(right != null, nameof(right));
+
+            return this.AddReferenceComparisonVariableImpl(areEqual, left, right);
+        }
+
         internal void ReleaseGraph()
         {
             this.Graph = null;
@@ -200,6 +215,17 @@ namespace AskTheCode.ControlFlowGraphs
             }
 
             var variable = new LocalFlowVariable(this.Graph, variableId, sort, displayName);
+            this.Graph.MutableLocalVariables.Add(variable);
+            Contract.Assert(variableId.Value == this.Graph.MutableLocalVariables.IndexOf(variable));
+
+            return variable;
+        }
+
+        private ReferenceComparisonVariable AddReferenceComparisonVariableImpl(bool areEqual, FlowVariable left, FlowVariable right)
+        {
+            var variableId = this.variableIdProvider.GenerateNewId();
+
+            var variable = new ReferenceComparisonVariable(this.Graph, variableId, areEqual, left, right);
             this.Graph.MutableLocalVariables.Add(variable);
             Contract.Assert(variableId.Value == this.Graph.MutableLocalVariables.IndexOf(variable));
 

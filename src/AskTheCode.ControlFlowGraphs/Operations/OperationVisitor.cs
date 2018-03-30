@@ -24,5 +24,15 @@ namespace AskTheCode.ControlFlowGraphs.Operations
         {
             this.DefaultVisit(assignment);
         }
+
+        public virtual void VisitFieldRead(FieldRead fieldRead)
+        {
+            this.DefaultVisit(fieldRead);
+        }
+
+        public virtual void VisitFieldWrite(FieldWrite fieldWrite)
+        {
+            this.DefaultVisit(fieldWrite);
+        }
     }
 }
