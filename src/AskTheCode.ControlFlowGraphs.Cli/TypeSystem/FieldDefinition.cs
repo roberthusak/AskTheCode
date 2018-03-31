@@ -25,7 +25,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
             Contract.Requires(referencedClass != null);
 
             this.Symbol = symbol;
-            this.Sort = CustomSorts.Reference;
+            this.Sort = References.Sort;
             this.ReferencedClass = referencedClass;
         }
 

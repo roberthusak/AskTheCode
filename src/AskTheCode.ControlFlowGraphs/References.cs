@@ -7,8 +7,10 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs
 {
-    public static class CustomSorts
+    public static class References
     {
-        public static Sort Reference { get; } = Sort.CreateCustom("Reference");
+        public static Sort Sort { get; } = Sort.CreateCustom("Reference");
+
+        public static SpecialFlowVariable Null { get; } = new SpecialFlowVariable("null", Sort);
     }
 }

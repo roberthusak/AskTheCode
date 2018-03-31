@@ -45,7 +45,7 @@ namespace AskTheCode.ControlFlowGraphs
             IEnumerable<FlowVariable> returnAssignments)
         {
             return location.IsConstructor
-                && returnAssignments.Count() == 1 && returnAssignments.Single().Sort == CustomSorts.Reference;
+                && returnAssignments.Count() == 1 && returnAssignments.Single().Sort == References.Sort;
         }
     }
 }
