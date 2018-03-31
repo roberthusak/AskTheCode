@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs.TypeSystem;
+using AskTheCode.SmtLibStandard;
 using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs.Operations
 {
     public class FieldWrite : Operation
     {
-        public FieldWrite(FlowVariable reference, IFieldDefinition field, FlowVariable value)
+        public FieldWrite(FlowVariable reference, IFieldDefinition field, Expression value)
         {
             Contract.Requires<ArgumentNullException>(reference != null, nameof(reference));
             Contract.Requires<ArgumentNullException>(field != null, nameof(field));
@@ -27,7 +28,7 @@ namespace AskTheCode.ControlFlowGraphs.Operations
 
         public IFieldDefinition Field { get; }
 
-        public FlowVariable Value { get; }
+        public Expression Value { get; }
 
         public override void Accept(OperationVisitor visitor)
         {

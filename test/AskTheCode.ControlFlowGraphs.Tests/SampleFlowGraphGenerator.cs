@@ -143,9 +143,9 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         {
             var builder = new FlowGraphBuilder(GetId());
 
-            var @this = builder.AddLocalVariable(CustomSorts.Reference, "this");
+            var @this = builder.AddLocalVariable(References.Sort, "this");
             var value = builder.AddLocalVariable(Sort.Int, "value");
-            var next = builder.AddLocalVariable(CustomSorts.Reference, "next");
+            var next = builder.AddLocalVariable(References.Sort, "next");
 
             var enterNode = builder.AddEnterNode(new[] { @this, value, next });
 
@@ -163,31 +163,64 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
+        public static FlowGraph HeapSimpleConstructorGraph()
+        {
+            var builder = new FlowGraphBuilder(GetId());
+
+            var enterNode = builder.AddEnterNode();
+
+            var n = builder.AddLocalVariable(References.Sort, "n");
+
+            var newNode = builder.AddCallNode(
+                new TestRoutineLocation("NodeConstructorGraph", true),
+                new Expression[] { n, ExpressionFactory.IntInterpretation(0), References.Null },
+                n.ToSingular(),
+                true);
+
+            var n_value = builder.AddLocalVariable(Sort.Int, "n_value");
+            var assert1 = builder.AddLocalVariable(Sort.Bool, "assert1");
+            var assert2 = builder.AddLocalVariable(Sort.Bool, "assert2");
+
+            var assertNode = builder.AddInnerNode(new Operation[]
+            {
+                new Assignment(assert1, builder.AddReferenceComparisonVariable(false, n, References.Null)),
+                new FieldRead(n_value, n, nodeClass.Value),
+                new Assignment(assert2, (IntHandle)n_value == 0)
+            });
+
+            var returnNode = builder.AddReturnNode();
+
+            builder.AddEdge(enterNode, newNode);
+            builder.AddEdge(newNode, assertNode);
+            builder.AddEdge(assertNode, returnNode);
+
+            return builder.FreezeAndReleaseGraph();
+        }
+
         public static FlowGraph HeapSimpleBranchingGraph()
         {
             var builder = new FlowGraphBuilder(GetId());
 
-            var n = builder.AddLocalVariable(CustomSorts.Reference, "n");
-            var @null = builder.AddLocalVariable(CustomSorts.Reference, "null");
+            var n = builder.AddLocalVariable(References.Sort, "n");
 
             var enterNode = builder.AddEnterNode(n.ToSingular());
 
-            var n_eq_null = builder.AddReferenceComparisonVariable(true, n, @null);
-            var n_neq_null = builder.AddReferenceComparisonVariable(false, n, @null);
+            var n_eq_null = builder.AddReferenceComparisonVariable(true, n, References.Null);
+            var n_neq_null = builder.AddReferenceComparisonVariable(false, n, References.Null);
 
             var eqNewNode = builder.AddCallNode(
-                new TestRoutineLocation("Node.Node", true),
-                new Expression[] { ExpressionFactory.IntInterpretation(0), n },
+                new TestRoutineLocation("NodeConstructorGraph", true),
+                new Expression[] { n, ExpressionFactory.IntInterpretation(0), n },
                 n.ToSingular(),
                 true);
 
-            var n_next = builder.AddLocalVariable(CustomSorts.Reference, "n_next");
+            var n_next = builder.AddLocalVariable(References.Sort, "n_next");
             var eqAssertResult = builder.AddLocalVariable(Sort.Bool, "assert1");
 
             var eqAssertNode = builder.AddInnerNode(new Operation[]
             {
                 new FieldRead(n_next, n, nodeClass.Next),
-                new Assignment(eqAssertResult, builder.AddReferenceComparisonVariable(true, n_next, @null))
+                new Assignment(eqAssertResult, builder.AddReferenceComparisonVariable(true, n_next, References.Null))
             });
 
             var val = builder.AddLocalVariable(Sort.Int, "val");
@@ -196,7 +229,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var neqNode = builder.AddInnerNode(new Operation[]
             {
                 new FieldRead(val, n, nodeClass.Value),
-                new Assignment(neqAssertResult, builder.AddReferenceComparisonVariable(false, n, @null))
+                new Assignment(neqAssertResult, builder.AddReferenceComparisonVariable(false, n, References.Null))
             });
 
             var returnNode = builder.AddReturnNode();
@@ -205,6 +238,54 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             builder.AddEdge(eqNewNode, eqAssertNode);
             builder.AddEdge(eqAssertNode, returnNode);
             builder.AddEdge(enterNode, neqNode, n_neq_null);
+            builder.AddEdge(neqNode, returnNode);
+
+            return builder.FreezeAndReleaseGraph();
+        }
+
+        public static FlowGraph HeapSimpleComparisonGraph()
+        {
+            var builder = new FlowGraphBuilder(GetId());
+
+            var a = builder.AddLocalVariable(References.Sort, "a");
+            var b = builder.AddLocalVariable(References.Sort, "b");
+
+            var enterNode = builder.AddEnterNode(new[] { a, b });
+
+            var a_eq_b = builder.AddReferenceComparisonVariable(true, a, b);
+            var a_neq_b = builder.AddReferenceComparisonVariable(false, a, b);
+
+            var a_next = builder.AddLocalVariable(References.Sort, "a_next");
+            var b_next = builder.AddLocalVariable(References.Sort, "b_next");
+            var a_next_eq_b_next = builder.AddReferenceComparisonVariable(true, a_next, b_next);
+            var eqAssert = builder.AddLocalVariable(Sort.Bool, "assert1");
+
+            var eqNode = builder.AddInnerNode(new Operation[]
+            {
+                new FieldRead(a_next, a, nodeClass.Next),
+                new FieldRead(b_next, b, nodeClass.Next),
+                new Assignment(eqAssert, a_next_eq_b_next)
+            });
+
+            var a_value = builder.AddLocalVariable(Sort.Int, "a_value");
+            var b_value = builder.AddLocalVariable(Sort.Int, "b_value");
+            var neqAssert = builder.AddLocalVariable(Sort.Bool, "assert2");
+
+            var neqNode = builder.AddInnerNode(new Operation[]
+            {
+                new FieldWrite(a, nodeClass.Value, new IntHandle(5)),
+                new FieldWrite(b, nodeClass.Value, new IntHandle(10)),
+
+                new FieldRead(a_value, a, nodeClass.Value),
+                new FieldRead(b_value, b, nodeClass.Value),
+                new Assignment(neqAssert, (IntHandle)a_value != (IntHandle)b_value)
+            });
+
+            var returnNode = builder.AddReturnNode();
+
+            builder.AddEdge(enterNode, eqNode, a_eq_b);
+            builder.AddEdge(eqNode, returnNode);
+            builder.AddEdge(enterNode, neqNode, a_neq_b);
             builder.AddEdge(neqNode, returnNode);
 
             return builder.FreezeAndReleaseGraph();
@@ -220,7 +301,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             public SampleNodeClassDefinition()
             {
                 this.Value = new SampleFieldDefinition("value", Sort.Int, this);
-                this.Next = new SampleFieldDefinition("next", CustomSorts.Reference, this);
+                this.Next = new SampleFieldDefinition("next", References.Sort, this);
 
                 this.Fields = new AsyncLazy<IEnumerable<IFieldDefinition>>(
                     () => Task.FromResult<IEnumerable<IFieldDefinition>>(
