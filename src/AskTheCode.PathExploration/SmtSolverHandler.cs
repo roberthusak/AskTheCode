@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
+using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
@@ -23,12 +24,15 @@ namespace AskTheCode.PathExploration
             SmtContextHandler contextHandler,
             ISolver smtSolver,
             Path path,
-            StartingNodeInfo startingNode)
+            StartingNodeInfo startingNode,
+            ISymbolicHeapFactory heapFactory)
             : this(
                 contextHandler,
                 smtSolver,
-                new PathConditionHandler(contextHandler, smtSolver, path, startingNode))
+                null)
         {
+            var heap = heapFactory.Create(new SymbolicHeapContext(this));
+            this.pathConditionHandler = new PathConditionHandler(contextHandler, smtSolver, path, startingNode, heap);
         }
 
         private SmtSolverHandler(
@@ -58,6 +62,7 @@ namespace AskTheCode.PathExploration
 
             // TODO: Clone the underlying SMT solver and path condition handler!
             // TODO: Clone the variable versions of the latter! (we need to make the overlay cloneable/enumerable)
+            // TODO: Clone the symbolic heap!
             throw new NotImplementedException();
         }
 
@@ -68,7 +73,15 @@ namespace AskTheCode.PathExploration
             this.pathConditionHandler.Update(path);
             Contract.Assert(this.Path == path);
 
-            var solverResult = this.smtSolver.Solve();
+            SolverResult solverResult;
+            if (!this.pathConditionHandler.Heap.CanBeSatisfiable)
+            {
+                solverResult = SolverResult.Unsat;
+            }
+            else
+            {
+                solverResult = this.smtSolver.Solve();
+            }
 
             switch (solverResult)
             {
@@ -142,7 +155,18 @@ namespace AskTheCode.PathExploration
             creator.CreateExecutionModel();
             return new ExecutionModel(
                 creator.NodeStack.ToImmutableArray(),
-                creator.InterpretationStack.ToImmutableArray());
+                creator.InterpretationStack.ToImmutableArray(),
+                creator.ReferenceModelStack.ToImmutableArray());
+        }
+
+        private class SymbolicHeapContext : ISymbolicHeapContext
+        {
+            private readonly SmtSolverHandler parent;
+
+            public SymbolicHeapContext(SmtSolverHandler parent)
+            {
+                this.parent = parent;
+            }
         }
 
         private class ExecutionModelCreator : PathVariableVersionHandler
@@ -152,13 +176,15 @@ namespace AskTheCode.PathExploration
 
             private Stack<Interpretation> currentNodeInterpretations = new Stack<Interpretation>();
             private Stack<Interpretation> nextNodeInterpretations = new Stack<Interpretation>();
+            private Stack<IReferenceModel> currentNodeReferenceModels = new Stack<IReferenceModel>();
+            private Stack<IReferenceModel> nextNodeReferenceModels = new Stack<IReferenceModel>();
             private bool areAssignmentsPostponedToNextNode = false;
 
             public ExecutionModelCreator(
                 PathConditionHandler pathConditionHandler,
                 SmtContextHandler smtContextHandler,
                 IModel smtModel)
-                : base(pathConditionHandler)
+                : base(pathConditionHandler, new EmptySymbolicHeapContext())
             {
                 this.smtContextHandler = smtContextHandler;
                 this.smtModel = smtModel;
@@ -167,6 +193,8 @@ namespace AskTheCode.PathExploration
             public Stack<FlowNode> NodeStack { get; private set; }
 
             public Stack<ImmutableArray<Interpretation>> InterpretationStack { get; private set; }
+
+            public Stack<ImmutableArray<IReferenceModel>> ReferenceModelStack { get; private set; }
 
             /// <remarks>
             /// This function is expected to be called only once.
@@ -180,6 +208,7 @@ namespace AskTheCode.PathExploration
 
                 this.NodeStack = new Stack<FlowNode>();
                 this.InterpretationStack = new Stack<ImmutableArray<Interpretation>>();
+                this.ReferenceModelStack = new Stack<ImmutableArray<IReferenceModel>>();
 
                 var enterNode = this.Path.Node as EnterFlowNode;
                 if (enterNode != null)
@@ -207,9 +236,14 @@ namespace AskTheCode.PathExploration
 
                 // Swap the next node interpretations with the emptied stack of the current one making it ready for the
                 // current node
-                var hlp = this.currentNodeInterpretations;
+                var hlpInt = this.currentNodeInterpretations;
                 this.currentNodeInterpretations = this.nextNodeInterpretations;
-                this.nextNodeInterpretations = hlp;
+                this.nextNodeInterpretations = hlpInt;
+
+                // Do the same in the case of reference models
+                var hlpRef = this.currentNodeReferenceModels;
+                this.currentNodeReferenceModels = this.nextNodeReferenceModels;
+                this.nextNodeReferenceModels = hlpRef;
             }
 
             protected override void OnRandomVariableRetracted(FlowVariable variable, int version)
@@ -229,20 +263,43 @@ namespace AskTheCode.PathExploration
             {
                 this.InterpretationStack.Push(this.currentNodeInterpretations.ToImmutableArray());
                 this.currentNodeInterpretations.Clear();
+
+                this.ReferenceModelStack.Push(this.currentNodeReferenceModels.ToImmutableArray());
+                this.currentNodeReferenceModels.Clear();
             }
 
             private void PushInterpretation(FlowVariable variable, int assignedVersion)
             {
-                var symbolName = this.smtContextHandler.GetVariableVersionSymbol(variable, assignedVersion);
-                var interpretation = this.smtModel.GetInterpretation(symbolName);
-                if (this.areAssignmentsPostponedToNextNode)
+                if (variable.IsReference)
                 {
-                    this.nextNodeInterpretations.Push(interpretation);
+                    var versionedVar = new VersionedVariable(variable, assignedVersion);
+                    var referenceModel = this.Heap.GetReferenceModel(this.smtModel, versionedVar);
+                    if (this.areAssignmentsPostponedToNextNode)
+                    {
+                        this.nextNodeReferenceModels.Push(referenceModel);
+                    }
+                    else
+                    {
+                        this.currentNodeReferenceModels.Push(referenceModel);
+                    }
                 }
                 else
                 {
-                    this.currentNodeInterpretations.Push(interpretation);
+                    var symbolName = this.smtContextHandler.GetVariableVersionSymbol(variable, assignedVersion);
+                    var interpretation = this.smtModel.GetInterpretation(symbolName);
+                    if (this.areAssignmentsPostponedToNextNode)
+                    {
+                        this.nextNodeInterpretations.Push(interpretation);
+                    }
+                    else
+                    {
+                        this.currentNodeInterpretations.Push(interpretation);
+                    }
                 }
+            }
+
+            private class EmptySymbolicHeapContext : ISymbolicHeapContext
+            {
             }
         }
     }

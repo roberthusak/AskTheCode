@@ -98,6 +98,7 @@ namespace AskTheCode.PathExploration
                 this.SmtContextFactory,
                 this.StartingNode,
                 this.Options.FinalNodeRecognizer,
+                this.Options.SymbolicHeapFactory,
                 this.ExplorerResultCallback);
 
             explorer.ExplorationHeuristic = this.Options.ExplorationHeuristicFactory.CreateHeuristic(explorer);

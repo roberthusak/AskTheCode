@@ -1,4 +1,5 @@
-﻿using AskTheCode.PathExploration.Heuristics;
+﻿using AskTheCode.PathExploration.Heap;
+using AskTheCode.PathExploration.Heuristics;
 
 namespace AskTheCode.PathExploration
 {
@@ -10,6 +11,8 @@ namespace AskTheCode.PathExploration
         }
 
         public IEntryPointRecognizer FinalNodeRecognizer { get; set; } = new BorderEntryPointRecognizer();
+
+        public ISymbolicHeapFactory SymbolicHeapFactory { get; set; } = new ProxySimplifyingSymbolicHeapFactory();
 
         public IHeuristicFactory<IExplorationHeuristic> ExplorationHeuristicFactory { get; set; } =
             new SimpleHeuristicFactory<GreedyExplorationHeuristic>();

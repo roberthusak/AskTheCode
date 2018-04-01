@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
+using AskTheCode.PathExploration.Heap;
 using AskTheCode.PathExploration.Heuristics;
 using AskTheCode.SmtLibStandard;
 using CodeContractsRevival.Runtime;
@@ -19,6 +20,7 @@ namespace AskTheCode.PathExploration
         private ExplorationContext context;
         private StartingNodeInfo startingNode;
         private IEntryPointRecognizer finalNodeRecognizer;
+        private ISymbolicHeapFactory heapFactory;
         private Action<ExplorationResult> resultCallback;
 
         private SmtContextHandler smtContextHandler;
@@ -31,6 +33,7 @@ namespace AskTheCode.PathExploration
             IContextFactory smtContextFactory,
             StartingNodeInfo startingNode,
             IEntryPointRecognizer finalNodeRecognizer,
+            ISymbolicHeapFactory heapFactory,
             Action<ExplorationResult> resultCallback)
         {
             // TODO: Solve this marginal case directly in the ExplorationContext
@@ -39,6 +42,7 @@ namespace AskTheCode.PathExploration
             this.context = explorationContext;
             this.startingNode = startingNode;
             this.finalNodeRecognizer = finalNodeRecognizer;
+            this.heapFactory = heapFactory;
             this.resultCallback = resultCallback;
 
             this.smtContextHandler = new SmtContextHandler(smtContextFactory);
@@ -51,7 +55,7 @@ namespace AskTheCode.PathExploration
             var rootState = new ExplorationState(
                 rootPath,
                 CallSiteStack.Empty,
-                this.smtContextHandler.CreateEmptySolver(rootPath, this.startingNode));
+                this.smtContextHandler.CreateEmptySolver(rootPath, this.startingNode, heapFactory));
             this.AddState(rootState);
         }
 

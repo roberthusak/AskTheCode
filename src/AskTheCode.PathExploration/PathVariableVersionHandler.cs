@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.ControlFlowGraphs.Overlays;
+using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
@@ -22,16 +23,20 @@ namespace AskTheCode.PathExploration
         private readonly OperationAssertionHandler operationAssertionHandler;
         private readonly OperationRetractionHandler operationRetractionHandler;
 
-        public PathVariableVersionHandler(Path path, StartingNodeInfo startingNode)
+        public PathVariableVersionHandler(
+            Path path,
+            StartingNodeInfo startingNode,
+            ISymbolicHeap heap)
             : this()
         {
             this.startingNode = startingNode;
             this.callStack = new Stack<LocalFlowVariableOverlay<int>>();
             this.variableVersions = new FlowGraphsVariableOverlay<VariableVersionInfo>(() => new VariableVersionInfo());
             this.Path = path;
+            this.Heap = heap;
         }
 
-        protected PathVariableVersionHandler(PathVariableVersionHandler other)
+        protected PathVariableVersionHandler(PathVariableVersionHandler other, ISymbolicHeapContext heapContext)
             : this()
         {
             this.startingNode = other.startingNode;
@@ -39,6 +44,7 @@ namespace AskTheCode.PathExploration
                 other.callStack.Select(overlay => overlay.Clone()));
             this.variableVersions = other.variableVersions.Clone(varInfo => varInfo.Clone());
             this.Path = other.Path;
+            this.Heap = other.Heap.Clone(heapContext);
         }
 
         private PathVariableVersionHandler()
@@ -49,9 +55,26 @@ namespace AskTheCode.PathExploration
 
         public Path Path { get; private set; }
 
-        public PathVariableVersionHandler Clone() => new PathVariableVersionHandler(this);
+        internal ISymbolicHeap Heap { get; }
 
-        public int GetVariableVersion(FlowVariable variable) => this.variableVersions[variable].CurrentVersion;
+        public int GetVariableVersion(FlowVariable variable)
+        {
+            // TODO: Consider turning null into a global variable to avoid this check
+            if (variable == References.Null)
+            {
+                return VersionedVariable.Null.Version;
+            }
+            else
+            {
+                return this.variableVersions[variable].CurrentVersion;
+            }
+        }
+
+        public VersionedVariable GetVersioned(FlowVariable variable)
+        {
+            int version = this.GetVariableVersion(variable);
+            return new VersionedVariable(variable, version);
+        }
 
         public void Update(Path path)
         {
@@ -120,22 +143,34 @@ namespace AskTheCode.PathExploration
 
         protected void ProcessStartingNode()
         {
-            var innerNode = this.startingNode.Node as InnerFlowNode;
-            if (innerNode != null && this.startingNode.AssignmentIndex != null)
+            if (this.startingNode.Node is InnerFlowNode innerNode && this.startingNode.AssignmentIndex != null)
             {
                 if (this.startingNode.IsAssertionChecked)
                 {
                     if (this.startingNode.Operation is Assignment assignment)
                     {
                         var assertionVar = assignment.Variable;
-                        this.OnConditionAsserted(!(BoolHandle)assertionVar);
+                        if (assignment.Value is ReferenceComparisonVariable refComp)
+                        {
+                            var leftVar = this.GetVersioned(refComp.Left);
+                            var rightVar = this.GetVersioned(refComp.Right);
+                            this.Heap.AssertEquality(!refComp.AreEqual, leftVar, rightVar);
+                        }
+                        else
+                        {
+                            this.OnConditionAsserted(!(BoolHandle)assertionVar);
+                        }
                     }
-                    else
+                    else if (this.startingNode.Operation is FieldOperation fieldOp)
                     {
-                        throw new NotImplementedException();
+                        // Check whether can the operation fail due to null dereference
+                        var leftVar = this.GetVersioned(fieldOp.Reference);
+                        var nullVar = this.GetVersioned(References.Null);
+                        this.Heap.AssertEquality(true, leftVar, nullVar);
                     }
                 }
 
+                // TODO: Consider skipping the assertion itself in the case of heap
                 int operationCount = this.startingNode.AssignmentIndex.Value + 1;
                 var initialOperations = innerNode.Operations
                     .Take(operationCount)
@@ -146,6 +181,7 @@ namespace AskTheCode.PathExploration
 
         protected void RetractStartingNode()
         {
+            // TODO: Reflect heap
             var innerNode = this.startingNode.Node as InnerFlowNode;
             if (innerNode != null && this.startingNode.AssignmentIndex != null)
             {
@@ -198,9 +234,19 @@ namespace AskTheCode.PathExploration
             if (edge is InnerFlowEdge)
             {
                 var innerEdge = (InnerFlowEdge)edge;
-                if (innerEdge.Condition.Expression != ExpressionFactory.True)
+                Expression condExpr = innerEdge.Condition.Expression;
+                if (condExpr != ExpressionFactory.True)
                 {
-                    this.OnConditionAsserted(innerEdge.Condition);
+                    if (condExpr is ReferenceComparisonVariable refComp)
+                    {
+                        var varLeft = this.GetVersioned(refComp.Left);
+                        var varRight = this.GetVersioned(refComp.Right);
+                        this.Heap.AssertEquality(refComp.AreEqual, varLeft, varRight);
+                    }
+                    else
+                    {
+                        this.OnConditionAsserted(innerEdge.Condition);
+                    }
                 }
 
                 var innerNode = edge.From as InnerFlowNode;
@@ -231,8 +277,13 @@ namespace AskTheCode.PathExploration
 
         private void Retract(FlowEdge edge)
         {
-            if (edge is InnerFlowEdge)
+            if (edge is InnerFlowEdge innerEdge)
             {
+                if (innerEdge.Condition.Expression is ReferenceComparisonVariable)
+                {
+                    this.Heap.Retract();
+                }
+
                 var innerNode = edge.From as InnerFlowNode;
                 if (innerNode != null)
                 {
@@ -317,7 +368,7 @@ namespace AskTheCode.PathExploration
             // Assert the argument passing
             for (int i = 0; i < paramVersions.Length; i++)
             {
-                this.OnVariableAssigned(enterNode.Parameters[i], paramVersions[i], callNode.Arguments[i]);
+                this.AssignVariable(enterNode.Parameters[i], paramVersions[i], callNode.Arguments[i]);
             }
         }
 
@@ -336,10 +387,11 @@ namespace AskTheCode.PathExploration
             foreach (var param in enterNode.Parameters)
             {
                 // TODO: Consider passing also the values instead of null
-                this.OnVariableAssignmentRetracted(param, this.variableVersions[param].CurrentVersion, null);
+                this.RetractVariableAssignment(param, this.variableVersions[param].CurrentVersion, null);
             }
         }
 
+        // TODO: Handle ISymbolicHeap.AllocateNew
         private void ExtendReturn(OuterFlowEdge outerEdge)
         {
             Contract.Requires(outerEdge.Kind == OuterFlowEdgeKind.Return);
@@ -371,10 +423,16 @@ namespace AskTheCode.PathExploration
 
             this.callStack.Push(frame);
 
+            if (callNode.IsConstructorCall)
+            {
+                var newVar = this.GetVersioned(callNode.ReturnAssignments[0]);
+                this.Heap.AllocateNew(newVar);
+            }
+
             // Assert the return assignments
             for (int i = 0; i < returnVersions.Length; i++)
             {
-                this.OnVariableAssigned(callNode.ReturnAssignments[i], returnVersions[i], returnNode.ReturnValues[i]);
+                this.AssignVariable(callNode.ReturnAssignments[i], returnVersions[i], returnNode.ReturnValues[i]);
             }
         }
 
@@ -395,7 +453,12 @@ namespace AskTheCode.PathExploration
                 var versionInfo = this.variableVersions[assignedVariable];
                 versionInfo.PopVersion();
                 // TODO: Consider passing also the values instead of null (or removing the parameter)
-                this.OnVariableAssignmentRetracted(assignedVariable, versionInfo.CurrentVersion, null);
+                this.RetractVariableAssignment(assignedVariable, versionInfo.CurrentVersion, null);
+            }
+
+            if (callNode.IsConstructorCall)
+            {
+                this.Heap.Retract();
             }
 
             this.callStack.Pop();
@@ -417,6 +480,43 @@ namespace AskTheCode.PathExploration
             }
         }
 
+        private void AssignVariable(FlowVariable variable, int lastVersion, Expression value)
+        {
+            if (variable.IsReference)
+            {
+                var leftRef = new VersionedVariable(variable, lastVersion);
+                var rightRef = this.GetVersioned((FlowVariable)value);
+
+                this.Heap.AssertEquality(true, leftRef, rightRef);
+            }
+            else if (value.Sort == Sort.Bool && value is ReferenceComparisonVariable refComp)
+            {
+                value = this.GetReferenceComparisonExpression(refComp);
+            }
+
+            this.OnVariableAssigned(variable, lastVersion, value);
+        }
+
+        private void RetractVariableAssignment(
+            FlowVariable variable,
+            int assignedVersion,
+            Expression value)
+        {
+            if (variable.IsReference)
+            {
+                this.Heap.Retract();
+            }
+
+            this.OnVariableAssignmentRetracted(variable, assignedVersion, value);
+        }
+
+        private Expression GetReferenceComparisonExpression(ReferenceComparisonVariable refComp)
+        {
+            var varLeft = this.GetVersioned(refComp.Left);
+            var varRight = this.GetVersioned(refComp.Right);
+            return this.Heap.GetEqualityExpression(refComp.AreEqual, varLeft, varRight);
+        }
+
         private class OperationAssertionHandler : OperationVisitor
         {
             private readonly PathVariableVersionHandler parent;
@@ -433,7 +533,24 @@ namespace AskTheCode.PathExploration
                 int lastVersion = versionInfo.CurrentVersion;
                 versionInfo.PushNewVersion();
 
-                this.parent.OnVariableAssigned(variable, lastVersion, assignment.Value);
+                this.parent.AssignVariable(variable, lastVersion, assignment.Value);
+            }
+
+            public override void VisitFieldRead(FieldRead fieldRead)
+            {
+                this.parent.Heap.ReadField(
+                    this.parent.GetVersioned(fieldRead.ResultStore),
+                    this.parent.GetVersioned(fieldRead.Reference),
+                    fieldRead.Field);
+            }
+
+            public override void VisitFieldWrite(FieldWrite fieldWrite)
+            {
+                // TODO: Use the original value expression when it is supported in ISymbolicHeap
+                this.parent.Heap.WriteField(
+                    this.parent.GetVersioned(fieldWrite.Reference),
+                    fieldWrite.Field,
+                    this.parent.GetVersioned((FlowVariable)fieldWrite.Value));
             }
         }
 
@@ -453,7 +570,17 @@ namespace AskTheCode.PathExploration
                 versionInfo.PopVersion();
                 int assignedVersion = versionInfo.CurrentVersion;
 
-                this.parent.OnVariableAssignmentRetracted(variable, assignedVersion, assignment.Value);
+                this.parent.RetractVariableAssignment(variable, assignedVersion, assignment.Value);
+            }
+
+            public override void VisitFieldRead(FieldRead fieldRead)
+            {
+                this.parent.Heap.Retract();
+            }
+
+            public override void VisitFieldWrite(FieldWrite fieldWrite)
+            {
+                this.parent.Heap.Retract();
             }
         }
 

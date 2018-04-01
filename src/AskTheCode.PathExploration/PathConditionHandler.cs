@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
+using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
@@ -20,13 +21,15 @@ namespace AskTheCode.PathExploration
             SmtContextHandler contextHandler,
             ISolver smtSolver,
             Path path,
-            StartingNodeInfo startingNode)
-            : base(path, startingNode)
+            StartingNodeInfo startingNode,
+            ISymbolicHeap heap)
+            : base(path, startingNode, heap)
         {
             Contract.Requires(contextHandler != null);
             Contract.Requires(smtSolver != null);
             Contract.Requires(path != null);
             Contract.Requires(startingNode != null);
+            Contract.Requires(heap != null);
 
             this.contextHandler = contextHandler;
             this.smtSolver = smtSolver;
@@ -59,7 +62,10 @@ namespace AskTheCode.PathExploration
 
         protected override void OnVariableAssigned(FlowVariable variable, int lastVersion, Expression value)
         {
-            this.AssertEquals(variable, lastVersion, value);
+            if (!variable.IsReference)
+            {
+                this.AssertEquals(variable, lastVersion, value);
+            }
         }
 
         private void AssertEquals(FlowVariable variable, int version, Expression value)
@@ -104,20 +110,19 @@ namespace AskTheCode.PathExploration
 
             public SymbolName GetName(Variable variable)
             {
-                var flowVariable = variable as FlowVariable;
-                if (flowVariable != null)
+                if (variable is FlowVariable flowVariable)
                 {
                     int version = this.owner.GetVariableVersion(flowVariable);
                     return this.owner.contextHandler.GetVariableVersionSymbol(flowVariable, version);
                 }
-                else
+                else if (variable is ConcreteVariableSymbolWrapper symbolWrapper)
                 {
-                    var symbolWrapper = variable as ConcreteVariableSymbolWrapper;
-                    if (symbolWrapper != null)
-                    {
-                        return symbolWrapper.SymbolName;
-                    }
+                    return symbolWrapper.SymbolName;
                 }
+                //else if (variable is ReferenceComparisonVariable refComp)
+                //{
+                //    return this.owner.GetReferenceComparisonExpression(refComp);
+                //}
 
                 throw new InvalidOperationException();
             }

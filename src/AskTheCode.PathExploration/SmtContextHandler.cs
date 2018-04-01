@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
+using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 using CodeContractsRevival.Runtime;
 
@@ -27,7 +28,7 @@ namespace AskTheCode.PathExploration
             this.context = this.contextFactory.CreateContext();
         }
 
-        public SmtSolverHandler CreateEmptySolver(Path rootPath, StartingNodeInfo startingNode)
+        public SmtSolverHandler CreateEmptySolver(Path rootPath, StartingNodeInfo startingNode, ISymbolicHeapFactory heapFactory)
         {
             Contract.Requires(rootPath != null);
             Contract.Requires(startingNode != null);
@@ -36,7 +37,7 @@ namespace AskTheCode.PathExploration
 
             var solver = this.context.CreateSolver(areDeclarationsGlobal: true, isUnsatisfiableCoreProduced: true);
 
-            return new SmtSolverHandler(this, solver, rootPath, startingNode);
+            return new SmtSolverHandler(this, solver, rootPath, startingNode, heapFactory);
         }
 
         internal SymbolName GetVariableVersionSymbol(FlowVariable variable, int version)

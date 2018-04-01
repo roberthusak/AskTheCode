@@ -97,6 +97,7 @@
     <Compile Include="SmtSolverHandler.cs" />
     <Compile Include="PathVariableVersionHandler.cs" />
     <Compile Include="StartingNodeInfo.cs" />
+    <Compile Include="VersionedVariable.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AskTheCode.Common\AskTheCode.Common.csproj">
