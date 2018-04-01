@@ -74,6 +74,9 @@
     <Compile Include="ExplorationResult.cs" />
     <Compile Include="ExplorationState.cs" />
     <Compile Include="Explorer.cs" />
+    <Compile Include="Heap\IReferenceModel.cs" />
+    <Compile Include="Heap\ISymbolicHeap.cs" />
+    <Compile Include="Heap\ISymbolicHeapContext.cs" />
     <Compile Include="Heuristics\GreedyExplorationHeuristic.cs" />
     <Compile Include="Heuristics\IExplorationHeuristic.cs" />
     <Compile Include="Heuristics\IHeuristicFactory.cs" />
