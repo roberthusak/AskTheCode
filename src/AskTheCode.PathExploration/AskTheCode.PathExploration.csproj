@@ -77,6 +77,7 @@
     <Compile Include="Heap\IReferenceModel.cs" />
     <Compile Include="Heap\ISymbolicHeap.cs" />
     <Compile Include="Heap\ISymbolicHeapContext.cs" />
+    <Compile Include="Heap\ProxySimplifyingSymbolicHeap.cs" />
     <Compile Include="Heuristics\GreedyExplorationHeuristic.cs" />
     <Compile Include="Heuristics\IExplorationHeuristic.cs" />
     <Compile Include="Heuristics\IHeuristicFactory.cs" />
