@@ -131,6 +131,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Operations\FieldOperation.cs" />
     <Compile Include="Operations\FieldRead.cs" />
     <Compile Include="Operations\FieldWrite.cs" />
     <Compile Include="ReferenceComparisonVariable.cs" />

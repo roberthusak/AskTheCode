@@ -8,9 +8,10 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs.Operations
 {
-    public class FieldRead : Operation
+    public class FieldRead : FieldOperation
     {
         public FieldRead(FlowVariable resultStore, FlowVariable reference, IFieldDefinition field)
+            : base(reference, field)
         {
             Contract.Requires<ArgumentNullException>(resultStore != null, nameof(resultStore));
             Contract.Requires<ArgumentNullException>(reference != null, nameof(reference));
@@ -19,15 +20,9 @@ namespace AskTheCode.ControlFlowGraphs.Operations
             Contract.Requires<ArgumentException>(resultStore.Sort == field.Sort, nameof(resultStore));
 
             this.ResultStore = resultStore;
-            this.Reference = reference;
-            this.Field = field;
         }
 
         public FlowVariable ResultStore { get; }
-
-        public FlowVariable Reference { get; }
-
-        public IFieldDefinition Field { get; }
 
         public override void Accept(OperationVisitor visitor)
         {
