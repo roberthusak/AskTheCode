@@ -31,7 +31,7 @@ namespace AskTheCode.PathExploration
                 smtSolver,
                 null)
         {
-            var heap = heapFactory.Create(new SymbolicHeapContext(this));
+            var heap = heapFactory.Create(new SolverSymbolicHeapContext(this));
             this.pathConditionHandler = new PathConditionHandler(contextHandler, smtSolver, path, startingNode, heap);
         }
 
@@ -159,13 +159,24 @@ namespace AskTheCode.PathExploration
                 creator.ReferenceModelStack.ToImmutableArray());
         }
 
-        private class SymbolicHeapContext : ISymbolicHeapContext
+        private class SolverSymbolicHeapContext : ISymbolicHeapContext
         {
-            private readonly SmtSolverHandler parent;
+            private readonly SmtSolverHandler owner;
 
-            public SymbolicHeapContext(SmtSolverHandler parent)
+            public SolverSymbolicHeapContext(SmtSolverHandler owner)
             {
-                this.parent = parent;
+                this.owner = owner;
+            }
+
+            public void AddAssertion(BoolHandle assertion)
+            {
+                this.owner.smtSolver.AddAssertion(this.owner.pathConditionHandler.NameProvider, assertion);
+            }
+
+            public NamedVariable GetNamedVariable(VersionedVariable variable)
+            {
+                var name = this.owner.contextHandler.GetVariableVersionSymbol(variable.Variable, variable.Version);
+                return ExpressionFactory.NamedVariable(variable.Variable.Sort, name);
             }
         }
 
@@ -184,7 +195,7 @@ namespace AskTheCode.PathExploration
                 PathConditionHandler pathConditionHandler,
                 SmtContextHandler smtContextHandler,
                 IModel smtModel)
-                : base(pathConditionHandler, new EmptySymbolicHeapContext())
+                : base(pathConditionHandler, (parent) => new ModelSymbolicHeapContext((ExecutionModelCreator)parent))
             {
                 this.smtContextHandler = smtContextHandler;
                 this.smtModel = smtModel;
@@ -298,8 +309,26 @@ namespace AskTheCode.PathExploration
                 }
             }
 
-            private class EmptySymbolicHeapContext : ISymbolicHeapContext
+            private class ModelSymbolicHeapContext : ISymbolicHeapContext
             {
+                private ExecutionModelCreator owner;
+
+                public ModelSymbolicHeapContext(ExecutionModelCreator owner)
+                {
+                    this.owner = owner;
+                }
+
+                public void AddAssertion(BoolHandle boolHandle)
+                {
+                    // We know that we only retract the path when constructing the model
+                    throw new InvalidOperationException("Unable to add assertions during path retraction");
+                }
+
+                public NamedVariable GetNamedVariable(VersionedVariable variable)
+                {
+                    var name = this.owner.smtContextHandler.GetVariableVersionSymbol(variable.Variable, variable.Version);
+                    return ExpressionFactory.NamedVariable(variable.Variable.Sort, name);
+                }
             }
         }
     }

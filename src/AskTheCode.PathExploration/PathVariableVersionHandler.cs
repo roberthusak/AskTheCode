@@ -36,7 +36,9 @@ namespace AskTheCode.PathExploration
             this.Heap = heap;
         }
 
-        protected PathVariableVersionHandler(PathVariableVersionHandler other, ISymbolicHeapContext heapContext)
+        protected PathVariableVersionHandler(
+            PathVariableVersionHandler other,
+            Func<PathVariableVersionHandler, ISymbolicHeapContext> heapContextFactory)
             : this()
         {
             this.startingNode = other.startingNode;
@@ -44,7 +46,7 @@ namespace AskTheCode.PathExploration
                 other.callStack.Select(overlay => overlay.Clone()));
             this.variableVersions = other.variableVersions.Clone(varInfo => varInfo.Clone());
             this.Path = other.Path;
-            this.Heap = other.Heap.Clone(heapContext);
+            this.Heap = other.Heap.Clone(heapContextFactory(this));
         }
 
         private PathVariableVersionHandler()
