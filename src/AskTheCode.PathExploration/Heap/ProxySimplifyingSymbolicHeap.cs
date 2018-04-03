@@ -136,11 +136,13 @@ namespace AskTheCode.PathExploration.Heap
 
         private void OnNodeMerge(ReferenceNode a, ReferenceNode b, ReferenceNode merged)
         {
+            Contract.Requires(a != b && b != merged);
+
             var aRepresentative = a.Variables[0];
             if (!aRepresentative.Variable.IsReference)
             {
                 var bRepresentative = b.Variables[0];
-                Contract.Assert(a != b);
+                Contract.Assert(aRepresentative != bRepresentative);
                 Contract.Assert(aRepresentative.Variable.Sort == bRepresentative.Variable.Sort);
 
                 var aVar = this.context.GetNamedVariable(aRepresentative);
@@ -192,7 +194,7 @@ namespace AskTheCode.PathExploration.Heap
             /// </summary>
             public static readonly ReferenceGraph ConflictGraph = new ReferenceGraph(
                 ImmutableSortedDictionary<int, ReferenceNode>.Empty,
-                ImmutableSortedDictionary<int, ImmutableSortedDictionary<IFieldDefinition, ReferenceEdge>>.Empty,
+                ImmutableSortedDictionary<int, ImmutableDictionary<IFieldDefinition, ReferenceEdge>>.Empty,
                 ImmutableSortedDictionary<int, ImmutableSortedSet<int>>.Empty,
                 ImmutableDictionary<VersionedVariable, int>.Empty,
                 0);
@@ -203,14 +205,14 @@ namespace AskTheCode.PathExploration.Heap
             private const int InvalidNodeId = -1;
 
             private readonly ImmutableSortedDictionary<int, ReferenceNode> nodes;
-            private readonly ImmutableSortedDictionary<int, ImmutableSortedDictionary<IFieldDefinition, ReferenceEdge>> nodeEdges;
+            private readonly ImmutableSortedDictionary<int, ImmutableDictionary<IFieldDefinition, ReferenceEdge>> nodeEdges;
             private readonly ImmutableSortedDictionary<int, ImmutableSortedSet<int>> nodeInequalities;
             private readonly ImmutableDictionary<VersionedVariable, int> variableToNodeIdMap;
             private readonly int nextNodeId;
 
             private ReferenceGraph(
                 ImmutableSortedDictionary<int, ReferenceNode> nodes,
-                ImmutableSortedDictionary<int, ImmutableSortedDictionary<IFieldDefinition, ReferenceEdge>> nodeEdges,
+                ImmutableSortedDictionary<int, ImmutableDictionary<IFieldDefinition, ReferenceEdge>> nodeEdges,
                 ImmutableSortedDictionary<int, ImmutableSortedSet<int>> nodeInequalities,
                 ImmutableDictionary<VersionedVariable, int> variableToNodeIdMap,
                 int nextNodeId)
@@ -440,9 +442,9 @@ namespace AskTheCode.PathExploration.Heap
                 });
                 var nodeEdges = ImmutableSortedDictionary.CreateRange(new[]
                 {
-                    new KeyValuePair<int, ImmutableSortedDictionary<IFieldDefinition, ReferenceEdge>>(
+                    new KeyValuePair<int, ImmutableDictionary<IFieldDefinition, ReferenceEdge>>(
                         nullNode.Id,
-                        ImmutableSortedDictionary<IFieldDefinition, ReferenceEdge>.Empty)
+                        ImmutableDictionary<IFieldDefinition, ReferenceEdge>.Empty)
                 });
                 var inequalities = ImmutableSortedDictionary.CreateRange(new[]
                 {
@@ -467,7 +469,7 @@ namespace AskTheCode.PathExploration.Heap
                     var node = new ReferenceNode(this.nextNodeId, ImmutableList.Create(variable));
                     var newGraph = new ReferenceGraph(
                         this.nodes.Add(node.Id, node),
-                        this.nodeEdges.Add(node.Id, ImmutableSortedDictionary<IFieldDefinition, ReferenceEdge>.Empty),
+                        this.nodeEdges.Add(node.Id, ImmutableDictionary<IFieldDefinition, ReferenceEdge>.Empty),
                         this.nodeInequalities.Add(node.Id, ImmutableSortedSet<int>.Empty),
                         this.variableToNodeIdMap.Add(variable, node.Id),
                         this.nextNodeId + 1);
