@@ -15,9 +15,9 @@ namespace AskTheCode.ControlFlowGraphs.Tests
     {
         private static SampleNodeClassDefinition nodeClass = new SampleNodeClassDefinition();
 
-        public static FlowGraph TrivialGraph()
+        public static FlowGraph TrivialGraph(FlowGraphId id)
         {
-            var builder = new FlowGraphBuilder(GetId());
+            var builder = new FlowGraphBuilder(id);
 
             var enterNode = builder.AddEnterNode();
             var retNode = builder.AddReturnNode();
@@ -26,9 +26,9 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
-        public static FlowGraph IntAddGraph()
+        public static FlowGraph IntAddGraph(FlowGraphId id)
         {
-            var builder = new FlowGraphBuilder(GetId());
+            var builder = new FlowGraphBuilder(id);
 
             var aParam = builder.AddLocalVariable(Sort.Int, "a");
             var bParam = builder.AddLocalVariable(Sort.Int, "b");
@@ -42,9 +42,9 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
-        public static FlowGraph IntMaxGraph()
+        public static FlowGraph IntMaxGraph(FlowGraphId id)
         {
-            var builder = new FlowGraphBuilder(GetId());
+            var builder = new FlowGraphBuilder(id);
 
             var aParam = builder.AddLocalVariable(Sort.Int, "a");
             var a = (IntHandle)aParam;
@@ -66,9 +66,9 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
-        public static FlowGraph ComplexExampleGraph()
+        public static FlowGraph ComplexExampleGraph(FlowGraphId id)
         {
-            var builder = new FlowGraphBuilder(GetId());
+            var builder = new FlowGraphBuilder(id);
 
             var aVar = builder.AddLocalVariable(Sort.Int, "a");
             var a = (IntHandle)aVar;
@@ -139,9 +139,10 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
-        public static FlowGraph NodeConstructorGraph()
+        [GeneratedMethodProperties(IsConstructor = true)]
+        public static FlowGraph NodeConstructorGraph(FlowGraphId id)
         {
-            var builder = new FlowGraphBuilder(GetId());
+            var builder = new FlowGraphBuilder(id);
 
             var @this = builder.AddLocalVariable(References.Sort, "this");
             var value = builder.AddLocalVariable(Sort.Int, "value");
@@ -163,16 +164,16 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
-        public static FlowGraph HeapSimpleConstructorGraph()
+        public static FlowGraph HeapSimpleConstructorGraph(FlowGraphId id)
         {
-            var builder = new FlowGraphBuilder(GetId());
+            var builder = new FlowGraphBuilder(id);
 
             var enterNode = builder.AddEnterNode();
 
             var n = builder.AddLocalVariable(References.Sort, "n");
 
             var newNode = builder.AddCallNode(
-                new TestRoutineLocation("NodeConstructorGraph", true),
+                new TestRoutineLocation(typeof(SampleFlowGraphGenerator).GetMethod(nameof(NodeConstructorGraph)), true),
                 new Expression[] { n, ExpressionFactory.IntInterpretation(0), References.Null },
                 n.ToSingular(),
                 true);
@@ -183,7 +184,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var assertNode = builder.AddInnerNode(new Operation[]
             {
-                new Assignment(assert1, builder.AddReferenceComparisonVariable(false, n, References.Null)),
+                //new Assignment(assert1, builder.AddReferenceComparisonVariable(false, n, References.Null)),
                 new FieldRead(n_value, n, nodeClass.Value),
                 new Assignment(assert2, (IntHandle)n_value == 0)
             });
@@ -197,9 +198,9 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
-        public static FlowGraph HeapSimpleBranchingGraph()
+        public static FlowGraph HeapSimpleBranchingGraph(FlowGraphId id)
         {
-            var builder = new FlowGraphBuilder(GetId());
+            var builder = new FlowGraphBuilder(id);
 
             var n = builder.AddLocalVariable(References.Sort, "n");
 
@@ -209,7 +210,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var n_neq_null = builder.AddReferenceComparisonVariable(false, n, References.Null);
 
             var eqNewNode = builder.AddCallNode(
-                new TestRoutineLocation("NodeConstructorGraph", true),
+                new TestRoutineLocation(typeof(SampleFlowGraphGenerator).GetMethod(nameof(NodeConstructorGraph)), true),
                 new Expression[] { n, ExpressionFactory.IntInterpretation(0), n },
                 n.ToSingular(),
                 true);
@@ -243,9 +244,9 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             return builder.FreezeAndReleaseGraph();
         }
 
-        public static FlowGraph HeapSimpleComparisonGraph()
+        public static FlowGraph HeapSimpleComparisonGraph(FlowGraphId id)
         {
-            var builder = new FlowGraphBuilder(GetId());
+            var builder = new FlowGraphBuilder(id);
 
             var a = builder.AddLocalVariable(References.Sort, "a");
             var b = builder.AddLocalVariable(References.Sort, "b");
@@ -289,11 +290,6 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             builder.AddEdge(neqNode, returnNode);
 
             return builder.FreezeAndReleaseGraph();
-        }
-
-        private static FlowGraphId GetId()
-        {
-            return new FlowGraphId(0);
         }
 
         private class SampleNodeClassDefinition : IClassDefinition

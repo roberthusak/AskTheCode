@@ -182,7 +182,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CSharpBuildToMsaglGraphConverter.cs" />
-    <Compile Include="DummyFlowGraphProvider.cs" />
     <Compile Include="FlowToMsaglGraphConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

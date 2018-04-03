@@ -43,7 +43,7 @@ namespace ControlFlowGraphViewer
         private CSharpBuildToMsaglGraphConverter csharpGraphConverter;
         private GraphViewer aglGraphViewer;
 
-        private MethodInfo[] flowGeneratorMethods;
+        private TestFlowGraphProvider sampleGraphProvider;
 
         private Workspace csharpWorkspace;
         private Document csharpDocument;
@@ -76,15 +76,8 @@ namespace ControlFlowGraphViewer
             this.aglGraphViewer.MouseDown += this.AglGraphViewer_MouseDown;
 
             // Symbolic CFGs
-            this.flowGeneratorMethods =
-                typeof(SampleFlowGraphGenerator)
-                .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Where(
-                    methodInfo => methodInfo.ReturnType == typeof(FlowGraph)
-                    && !methodInfo.ContainsGenericParameters
-                    && methodInfo.GetParameters().Length == 0)
-                .ToArray();
-            this.graphSelectionCombo.ItemsSource = this.flowGeneratorMethods;
+            this.sampleGraphProvider = new TestFlowGraphProvider(typeof(SampleFlowGraphGenerator));
+            this.graphSelectionCombo.ItemsSource = this.sampleGraphProvider.GeneratedMethodLocations;
             this.graphSelectionCombo.SelectedIndex = 0;
 
             // C# CFGs built from the syntax trees of the sample methods
@@ -195,8 +188,8 @@ namespace ControlFlowGraphViewer
                 return;
             }
 
-            var methodInfo = this.flowGeneratorMethods[index];
-            var flowGraph = (FlowGraph)methodInfo.Invoke(null, null);
+            var location = this.sampleGraphProvider.GeneratedMethodLocations[index];
+            var flowGraph = this.sampleGraphProvider.GetFlowGraphAsync(location).Result;
 
             var aglGraph = this.flowGraphConverter.Convert(flowGraph);
             aglGraph.Attr.LayerDirection = LayerDirection.TB;
@@ -313,7 +306,6 @@ namespace ControlFlowGraphViewer
             int? assignmentIndex = isAssertChecked ?
                 ((InnerFlowNode)this.currentFlowNode).Operations.Count - 1 : (int?)null;
             var startNode = new StartingNodeInfo(this.currentFlowNode, assignmentIndex, isAssertChecked);
-            var graphProvider = new DummyFlowGraphProvider();
             var z3Factory = new ContextFactory();
             var options = new ExplorationOptions();
 
@@ -323,7 +315,7 @@ namespace ControlFlowGraphViewer
                 options.TimeoutSeconds = timeoutSeconds;
             }
 
-            var explorationContext = new ExplorationContext(graphProvider, z3Factory, startNode, options);
+            var explorationContext = new ExplorationContext(this.sampleGraphProvider, z3Factory, startNode, options);
             explorationContext.ExecutionModelsObservable.Subscribe(this.ExecutionModelFound);
             await explorationContext.ExploreAsync();
 
