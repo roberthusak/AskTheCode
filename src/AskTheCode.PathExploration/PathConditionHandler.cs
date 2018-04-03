@@ -41,6 +41,8 @@ namespace AskTheCode.PathExploration
             this.ProcessStartingNode();
         }
 
+        public INameProvider<Variable> NameProvider => this.nameProvider;
+
         protected override void OnAfterPathRetracted(int popCount)
         {
             // It is done as batch for performance reasons
@@ -71,32 +73,10 @@ namespace AskTheCode.PathExploration
         private void AssertEquals(FlowVariable variable, int version, Expression value)
         {
             var symbolName = this.contextHandler.GetVariableVersionSymbol(variable, version);
-            var symbolWrapper = new ConcreteVariableSymbolWrapper(variable, symbolName);
+            var symbolWrapper = ExpressionFactory.NamedVariable(variable.Sort, symbolName);
 
             var equal = (BoolHandle)ExpressionFactory.Equal(symbolWrapper, value);
             this.smtSolver.AddAssertion(this.nameProvider, equal);
-        }
-
-        private class ConcreteVariableSymbolWrapper : Variable
-        {
-            public ConcreteVariableSymbolWrapper(FlowVariable variable, SymbolName symbolName)
-                : base(variable.Sort)
-            {
-                Contract.Requires(variable != null);
-                Contract.Requires(symbolName.IsValid);
-
-                this.Variable = variable;
-                this.SymbolName = symbolName;
-            }
-
-            public override string DisplayName
-            {
-                get { return this.SymbolName.ToString(); }
-            }
-
-            public FlowVariable Variable { get; private set; }
-
-            public SymbolName SymbolName { get; private set; }
         }
 
         private class VersionedNameProvider : INameProvider<Variable>
@@ -115,15 +95,9 @@ namespace AskTheCode.PathExploration
                     int version = this.owner.GetVariableVersion(flowVariable);
                     return this.owner.contextHandler.GetVariableVersionSymbol(flowVariable, version);
                 }
-                else if (variable is ConcreteVariableSymbolWrapper symbolWrapper)
-                {
-                    return symbolWrapper.SymbolName;
-                }
-                //else if (variable is ReferenceComparisonVariable refComp)
-                //{
-                //    return this.owner.GetReferenceComparisonExpression(refComp);
-                //}
 
+                // TODO: Implement handling of ReferenceComparisonVariable to enable it to appear in structured expressions
+                //       (now it can be only on the right side of an assignment by itself)
                 throw new InvalidOperationException();
             }
         }
