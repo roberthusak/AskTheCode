@@ -148,7 +148,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var value = builder.AddLocalVariable(Sort.Int, "value");
             var next = builder.AddLocalVariable(References.Sort, "next");
 
-            var enterNode = builder.AddEnterNode(new[] { @this, value, next });
+            var enterNode = builder.AddEnterNode(new[] { value, next });
 
             var initNode = builder.AddInnerNode(new[]
             {
@@ -174,7 +174,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var newNode = builder.AddCallNode(
                 new TestRoutineLocation(typeof(SampleFlowGraphGenerator).GetMethod(nameof(NodeConstructorGraph)), true),
-                new Expression[] { n, ExpressionFactory.IntInterpretation(0), References.Null },
+                new Expression[] { ExpressionFactory.IntInterpretation(0), References.Null },
                 n.ToSingular(),
                 true);
 
@@ -184,7 +184,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var assertNode = builder.AddInnerNode(new Operation[]
             {
-                //new Assignment(assert1, builder.AddReferenceComparisonVariable(false, n, References.Null)),
+                new Assignment(assert1, builder.AddReferenceComparisonVariable(false, n, References.Null)),
                 new FieldRead(n_value, n, nodeClass.Value),
                 new Assignment(assert2, (IntHandle)n_value == 0)
             });
@@ -211,7 +211,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var eqNewNode = builder.AddCallNode(
                 new TestRoutineLocation(typeof(SampleFlowGraphGenerator).GetMethod(nameof(NodeConstructorGraph)), true),
-                new Expression[] { n, ExpressionFactory.IntInterpretation(0), n },
+                new Expression[] { ExpressionFactory.IntInterpretation(0), n },
                 n.ToSingular(),
                 true);
 
