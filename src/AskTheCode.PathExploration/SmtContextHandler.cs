@@ -19,6 +19,8 @@ namespace AskTheCode.PathExploration
         private FlowGraphsVariableOverlay<List<SymbolName>> variableVersionSymbols =
             new FlowGraphsVariableOverlay<List<SymbolName>>(() => new List<SymbolName>());
 
+        private List<NamedVariable> customVariables = new List<NamedVariable>();
+
         public SmtContextHandler(IContextFactory contextFactory)
         {
             this.contextFactory = contextFactory;
@@ -38,6 +40,19 @@ namespace AskTheCode.PathExploration
             var solver = this.context.CreateSolver(areDeclarationsGlobal: true, isUnsatisfiableCoreProduced: true);
 
             return new SmtSolverHandler(this, solver, rootPath, startingNode, heapFactory);
+        }
+
+        internal NamedVariable CreateVariable(Sort sort, string name = null)
+        {
+            Contract.Requires(sort != null);
+
+            var symbolName = new SymbolName(name, this.lastVariableNumber++);
+            this.lastVariableNumber++;
+
+            var variable = ExpressionFactory.NamedVariable(sort, symbolName);
+            this.customVariables.Add(variable);
+
+            return variable;
         }
 
         internal SymbolName GetVariableVersionSymbol(FlowVariable variable, int version)

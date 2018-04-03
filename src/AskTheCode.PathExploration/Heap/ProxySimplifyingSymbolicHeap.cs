@@ -39,6 +39,8 @@ namespace AskTheCode.PathExploration.Heap
 
         private ReferenceGraph CurrentGraph => this.graphStack.Peek();
 
+        public ImmutableArray<BoolHandle> Assumptions => ImmutableArray<BoolHandle>.Empty;
+
         public ProxySimplifyingSymbolicHeap Clone(ISymbolicHeapContext context)
         {
             return new ProxySimplifyingSymbolicHeap(context, this.graphStack);
@@ -109,7 +111,7 @@ namespace AskTheCode.PathExploration.Heap
             this.graphStack.Push(newGraph);
         }
 
-        public void WriteField(VersionedVariable reference, IFieldDefinition field, VersionedVariable value)
+        public void WriteField(VersionedVariable reference, IFieldDefinition field, Expression value)
         {
             if (!this.CanBeSatisfiable)
             {
@@ -117,7 +119,10 @@ namespace AskTheCode.PathExploration.Heap
                 return;
             }
 
-            var newGraph = this.CurrentGraph.PerformWrite(reference, field, value, this.OnNodeMerge);
+            // TODO: Support arbitrary expression
+            var valueVar = this.context.GetVersioned((FlowVariable)value);
+
+            var newGraph = this.CurrentGraph.PerformWrite(reference, field, valueVar, this.OnNodeMerge);
             this.graphStack.Push(newGraph);
         }
 

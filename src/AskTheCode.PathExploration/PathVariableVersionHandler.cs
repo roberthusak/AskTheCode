@@ -548,11 +548,10 @@ namespace AskTheCode.PathExploration
 
             public override void VisitFieldWrite(FieldWrite fieldWrite)
             {
-                // TODO: Use the original value expression when it is supported in ISymbolicHeap
                 this.parent.Heap.WriteField(
                     this.parent.GetVersioned(fieldWrite.Reference),
                     fieldWrite.Field,
-                    this.parent.GetVersioned((FlowVariable)fieldWrite.Value));
+                    fieldWrite.Value);
             }
         }
 

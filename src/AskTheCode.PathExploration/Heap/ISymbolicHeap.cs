@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.SmtLibStandard;
+using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.PathExploration.Heap
 {
     public interface ISymbolicHeap
     {
         bool CanBeSatisfiable { get; }
+
+        ImmutableArray<BoolHandle> Assumptions { get; }
 
         ISymbolicHeap Clone(ISymbolicHeapContext context);
 
@@ -22,8 +26,7 @@ namespace AskTheCode.PathExploration.Heap
 
         void ReadField(VersionedVariable result, VersionedVariable reference, IFieldDefinition field);
 
-        // TODO: Support arbitrary expressions as the value
-        void WriteField(VersionedVariable reference, IFieldDefinition field, VersionedVariable value);
+        void WriteField(VersionedVariable reference, IFieldDefinition field, Expression value);
 
         void Retract(int operationCount = 1);
 

@@ -73,14 +73,23 @@ namespace AskTheCode.PathExploration
             this.pathConditionHandler.Update(path);
             Contract.Assert(this.Path == path);
 
+            var heap = this.pathConditionHandler.Heap;
+
             SolverResult solverResult;
-            if (!this.pathConditionHandler.Heap.CanBeSatisfiable)
+            if (!heap.CanBeSatisfiable)
             {
                 solverResult = SolverResult.Unsat;
             }
             else
             {
-                solverResult = this.smtSolver.Solve();
+                if (heap.Assumptions.Length > 0)
+                {
+                    solverResult = this.smtSolver.Solve(heap.Assumptions);
+                }
+                else
+                {
+                    solverResult = this.smtSolver.Solve();
+                }
             }
 
             switch (solverResult)
@@ -173,10 +182,21 @@ namespace AskTheCode.PathExploration
                 this.owner.smtSolver.AddAssertion(this.owner.pathConditionHandler.NameProvider, assertion);
             }
 
+            public VersionedVariable GetVersioned(FlowVariable variable)
+            {
+                int version = this.owner.pathConditionHandler.GetVariableVersion(variable);
+                return new VersionedVariable(variable, version);
+            }
+
             public NamedVariable GetNamedVariable(VersionedVariable variable)
             {
                 var name = this.owner.contextHandler.GetVariableVersionSymbol(variable.Variable, variable.Version);
                 return ExpressionFactory.NamedVariable(variable.Variable.Sort, name);
+            }
+
+            public NamedVariable CreateVariable(Sort sort, string name = null)
+            {
+                return this.owner.contextHandler.CreateVariable(sort, name);
             }
         }
 
@@ -324,10 +344,21 @@ namespace AskTheCode.PathExploration
                     throw new InvalidOperationException("Unable to add assertions during path retraction");
                 }
 
+                public VersionedVariable GetVersioned(FlowVariable variable)
+                {
+                    int version = this.owner.GetVariableVersion(variable);
+                    return new VersionedVariable(variable, version);
+                }
+
                 public NamedVariable GetNamedVariable(VersionedVariable variable)
                 {
                     var name = this.owner.smtContextHandler.GetVariableVersionSymbol(variable.Variable, variable.Version);
                     return ExpressionFactory.NamedVariable(variable.Variable.Sort, name);
+                }
+
+                public NamedVariable CreateVariable(Sort sort, string name = null)
+                {
+                    return this.owner.smtContextHandler.CreateVariable(sort, name);
                 }
             }
         }
