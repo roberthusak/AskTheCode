@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.SmtLibStandard;
+using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration.Heap
@@ -68,7 +69,7 @@ namespace AskTheCode.PathExploration.Heap
             ReferenceGraph newGraph;
             if (areEqual)
             {
-                newGraph = this.CurrentGraph.MakeEqual(left, right);
+                newGraph = this.CurrentGraph.MakeEqual(left, right, this.OnNodeMerge);
             }
             else
             {
@@ -104,7 +105,7 @@ namespace AskTheCode.PathExploration.Heap
                 return;
             }
 
-            var newGraph = this.CurrentGraph.PerformRead(result, reference, field);
+            var newGraph = this.CurrentGraph.PerformRead(result, reference, field, this.OnNodeMerge);
             this.graphStack.Push(newGraph);
         }
 
@@ -116,7 +117,7 @@ namespace AskTheCode.PathExploration.Heap
                 return;
             }
 
-            var newGraph = this.CurrentGraph.PerformWrite(reference, field, value);
+            var newGraph = this.CurrentGraph.PerformWrite(reference, field, value, this.OnNodeMerge);
             this.graphStack.Push(newGraph);
         }
 
@@ -131,6 +132,21 @@ namespace AskTheCode.PathExploration.Heap
         public IReferenceModel GetReferenceModel(IModel smtModel, VersionedVariable reference)
         {
             return new EmptyReferenceModel();
+        }
+
+        private void OnNodeMerge(ReferenceNode a, ReferenceNode b, ReferenceNode merged)
+        {
+            var aRepresentative = a.Variables[0];
+            if (!aRepresentative.Variable.IsReference)
+            {
+                var bRepresentative = b.Variables[0];
+                Contract.Assert(a != b);
+                Contract.Assert(aRepresentative.Variable.Sort == bRepresentative.Variable.Sort);
+
+                var aVar = this.context.GetNamedVariable(aRepresentative);
+                var bVar = this.context.GetNamedVariable(bRepresentative);
+                this.context.AddAssertion((BoolHandle)ExpressionFactory.Equal(aVar, bVar));
+            }
         }
 
         private struct ReferenceEdge
@@ -206,13 +222,18 @@ namespace AskTheCode.PathExploration.Heap
                 this.nextNodeId = nextNodeId;
             }
 
+            public delegate void MergeListener(ReferenceNode a, ReferenceNode b, ReferenceNode merged);
+
             public enum ReferenceOperation
             {
                 Read,
                 Write
             }
 
-            public ReferenceGraph MakeEqual(VersionedVariable left, VersionedVariable right)
+            public ReferenceGraph MakeEqual(
+                VersionedVariable left,
+                VersionedVariable right,
+                MergeListener mergeListener)
             {
                 // TODO: Consider optimizing by adding an unknown variable to a known one's group
                 //       or creating a group of two unknown variables at once
@@ -225,7 +246,7 @@ namespace AskTheCode.PathExploration.Heap
                 }
                 else
                 {
-                    return graph.MergeNodes(leftNode.Id, rightNode.Id);
+                    return graph.MergeNodes(leftNode.Id, rightNode.Id, mergeListener);
                 }
             }
 
@@ -287,7 +308,11 @@ namespace AskTheCode.PathExploration.Heap
                 return null;
             }
 
-            public ReferenceGraph PerformRead(VersionedVariable result, VersionedVariable reference, IFieldDefinition field)
+            public ReferenceGraph PerformRead(
+                VersionedVariable result,
+                VersionedVariable reference,
+                IFieldDefinition field,
+                MergeListener mergeListener)
             {
                 (var graphWithResult, var resultNode) = this.GetOrAddNode(result);
                 (var graph, var refNode) = graphWithResult.GetOrAddNode(reference);
@@ -299,7 +324,7 @@ namespace AskTheCode.PathExploration.Heap
                         // Add to the target variables
                         if (edge.TargetNodeId != resultNode.Id)
                         {
-                            return graph.MergeNodes(edge.TargetNodeId, resultNode.Id);
+                            return graph.MergeNodes(edge.TargetNodeId, resultNode.Id, mergeListener);
                         }
                         else
                         {
@@ -341,7 +366,11 @@ namespace AskTheCode.PathExploration.Heap
                 }
             }
 
-            public ReferenceGraph PerformWrite(VersionedVariable reference, IFieldDefinition field, VersionedVariable value)
+            public ReferenceGraph PerformWrite(
+                VersionedVariable reference,
+                IFieldDefinition field,
+                VersionedVariable value,
+                MergeListener mergeListener)
             {
                 int nodeIdNotToClearEdges = InvalidNodeId;
                 var graph = this;
@@ -361,7 +390,7 @@ namespace AskTheCode.PathExploration.Heap
 
                         if (edge.TargetNodeId != valueNode.Id)
                         {
-                            graph = graph.MergeNodes(edge.TargetNodeId, valueNode.Id);
+                            graph = graph.MergeNodes(edge.TargetNodeId, valueNode.Id, mergeListener);
 
                             if (graph == ConflictGraph)
                             {
@@ -446,7 +475,7 @@ namespace AskTheCode.PathExploration.Heap
                 }
             }
 
-            private ReferenceGraph MergeNodes(int leftNodeId, int rightNodeId)
+            private ReferenceGraph MergeNodes(int leftNodeId, int rightNodeId, MergeListener mergeListener)
             {
                 Contract.Assert(leftNodeId != rightNodeId);
 
@@ -488,9 +517,13 @@ namespace AskTheCode.PathExploration.Heap
                     }
 
                     // Merge nodes into the first one
+                    var toMerge = nodesBuilder[toMergeId];
+                    var toRemove = nodesBuilder[toRemoveId];
                     var merged = new ReferenceNode(
                         toMergeId,
-                        nodesBuilder[toMergeId].Variables.AddRange(nodesBuilder[toRemoveId].Variables));
+                        toMerge.Variables.AddRange(toRemove.Variables));
+
+                    mergeListener(toMerge, toRemove, merged);
 
                     nodesBuilder[toMergeId] = merged;
                     nodesBuilder.Remove(toRemoveId);

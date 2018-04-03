@@ -21,6 +21,10 @@ namespace AskTheCode.PathExploration
 
         public int Version { get; }
 
+        public static bool operator ==(VersionedVariable left, VersionedVariable right) => left.Equals(right);
+
+        public static bool operator !=(VersionedVariable left, VersionedVariable right) => !left.Equals(right);
+
         public bool Equals(VersionedVariable other)
         {
             return this.Variable == other.Variable && this.Version == other.Version;
