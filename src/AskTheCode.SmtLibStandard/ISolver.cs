@@ -38,5 +38,11 @@ namespace AskTheCode.SmtLibStandard
         void Pop(int levels);
 
         SolverResult Solve();
+
+        SolverResult Solve(IEnumerable<BoolHandle> assumptions);
+
+        // TODO: Consider solving these overloads by default parameters and/or extension methods
+        SolverResult Solve<TVariable>(INameProvider<TVariable> varNameProvider, IEnumerable<BoolHandle> assumptions)
+             where TVariable : Variable;
     }
 }

@@ -63,10 +63,7 @@ namespace AskTheCode.SmtLibStandard.Z3
             get { return ImmutableArray<IUnsatisfiableCoreElement>.Empty; }
         }
 
-        public void AddAssertion(BoolHandle assertion)
-        {
-            throw new NotImplementedException();
-        }
+        public void AddAssertion(BoolHandle assertion) => this.AddAssertion((INameProvider<Variable>)null, assertion);
 
         public void AddAssertion<TVariable>(INameProvider<TVariable> varNameProvider, BoolHandle assertion)
             where TVariable : Variable
@@ -80,10 +77,7 @@ namespace AskTheCode.SmtLibStandard.Z3
 
         public void AddAssertions(IEnumerable<BoolHandle> assertions)
         {
-            foreach (var assertion in assertions)
-            {
-                this.AddAssertion(assertion);
-            }
+            this.AddAssertions((INameProvider<Variable>)null, assertions);
         }
 
         public void AddAssertions<TVariable>(
@@ -114,8 +108,32 @@ namespace AskTheCode.SmtLibStandard.Z3
 
         public SolverResult Solve()
         {
+            return this.SolveImpl(Array.Empty<Expr>());
+        }
+
+        public SolverResult Solve(IEnumerable<BoolHandle> assumptions)
+        {
+            return this.Solve((INameProvider<Variable>)null, assumptions);
+        }
+
+        public SolverResult Solve<TVariable>(
+            INameProvider<TVariable> varNameProvider,
+            IEnumerable<BoolHandle> assumptions)
+            where TVariable : Variable
+        {
+            var converter = this.context.ExpressionConverter;
+
+            var z3Assumptions = assumptions
+                .Select(a => converter.Convert(a, varNameProvider))
+                .ToArray();
+
+            return this.SolveImpl(z3Assumptions);
+        }
+
+        private SolverResult SolveImpl(Expr[] z3Assumptions)
+        {
             this.model = null;
-            var status = this.solver.Check();
+            var status = this.solver.Check(z3Assumptions);
 
             switch (status)
             {
