@@ -12,7 +12,7 @@ namespace AskTheCode.PathExploration
 
         public IEntryPointRecognizer FinalNodeRecognizer { get; set; } = new BorderEntryPointRecognizer();
 
-        public ISymbolicHeapFactory SymbolicHeapFactory { get; set; } = new ProxySimplifyingSymbolicHeapFactory();
+        public ISymbolicHeapFactory SymbolicHeapFactory { get; set; } = new ArrayTheorySymbolicHeapFactory();
 
         public IHeuristicFactory<IExplorationHeuristic> ExplorationHeuristicFactory { get; set; } =
             new SimpleHeuristicFactory<GreedyExplorationHeuristic>();
