@@ -33,6 +33,7 @@ namespace AskTheCode.PathExploration
         {
             var heap = heapFactory.Create(new SolverSymbolicHeapContext(this));
             this.pathConditionHandler = new PathConditionHandler(contextHandler, smtSolver, path, startingNode, heap);
+            this.pathConditionHandler.ProcessStartingNode();
         }
 
         private SmtSolverHandler(
@@ -82,6 +83,7 @@ namespace AskTheCode.PathExploration
             }
             else
             {
+                // TODO: Turn Assumptions into a method to express expected computation
                 if (heap.Assumptions.Length > 0)
                 {
                     solverResult = this.smtSolver.Solve(heap.Assumptions);

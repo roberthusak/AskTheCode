@@ -143,8 +143,10 @@ namespace AskTheCode.PathExploration
             this.Update(path);
         }
 
-        protected void ProcessStartingNode()
+        public void ProcessStartingNode()
         {
+            Contract.Requires(this.Path.Node == this.startingNode.Node);
+
             if (this.startingNode.Node is InnerFlowNode innerNode && this.startingNode.AssignmentIndex != null)
             {
                 if (this.startingNode.IsAssertionChecked)
@@ -427,7 +429,7 @@ namespace AskTheCode.PathExploration
 
             if (callNode.IsConstructorCall)
             {
-                var newVar = this.GetVersioned(callNode.ReturnAssignments[0]);
+                var newVar = new VersionedVariable(callNode.ReturnAssignments[0], returnVersions[0]);
                 this.Heap.AllocateNew(newVar);
             }
 

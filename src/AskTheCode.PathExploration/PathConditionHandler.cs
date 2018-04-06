@@ -37,8 +37,6 @@ namespace AskTheCode.PathExploration
             this.nameProvider = new VersionedNameProvider(this);
 
             this.smtSolver.Push();
-
-            this.ProcessStartingNode();
         }
 
         public INameProvider<Variable> NameProvider => this.nameProvider;
