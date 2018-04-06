@@ -296,7 +296,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
         {
             public SampleNodeClassDefinition()
             {
-                this.Value = new SampleFieldDefinition("value", Sort.Int, this);
+                this.Value = new SampleFieldDefinition("value", Sort.Int, null);
                 this.Next = new SampleFieldDefinition("next", References.Sort, this);
 
                 this.Fields = new AsyncLazy<IEnumerable<IFieldDefinition>>(
