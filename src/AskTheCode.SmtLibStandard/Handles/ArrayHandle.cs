@@ -58,6 +58,16 @@ namespace AskTheCode.SmtLibStandard.Handles
             return handle.Expression;
         }
 
+        public static BoolHandle operator ==(ArrayHandle<TKeyHandle, TValueHandle> left, ArrayHandle<TKeyHandle, TValueHandle> right)
+        {
+            return (BoolHandle)ExpressionFactory.Equal(left.Expression, right.Expression);
+        }
+
+        public static BoolHandle operator !=(ArrayHandle<TKeyHandle, TValueHandle> left, ArrayHandle<TKeyHandle, TValueHandle> right)
+        {
+            return (BoolHandle)ExpressionFactory.Distinct(left.Expression, right.Expression);
+        }
+
         public static TValueHandle Select<TKeyHandle, TValueHandle>(
             ArrayHandle<TKeyHandle, TValueHandle> array,
             TKeyHandle key)
