@@ -29,7 +29,7 @@ namespace AskTheCode.PathExploration.Heap
         {
             this.context = context;
 
-            foreach (var graph in graphStack)
+            foreach (var graph in graphStack.Reverse())
             {
                 this.graphStack.Push(graph);
             }
@@ -37,9 +37,9 @@ namespace AskTheCode.PathExploration.Heap
 
         public bool CanBeSatisfiable => this.CurrentGraph != ReferenceGraph.ConflictGraph;
 
-        private ReferenceGraph CurrentGraph => this.graphStack.Peek();
-
         public ImmutableArray<BoolHandle> Assumptions => ImmutableArray<BoolHandle>.Empty;
+
+        private ReferenceGraph CurrentGraph => this.graphStack.Peek();
 
         public ProxySimplifyingSymbolicHeap Clone(ISymbolicHeapContext context)
         {
@@ -83,9 +83,13 @@ namespace AskTheCode.PathExploration.Heap
 
         public Expression GetEqualityExpression(bool areEqual, VersionedVariable left, VersionedVariable right)
         {
+            // It makes no change to the graph
+            this.graphStack.Push(this.CurrentGraph);
+
             if (!this.CanBeSatisfiable)
             {
-                throw new NotImplementedException();
+                // Doesn't matter, the path is unreachable anyway
+                return ExpressionFactory.False;
             }
 
             bool? result = this.CurrentGraph.GetEquality(left, right);
@@ -197,12 +201,7 @@ namespace AskTheCode.PathExploration.Heap
             /// <summary>
             /// A special instance to represent graphs with conflicts.
             /// </summary>
-            public static readonly ReferenceGraph ConflictGraph = new ReferenceGraph(
-                ImmutableSortedDictionary<int, ReferenceNode>.Empty,
-                ImmutableSortedDictionary<int, ImmutableDictionary<IFieldDefinition, ReferenceEdge>>.Empty,
-                ImmutableSortedDictionary<int, ImmutableSortedSet<int>>.Empty,
-                ImmutableDictionary<VersionedVariable, int>.Empty,
-                0);
+            public static readonly ReferenceGraph ConflictGraph = new ReferenceGraph(null, null, null, null, -1);
 
             public static readonly ReferenceGraph BasicGraph = ConstructBasicGraph();
 
