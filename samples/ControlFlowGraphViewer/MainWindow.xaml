@@ -6,6 +6,9 @@
         xmlns:local="clr-namespace:ControlFlowGraphViewer"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800" Loaded="MainWindow_Loaded">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -41,6 +44,18 @@
             </TabItem>
         </TabControl>
         <DockPanel Grid.Column="1" Grid.Row="1">
+            <Border DockPanel.Dock="Right" Width="300" BorderBrush="Gray" BorderThickness="1,0,0,0"
+                    Visibility="{Binding ElementName=heapCheckBox, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <DockPanel>
+                    <Slider x:Name="heapSlider" DockPanel.Dock="Top" IsEnabled="False" TickFrequency="1" IsSnapToTickEnabled="True" Margin="2" ValueChanged="HeapSlider_ValueChanged" />
+                    <!-- TODO: Implement properly working scrollbars (ScrollViewer doesn't work here) -->
+                    <ScrollContentPresenter>
+                        <ContentPresenter.Content>
+                            <DockPanel x:Name="heapViewerPanel" />
+                        </ContentPresenter.Content>
+                    </ScrollContentPresenter>
+                </DockPanel>
+            </Border>
             <Grid x:Name="propertiesPanel" DockPanel.Dock="Right" Width="120" Background="WhiteSmoke">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -62,8 +77,9 @@
                     <CheckBox x:Name="assertionCheckBox" IsChecked="True" Content="Check assertion" Margin="4" />
                     <Button x:Name="exploreButton" Content="Explore!" Margin="2" Click="ExploreButton_Click" />
                     <ProgressBar x:Name="exploreProgress" Height="20" Margin="2" />
+                    <CheckBox x:Name="heapCheckBox" IsChecked="True" Content="Show heap" Margin="4" />
                     <Label>Found paths:</Label>
-                    <ListBox x:Name="foundPathsView" DisplayMemberPath="Key" Height="100" Margin="2" />
+                    <ListBox x:Name="foundPathsView" DisplayMemberPath="Key" Height="100" Margin="2" SelectionChanged="FoundPathsView_SelectionChanged" />
                     <Label>Path model:</Label>
                 </StackPanel>
                 <ListBox Grid.Row="1" ItemsSource="{Binding ElementName=foundPathsView, Path=SelectedItem.Value}" MinHeight="200"

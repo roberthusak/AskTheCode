@@ -23,6 +23,7 @@ using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.ControlFlowGraphs.Tests;
 using AskTheCode.PathExploration;
+using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Z3;
 using Microsoft.CodeAnalysis;
@@ -41,7 +42,9 @@ namespace ControlFlowGraphViewer
     {
         private FlowToMsaglGraphConverter flowGraphConverter;
         private CSharpBuildToMsaglGraphConverter csharpGraphConverter;
+        private HeapToMsaglGraphConverter heapGraphConverter;
         private GraphViewer aglGraphViewer;
+        private GraphViewer aglHeapViewer;
 
         private TestFlowGraphProvider sampleGraphProvider;
 
@@ -58,6 +61,8 @@ namespace ControlFlowGraphViewer
         private ObservableCollection<KeyValuePair<string, List<string>>> foundPaths =
             new ObservableCollection<KeyValuePair<string, List<string>>>();
 
+        private List<ExecutionModel> foundPathModels = new List<ExecutionModel>();
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -67,6 +72,7 @@ namespace ControlFlowGraphViewer
         {
             this.flowGraphConverter = new FlowToMsaglGraphConverter();
             this.csharpGraphConverter = new CSharpBuildToMsaglGraphConverter();
+            this.heapGraphConverter = new HeapToMsaglGraphConverter();
 
             this.aglGraphViewer = new GraphViewer()
             {
@@ -74,6 +80,12 @@ namespace ControlFlowGraphViewer
             };
             this.aglGraphViewer.BindToPanel(this.graphViewerPanel);
             this.aglGraphViewer.MouseDown += this.AglGraphViewer_MouseDown;
+
+            this.aglHeapViewer = new GraphViewer()
+            {
+                LayoutEditingEnabled = false
+            };
+            this.aglHeapViewer.BindToPanel(this.heapViewerPanel);
 
             // Symbolic CFGs
             this.sampleGraphProvider = new TestFlowGraphProvider(typeof(SampleFlowGraphGenerator));
@@ -301,6 +313,7 @@ namespace ControlFlowGraphViewer
             this.exploreButton.IsEnabled = false;
             this.exploreProgress.IsIndeterminate = true;
             this.foundPaths.Clear();
+            this.foundPathModels.Clear();
 
             bool isAssertChecked = (this.assertionCheckBox.IsEnabled && this.assertionCheckBox.IsChecked == true);
             int? assignmentIndex = isAssertChecked ?
@@ -360,6 +373,7 @@ namespace ControlFlowGraphViewer
                 string pathName = $"Path {this.foundPaths.Count}";
                 var pathData = new KeyValuePair<string, List<string>>(pathName, modelList);
                 this.foundPaths.Add(pathData);
+                this.foundPathModels.Add(executionModel);
             });
         }
 
@@ -376,6 +390,44 @@ namespace ControlFlowGraphViewer
                     modelList.Add(line);
                 }
             }
+        }
+
+        private void FoundPathsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // TODO: Use instead when implemented
+            ////var executionModel = this.foundPathModels[this.foundPathsView.SelectedIndex];
+            ////var heapModel = executionModel.HeapModel;
+            var heapModel = new SampleHeapModel();
+
+            this.heapSlider.IsEnabled = true;
+            this.heapSlider.Minimum = 0;
+            this.heapSlider.Maximum = heapModel.MaxVersion;
+
+            int prevValue = (int)this.heapSlider.Value;
+            this.heapSlider.Value = 0;
+
+            // Display the first version by default
+            if (prevValue == 0)
+            {
+                this.UpdateHeapModel(heapModel, 0);
+            }
+        }
+
+        private void HeapSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            // TODO: Use instead when implemented
+            ////var executionModel = this.foundPathModels[this.foundPathsView.SelectedIndex];
+            ////var heapModel = executionModel.HeapModel;
+            var heapModel = new SampleHeapModel();
+
+            this.UpdateHeapModel(heapModel, (int)e.NewValue);
+        }
+
+        private void UpdateHeapModel(IHeapModel heapModel, int version)
+        {
+            var aglGraph = this.heapGraphConverter.Convert(heapModel, version);
+            aglGraph.Attr.LayerDirection = LayerDirection.LR;
+            this.aglHeapViewer.Graph = aglGraph;
         }
     }
 }
