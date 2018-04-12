@@ -108,7 +108,7 @@ namespace AskTheCode.SmtLibStandard.Z3
 
         public SolverResult Solve()
         {
-            return this.SolveImpl(Array.Empty<Expr>());
+            return this.SolveImpl(Array.Empty<BoolExpr>());
         }
 
         public SolverResult Solve(IEnumerable<BoolHandle> assumptions)
@@ -123,15 +123,54 @@ namespace AskTheCode.SmtLibStandard.Z3
         {
             var converter = this.context.ExpressionConverter;
 
-            var z3Assumptions = assumptions
-                .Select(a => converter.Convert(a, varNameProvider))
-                .ToArray();
+            // Z3 can handle only boolean variables (constants) as assumptions directly, other expressions
+            // must be emulated by adding them temporary to the assertion stack
+            List<BoolExpr> boolVars = null;
+            List<BoolExpr> exprs = null;
 
-            return this.SolveImpl(z3Assumptions);
+            foreach (var assumption in assumptions)
+            {
+                var z3Assumption = (BoolExpr)converter.Convert(assumption, varNameProvider);
+                if (z3Assumption.IsConst)
+                {
+                    if (boolVars == null)
+                    {
+                        boolVars = new List<BoolExpr>();
+                    }
+
+                    boolVars.Add(z3Assumption);
+                }
+                else
+                {
+                    if (exprs == null)
+                    {
+                        exprs = new List<BoolExpr>();
+                    }
+
+                    exprs.Add(z3Assumption);
+                }
+            }
+
+            if (exprs != null)
+            {
+                this.solver.Push();
+                this.solver.Assert(exprs.ToArray());
+            }
+
+            var result = this.SolveImpl(boolVars?.ToArray() ?? Array.Empty<BoolExpr>());
+
+            if (exprs != null)
+            {
+                this.solver.Pop();
+            }
+
+            return result;
         }
 
-        private SolverResult SolveImpl(Expr[] z3Assumptions)
+        private SolverResult SolveImpl(BoolExpr[] z3Assumptions)
         {
+            Contract.Requires(z3Assumptions.All(a => a.IsConst));
+
             this.model = null;
             var status = this.solver.Check(z3Assumptions);
 

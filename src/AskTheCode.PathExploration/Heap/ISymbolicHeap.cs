@@ -14,7 +14,7 @@ namespace AskTheCode.PathExploration.Heap
     {
         bool CanBeSatisfiable { get; }
 
-        ImmutableArray<BoolHandle> Assumptions { get; }
+        ImmutableArray<BoolHandle> GetAssumptions();
 
         ISymbolicHeap Clone(ISymbolicHeapContext context);
 

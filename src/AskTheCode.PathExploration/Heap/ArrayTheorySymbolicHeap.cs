@@ -36,9 +36,9 @@ namespace AskTheCode.PathExploration.Heap
 
         public bool CanBeSatisfiable => this.CurrentState != AlgorithmState.ConflictState;
 
-        public ImmutableArray<BoolHandle> Assumptions => this.CurrentState.GetAssumptions();
-
         private AlgorithmState CurrentState => this.stateStack.Peek();
+
+        public ImmutableArray<BoolHandle> GetAssumptions() => this.CurrentState.GetAssumptions();
 
         public ISymbolicHeap Clone(ISymbolicHeapContext context)
         {

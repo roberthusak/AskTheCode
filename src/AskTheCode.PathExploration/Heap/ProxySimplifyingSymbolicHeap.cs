@@ -37,9 +37,9 @@ namespace AskTheCode.PathExploration.Heap
 
         public bool CanBeSatisfiable => this.CurrentGraph != ReferenceGraph.ConflictGraph;
 
-        public ImmutableArray<BoolHandle> Assumptions => ImmutableArray<BoolHandle>.Empty;
-
         private ReferenceGraph CurrentGraph => this.graphStack.Peek();
+
+        public ImmutableArray<BoolHandle> GetAssumptions() => ImmutableArray<BoolHandle>.Empty;
 
         public ProxySimplifyingSymbolicHeap Clone(ISymbolicHeapContext context)
         {

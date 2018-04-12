@@ -84,10 +84,10 @@ namespace AskTheCode.PathExploration
             }
             else
             {
-                // TODO: Turn Assumptions into a method to express expected computation
-                if (heap.Assumptions.Length > 0)
+                var heapAssumptions = heap.GetAssumptions();
+                if (heapAssumptions.Length > 0)
                 {
-                    solverResult = this.smtSolver.Solve(heap.Assumptions);
+                    solverResult = this.smtSolver.Solve(this.pathConditionHandler.NameProvider, heapAssumptions);
                 }
                 else
                 {
