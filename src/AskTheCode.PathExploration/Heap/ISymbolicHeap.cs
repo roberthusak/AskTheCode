@@ -30,7 +30,7 @@ namespace AskTheCode.PathExploration.Heap
 
         void Retract(int operationCount = 1);
 
-        IReferenceModel GetReferenceModel(IModel smtModel, VersionedVariable reference);
+        IHeapModelRecorder GetModelRecorder(IModel smtModel);
     }
 
     public interface ISymbolicHeapFactory

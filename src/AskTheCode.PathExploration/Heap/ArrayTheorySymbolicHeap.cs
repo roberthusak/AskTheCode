@@ -12,7 +12,7 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration.Heap
 {
-    public class ArrayTheorySymbolicHeap : ISymbolicHeap
+    public partial class ArrayTheorySymbolicHeap : ISymbolicHeap
     {
         private readonly ISymbolicHeapContext context;
         private readonly Stack<AlgorithmState> stateStack = new Stack<AlgorithmState>();
@@ -117,9 +117,9 @@ namespace AskTheCode.PathExploration.Heap
             }
         }
 
-        public IReferenceModel GetReferenceModel(IModel smtModel, VersionedVariable reference)
+        public IHeapModelRecorder GetModelRecorder(IModel smtModel)
         {
-            return new EmptyReferenceModel();
+            return new EmptyModelRecorder();
         }
 
         private class VariableState
@@ -795,10 +795,6 @@ namespace AskTheCode.PathExploration.Heap
                     return null;
                 }
             }
-        }
-
-        private class EmptyReferenceModel : IReferenceModel
-        {
         }
     }
 

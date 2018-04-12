@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
+using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
@@ -13,33 +14,28 @@ namespace AskTheCode.PathExploration
 {
     internal class PathConditionHandler : PathVariableVersionHandler
     {
-        private readonly SmtContextHandler contextHandler;
         private readonly ISolver smtSolver;
-        private readonly VersionedNameProvider nameProvider;
 
         public PathConditionHandler(
-            SmtContextHandler contextHandler,
+            SmtContextHandler smtContextHandler,
             ISolver smtSolver,
             Path path,
             StartingNodeInfo startingNode,
             ISymbolicHeap heap)
-            : base(path, startingNode, heap)
+            : base(path, startingNode, smtContextHandler)
         {
-            Contract.Requires(contextHandler != null);
             Contract.Requires(smtSolver != null);
-            Contract.Requires(path != null);
-            Contract.Requires(startingNode != null);
             Contract.Requires(heap != null);
 
-            this.contextHandler = contextHandler;
             this.smtSolver = smtSolver;
-
-            this.nameProvider = new VersionedNameProvider(this);
+            this.Heap = heap;
 
             this.smtSolver.Push();
         }
 
-        public INameProvider<Variable> NameProvider => this.nameProvider;
+        public INameProvider<Variable> NameProvider => this.NameProvider;
+
+        internal ISymbolicHeap Heap { get; }
 
         protected override void OnAfterPathRetracted(int popCount)
         {
@@ -50,54 +46,133 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        protected override void OnBeforePathStepExtended()
+        protected override void OnBeforePathStepExtended(FlowEdge edge)
         {
             this.smtSolver.Push();
+
+            if (edge is OuterFlowEdge outerEdge
+                && outerEdge.Kind == OuterFlowEdgeKind.Return
+                && outerEdge.To is CallFlowNode callNode
+                && callNode.IsConstructorCall)
+            {
+                var newVar = callNode.ReturnAssignments[0];
+                var versionedVar = new VersionedVariable(newVar, this.GetVariableVersion(newVar));
+                this.Heap.AllocateNew(versionedVar);
+            }
+        }
+
+        protected override void OnAfterPathStepRetracted(FlowEdge edge)
+        {
+            if (edge is OuterFlowEdge outerEdge
+                && outerEdge.Kind == OuterFlowEdgeKind.Return
+                && outerEdge.To is CallFlowNode callNode
+                && callNode.IsConstructorCall)
+            {
+                this.Heap.Retract();
+            }
         }
 
         protected override void OnConditionAsserted(BoolHandle condition)
         {
-            this.smtSolver.AddAssertion(this.nameProvider, condition);
+            this.smtSolver.AddAssertion(this.NameProvider, condition);
         }
 
-        protected override void OnVariableAssigned(FlowVariable variable, int lastVersion, Expression value)
+        protected override void OnVariableAssigned(
+            FlowVariable variable,
+            int lastVersion,
+            Expression value)
         {
+            if (variable.IsReference)
+            {
+                var leftRef = new VersionedVariable(variable, lastVersion);
+                var rightRef = this.GetVersioned((FlowVariable)value);
+
+                this.Heap.AssertEquality(true, leftRef, rightRef);
+            }
+            else if (value.Sort == Sort.Bool && value is ReferenceComparisonVariable refComp)
+            {
+                value = this.GetReferenceComparisonExpression(refComp);
+            }
+
             if (!variable.IsReference)
             {
                 this.AssertEquals(variable, lastVersion, value);
             }
         }
 
+        protected override void OnVariableAssignmentRetracted(
+            FlowVariable variable,
+            int assignedVersion,
+            Expression value)
+        {
+            if (variable.IsReference)
+            {
+                this.Heap.Retract();
+            }
+        }
+
+        protected override void OnReferenceEqualityAsserted(
+            bool areEqual,
+            VersionedVariable left,
+            VersionedVariable right)
+        {
+            this.Heap.AssertEquality(areEqual, left, right);
+        }
+
+        protected override void OnReferenceEqualityRetracted(
+            bool areEqual,
+            VersionedVariable left,
+            VersionedVariable right)
+        {
+            this.Heap.Retract();
+        }
+
+        protected override void OnFieldReadAsserted(
+            VersionedVariable result,
+            VersionedVariable reference,
+            IFieldDefinition field)
+        {
+            this.Heap.ReadField(result, reference, field);
+        }
+
+        protected override void OnFieldReadRetracted(
+            VersionedVariable result,
+            VersionedVariable reference,
+            IFieldDefinition field)
+        {
+            this.Heap.Retract();
+        }
+
+        protected override void OnFieldWriteAsserted(
+            VersionedVariable reference,
+            IFieldDefinition field,
+            Expression value)
+        {
+            this.Heap.WriteField(reference, field, value);
+        }
+
+        protected override void OnFieldWriteRetracted(
+            VersionedVariable reference,
+            IFieldDefinition field,
+            Expression value)
+        {
+            this.Heap.Retract();
+        }
+
         private void AssertEquals(FlowVariable variable, int version, Expression value)
         {
-            var symbolName = this.contextHandler.GetVariableVersionSymbol(variable, version);
+            var symbolName = this.SmtContextHandler.GetVariableVersionSymbol(variable, version);
             var symbolWrapper = ExpressionFactory.NamedVariable(variable.Sort, symbolName);
 
             var equal = (BoolHandle)ExpressionFactory.Equal(symbolWrapper, value);
-            this.smtSolver.AddAssertion(this.nameProvider, equal);
+            this.smtSolver.AddAssertion(this.NameProvider, equal);
         }
 
-        private class VersionedNameProvider : INameProvider<Variable>
+        private Expression GetReferenceComparisonExpression(ReferenceComparisonVariable refComp)
         {
-            private PathConditionHandler owner;
-
-            public VersionedNameProvider(PathConditionHandler owner)
-            {
-                this.owner = owner;
-            }
-
-            public SymbolName GetName(Variable variable)
-            {
-                if (variable is FlowVariable flowVariable)
-                {
-                    int version = this.owner.GetVariableVersion(flowVariable);
-                    return this.owner.contextHandler.GetVariableVersionSymbol(flowVariable, version);
-                }
-
-                // TODO: Implement handling of ReferenceComparisonVariable to enable it to appear in structured expressions
-                //       (now it can be only on the right side of an assignment by itself)
-                throw new InvalidOperationException();
-            }
+            var varLeft = this.GetVersioned(refComp.Left);
+            var varRight = this.GetVersioned(refComp.Right);
+            return this.Heap.GetEqualityExpression(refComp.AreEqual, varLeft, varRight);
         }
     }
 }

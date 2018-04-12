@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Overlays;
+using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
@@ -159,12 +160,15 @@ namespace AskTheCode.PathExploration
         {
             Contract.Requires(this.smtSolver.Model != null);
 
+            var heapModelRecorder = this.pathConditionHandler.Heap.GetModelRecorder(this.smtSolver.Model);
             var creator = new ExecutionModelCreator(
                 this.pathConditionHandler,
                 this.contextHandler,
-                this.smtSolver.Model);
+                this.smtSolver.Model,
+                heapModelRecorder);
             creator.CreateExecutionModel();
             return new ExecutionModel(
+                heapModelRecorder.GetModel(),
                 creator.NodeStack.ToImmutableArray(),
                 creator.InterpretationStack.ToImmutableArray(),
                 creator.ReferenceModelStack.ToImmutableArray());
@@ -206,28 +210,31 @@ namespace AskTheCode.PathExploration
         {
             private readonly SmtContextHandler smtContextHandler;
             private readonly IModel smtModel;
+            private readonly IHeapModelRecorder heapModelRecorder;
 
             private Stack<Interpretation> currentNodeInterpretations = new Stack<Interpretation>();
             private Stack<Interpretation> nextNodeInterpretations = new Stack<Interpretation>();
-            private Stack<IReferenceModel> currentNodeReferenceModels = new Stack<IReferenceModel>();
-            private Stack<IReferenceModel> nextNodeReferenceModels = new Stack<IReferenceModel>();
+            private Stack<HeapModelLocation> currentNodeHeapLocations = new Stack<HeapModelLocation>();
+            private Stack<HeapModelLocation> nextNodeHeapLocations = new Stack<HeapModelLocation>();
             private bool areAssignmentsPostponedToNextNode = false;
 
             public ExecutionModelCreator(
                 PathConditionHandler pathConditionHandler,
                 SmtContextHandler smtContextHandler,
-                IModel smtModel)
-                : base(pathConditionHandler, (parent) => new ModelSymbolicHeapContext((ExecutionModelCreator)parent))
+                IModel smtModel,
+                IHeapModelRecorder heapModelRecorder)
+                : base(pathConditionHandler)
             {
                 this.smtContextHandler = smtContextHandler;
                 this.smtModel = smtModel;
+                this.heapModelRecorder = heapModelRecorder;
             }
 
             public Stack<FlowNode> NodeStack { get; private set; }
 
             public Stack<ImmutableArray<Interpretation>> InterpretationStack { get; private set; }
 
-            public Stack<ImmutableArray<IReferenceModel>> ReferenceModelStack { get; private set; }
+            public Stack<ImmutableArray<HeapModelLocation>> ReferenceModelStack { get; private set; }
 
             /// <remarks>
             /// This function is expected to be called only once.
@@ -241,7 +248,7 @@ namespace AskTheCode.PathExploration
 
                 this.NodeStack = new Stack<FlowNode>();
                 this.InterpretationStack = new Stack<ImmutableArray<Interpretation>>();
-                this.ReferenceModelStack = new Stack<ImmutableArray<IReferenceModel>>();
+                this.ReferenceModelStack = new Stack<ImmutableArray<HeapModelLocation>>();
 
                 var enterNode = this.Path.Node as EnterFlowNode;
                 if (enterNode != null)
@@ -259,13 +266,13 @@ namespace AskTheCode.PathExploration
 
                 this.NodeStack.Push(this.Path.Node);
                 this.RetractStartingNode();
-                this.OnAfterPathStepRetracted();
+                this.PushNodeInterpretations();
             }
 
-            protected override void OnBeforePathStepRetracted(FlowEdge retractingEdge)
+            protected override void OnBeforePathStepRetracted(FlowEdge edge)
             {
-                this.NodeStack.Push(retractingEdge.From);
-                this.areAssignmentsPostponedToNextNode = retractingEdge is OuterFlowEdge;
+                this.NodeStack.Push(edge.From);
+                this.areAssignmentsPostponedToNextNode = edge is OuterFlowEdge;
 
                 // Swap the next node interpretations with the emptied stack of the current one making it ready for the
                 // current node
@@ -274,14 +281,30 @@ namespace AskTheCode.PathExploration
                 this.nextNodeInterpretations = hlpInt;
 
                 // Do the same in the case of reference models
-                var hlpRef = this.currentNodeReferenceModels;
-                this.currentNodeReferenceModels = this.nextNodeReferenceModels;
-                this.nextNodeReferenceModels = hlpRef;
+                var hlpRef = this.currentNodeHeapLocations;
+                this.currentNodeHeapLocations = this.nextNodeHeapLocations;
+                this.nextNodeHeapLocations = hlpRef;
+
+                // Identify the creation of new objects on the heap
+                if (edge is OuterFlowEdge outerEdge
+                    && outerEdge.Kind == OuterFlowEdgeKind.MethodCall
+                    && outerEdge.From is CallFlowNode callNode
+                    && callNode.IsConstructorCall)
+                {
+                    var newVar = callNode.ReturnAssignments[0];
+                    var versionedVar = new VersionedVariable(newVar, this.GetVariableVersion(newVar));
+                    this.heapModelRecorder.AllocateNew(versionedVar);
+                }
+            }
+
+            protected override void OnAfterPathStepRetracted(FlowEdge edge)
+            {
+                this.PushNodeInterpretations();
             }
 
             protected override void OnRandomVariableRetracted(FlowVariable variable, int version)
             {
-                this.PushInterpretation(variable, version);
+                this.PushInterpretation(new VersionedVariable(variable, version));
             }
 
             protected override void OnVariableAssignmentRetracted(
@@ -289,36 +312,71 @@ namespace AskTheCode.PathExploration
                 int assignedVersion,
                 Expression value)
             {
-                this.PushInterpretation(variable, assignedVersion);
+                this.PushInterpretation(new VersionedVariable(variable, assignedVersion));
             }
 
-            protected override void OnAfterPathStepRetracted()
+            protected override void OnReferenceEqualityRetracted(
+                bool areEqual,
+                VersionedVariable left,
+                VersionedVariable right)
             {
-                this.InterpretationStack.Push(this.currentNodeInterpretations.ToImmutableArray());
-                this.currentNodeInterpretations.Clear();
+                // TODO: Store the comparison result to the interpretation stack when expected in ViewModel
 
-                this.ReferenceModelStack.Push(this.currentNodeReferenceModels.ToImmutableArray());
-                this.currentNodeReferenceModels.Clear();
+                // Only let the heap model know that we are interested in them
+                // so that it displays them later
+                this.heapModelRecorder.GetLocation(left);
+                this.heapModelRecorder.GetLocation(right);
             }
 
-            private void PushInterpretation(FlowVariable variable, int assignedVersion)
+            protected override void OnFieldReadRetracted(
+                VersionedVariable result,
+                VersionedVariable reference,
+                IFieldDefinition field)
             {
-                if (variable.IsReference)
+                this.heapModelRecorder.ReadField(reference, field);
+                this.PushInterpretation(result);
+            }
+
+            protected override void OnFieldWriteRetracted(
+                VersionedVariable reference,
+                IFieldDefinition field,
+                Expression value)
+            {
+                if (value.Sort == References.Sort)
                 {
-                    var versionedVar = new VersionedVariable(variable, assignedVersion);
-                    var referenceModel = this.Heap.GetReferenceModel(this.smtModel, versionedVar);
+                    if (!(value is FlowVariable valVar))
+                    {
+                        throw new NotSupportedException("Only versioned flow variables supported as references");
+                    }
+
+                    this.heapModelRecorder.WriteReferenceField(reference, field, this.GetVersioned(valVar));
+                }
+                else
+                {
+                    var valueInterpretation = this.smtModel.GetInterpretation(this.NameProvider, value);
+                    this.heapModelRecorder.WriteValueField(reference, field, valueInterpretation);
+                }
+            }
+
+            private void PushInterpretation(VersionedVariable variable)
+            {
+                if (variable.Variable.IsReference)
+                {
+                    var heapLocation = this.heapModelRecorder.GetLocation(variable);
                     if (this.areAssignmentsPostponedToNextNode)
                     {
-                        this.nextNodeReferenceModels.Push(referenceModel);
+                        this.nextNodeHeapLocations.Push(heapLocation);
                     }
                     else
                     {
-                        this.currentNodeReferenceModels.Push(referenceModel);
+                        this.currentNodeHeapLocations.Push(heapLocation);
                     }
                 }
                 else
                 {
-                    var symbolName = this.smtContextHandler.GetVariableVersionSymbol(variable, assignedVersion);
+                    var symbolName = this.smtContextHandler.GetVariableVersionSymbol(
+                        variable.Variable,
+                        variable.Version);
                     var interpretation = this.smtModel.GetInterpretation(symbolName);
                     if (this.areAssignmentsPostponedToNextNode)
                     {
@@ -331,37 +389,13 @@ namespace AskTheCode.PathExploration
                 }
             }
 
-            private class ModelSymbolicHeapContext : ISymbolicHeapContext
+            private void PushNodeInterpretations()
             {
-                private ExecutionModelCreator owner;
+                this.InterpretationStack.Push(this.currentNodeInterpretations.ToImmutableArray());
+                this.currentNodeInterpretations.Clear();
 
-                public ModelSymbolicHeapContext(ExecutionModelCreator owner)
-                {
-                    this.owner = owner;
-                }
-
-                public void AddAssertion(BoolHandle boolHandle)
-                {
-                    // We know that we only retract the path when constructing the model
-                    throw new InvalidOperationException("Unable to add assertions during path retraction");
-                }
-
-                public VersionedVariable GetVersioned(FlowVariable variable)
-                {
-                    int version = this.owner.GetVariableVersion(variable);
-                    return new VersionedVariable(variable, version);
-                }
-
-                public NamedVariable GetNamedVariable(VersionedVariable variable)
-                {
-                    var name = this.owner.smtContextHandler.GetVariableVersionSymbol(variable.Variable, variable.Version);
-                    return ExpressionFactory.NamedVariable(variable.Variable.Sort, name);
-                }
-
-                public NamedVariable CreateVariable(Sort sort, string name = null)
-                {
-                    return this.owner.smtContextHandler.CreateVariable(sort, name);
-                }
+                this.ReferenceModelStack.Push(this.currentNodeHeapLocations.ToImmutableArray());
+                this.currentNodeHeapLocations.Clear();
             }
         }
     }

@@ -138,9 +138,9 @@ namespace AskTheCode.PathExploration.Heap
             }
         }
 
-        public IReferenceModel GetReferenceModel(IModel smtModel, VersionedVariable reference)
+        public IHeapModelRecorder GetModelRecorder(IModel smtModel)
         {
-            return new EmptyReferenceModel();
+            throw new NotImplementedException();
         }
 
         private void OnNodeMerge(ReferenceNode a, ReferenceNode b, ReferenceNode merged)
@@ -626,10 +626,6 @@ namespace AskTheCode.PathExploration.Heap
                     varNodeMapBuilder.ToImmutable(),
                     this.nextNodeId);
             }
-        }
-
-        private class EmptyReferenceModel : IReferenceModel
-        {
         }
     }
 

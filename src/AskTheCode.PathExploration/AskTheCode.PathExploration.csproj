@@ -75,7 +75,8 @@
     <Compile Include="ExplorationState.cs" />
     <Compile Include="Explorer.cs" />
     <Compile Include="Heap\ArrayTheorySymbolicHeap.cs" />
-    <Compile Include="Heap\IReferenceModel.cs" />
+    <Compile Include="Heap\IHeapModel.cs" />
+    <Compile Include="Heap\IHeapModelRecorder.cs" />
     <Compile Include="Heap\ISymbolicHeap.cs" />
     <Compile Include="Heap\ISymbolicHeapContext.cs" />
     <Compile Include="Heap\ProxySimplifyingSymbolicHeap.cs" />
@@ -122,6 +123,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="AskTheCode.PathExploration.ruleset" />
+    <Compile Include="Heap\ArrayTheorySymbolicHeap.Model.cs" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
