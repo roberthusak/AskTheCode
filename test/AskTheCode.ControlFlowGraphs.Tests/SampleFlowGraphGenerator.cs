@@ -13,8 +13,6 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 {
     public static class SampleFlowGraphGenerator
     {
-        private static SampleNodeClassDefinition nodeClass = new SampleNodeClassDefinition();
-
         public static FlowGraph TrivialGraph(FlowGraphId id)
         {
             var builder = new FlowGraphBuilder(id);
@@ -152,8 +150,8 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var initNode = builder.AddInnerNode(new[]
             {
-                new FieldWrite(@this, nodeClass.Value, value),
-                new FieldWrite(@this, nodeClass.Next, next)
+                new FieldWrite(@this, SampleLinkedListDefinitions.Value, value),
+                new FieldWrite(@this, SampleLinkedListDefinitions.Next, next)
             });
 
             var returnNode = builder.AddReturnNode(@this.ToSingular());
@@ -185,7 +183,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var assertNode = builder.AddInnerNode(new Operation[]
             {
                 new Assignment(assert1, builder.AddReferenceComparisonVariable(false, n, References.Null)),
-                new FieldRead(n_value, n, nodeClass.Value),
+                new FieldRead(n_value, n, SampleLinkedListDefinitions.Value),
                 new Assignment(assert2, (IntHandle)n_value == 0)
             });
 
@@ -220,7 +218,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var eqAssertNode = builder.AddInnerNode(new Operation[]
             {
-                new FieldRead(n_next, n, nodeClass.Next),
+                new FieldRead(n_next, n, SampleLinkedListDefinitions.Next),
                 new Assignment(eqAssertResult, builder.AddReferenceComparisonVariable(true, n_next, References.Null))
             });
 
@@ -229,7 +227,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var neqNode = builder.AddInnerNode(new Operation[]
             {
-                new FieldRead(val, n, nodeClass.Value),
+                new FieldRead(val, n, SampleLinkedListDefinitions.Value),
                 new Assignment(neqAssertResult, builder.AddReferenceComparisonVariable(false, n, References.Null))
             });
 
@@ -263,8 +261,8 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var eqNode = builder.AddInnerNode(new Operation[]
             {
-                new FieldRead(a_next, a, nodeClass.Next),
-                new FieldRead(b_next, b, nodeClass.Next),
+                new FieldRead(a_next, a, SampleLinkedListDefinitions.Next),
+                new FieldRead(b_next, b, SampleLinkedListDefinitions.Next),
                 new Assignment(eqAssert, a_next_eq_b_next)
             });
 
@@ -274,11 +272,11 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var neqNode = builder.AddInnerNode(new Operation[]
             {
-                new FieldWrite(a, nodeClass.Value, new IntHandle(5)),
-                new FieldWrite(b, nodeClass.Value, new IntHandle(10)),
+                new FieldWrite(a, SampleLinkedListDefinitions.Value, new IntHandle(5)),
+                new FieldWrite(b, SampleLinkedListDefinitions.Value, new IntHandle(10)),
 
-                new FieldRead(a_value, a, nodeClass.Value),
-                new FieldRead(b_value, b, nodeClass.Value),
+                new FieldRead(a_value, a, SampleLinkedListDefinitions.Value),
+                new FieldRead(b_value, b, SampleLinkedListDefinitions.Value),
                 new Assignment(neqAssert, (IntHandle)a_value != (IntHandle)b_value)
             });
 
@@ -290,49 +288,6 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             builder.AddEdge(neqNode, returnNode);
 
             return builder.FreezeAndReleaseGraph();
-        }
-
-        private class SampleNodeClassDefinition : IClassDefinition
-        {
-            public SampleNodeClassDefinition()
-            {
-                this.Value = new SampleFieldDefinition("value", Sort.Int, null);
-                this.Next = new SampleFieldDefinition("next", References.Sort, this);
-
-                this.Fields = new AsyncLazy<IEnumerable<IFieldDefinition>>(
-                    () => Task.FromResult<IEnumerable<IFieldDefinition>>(
-                        new IFieldDefinition[]
-                        {
-                            this.Value,
-                            this.Next
-                        }));
-            }
-
-            public SampleFieldDefinition Value { get; }
-
-            public SampleFieldDefinition Next { get; }
-
-            public AsyncLazy<IEnumerable<IFieldDefinition>> Fields { get; }
-
-            public override string ToString() => "Node";
-        }
-
-        private class SampleFieldDefinition : IFieldDefinition
-        {
-            private readonly string name;
-
-            public SampleFieldDefinition(string name, Sort sort, IClassDefinition referencedClass)
-            {
-                this.name = name;
-                this.Sort = sort;
-                this.ReferencedClass = referencedClass;
-            }
-
-            public Sort Sort { get; }
-
-            public IClassDefinition ReferencedClass { get; }
-
-            public override string ToString() => this.name;
         }
     }
 }

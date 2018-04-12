@@ -58,6 +58,7 @@
     <Compile Include="GeneratedMethodPropertiesAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleFlowGraphGenerator.cs" />
+    <Compile Include="SampleLinkedListDefinitions.cs" />
     <Compile Include="TestFlowGraphProvider.cs" />
     <Compile Include="TestRoutineLocation.cs" />
   </ItemGroup>
