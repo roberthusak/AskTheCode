@@ -33,8 +33,6 @@ namespace AskTheCode.PathExploration
             this.smtSolver.Push();
         }
 
-        public INameProvider<Variable> NameProvider => this.NameProvider;
-
         internal ISymbolicHeap Heap { get; }
 
         protected override void OnAfterPathRetracted(int popCount)

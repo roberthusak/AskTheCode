@@ -62,9 +62,9 @@ namespace AskTheCode.PathExploration
 
         public Path Path { get; private set; }
 
-        protected SmtContextHandler SmtContextHandler { get; }
+        public INameProvider<Variable> NameProvider { get; }
 
-        protected VersionedNameProvider NameProvider { get; }
+        protected SmtContextHandler SmtContextHandler { get; }
 
         public int GetVariableVersion(FlowVariable variable)
         {
@@ -424,7 +424,7 @@ namespace AskTheCode.PathExploration
             // Assert the argument passing
             for (int i = 0; i < paramVersions.Length; i++)
             {
-                this.AssignVariable(enterNode.Parameters[i], paramVersions[i], callNode.Arguments[i]);
+                this.OnVariableAssigned(enterNode.Parameters[i], paramVersions[i], callNode.Arguments[i]);
             }
         }
 
@@ -443,7 +443,7 @@ namespace AskTheCode.PathExploration
             foreach (var param in enterNode.Parameters)
             {
                 // TODO: Consider passing also the values instead of null
-                this.RetractVariableAssignment(param, this.variableVersions[param].CurrentVersion, null);
+                this.OnVariableAssignmentRetracted(param, this.variableVersions[param].CurrentVersion, null);
             }
         }
 
@@ -482,7 +482,7 @@ namespace AskTheCode.PathExploration
             // Assert the return assignments
             for (int i = 0; i < returnVersions.Length; i++)
             {
-                this.AssignVariable(callNode.ReturnAssignments[i], returnVersions[i], returnNode.ReturnValues[i]);
+                this.OnVariableAssigned(callNode.ReturnAssignments[i], returnVersions[i], returnNode.ReturnValues[i]);
             }
         }
 
@@ -503,7 +503,7 @@ namespace AskTheCode.PathExploration
                 var versionInfo = this.variableVersions[assignedVariable];
                 versionInfo.PopVersion();
                 // TODO: Consider passing also the values instead of null (or removing the parameter)
-                this.RetractVariableAssignment(assignedVariable, versionInfo.CurrentVersion, null);
+                this.OnVariableAssignmentRetracted(assignedVariable, versionInfo.CurrentVersion, null);
             }
 
             this.callStack.Pop();
@@ -523,19 +523,6 @@ namespace AskTheCode.PathExploration
             {
                 this.operationRetractionHandler.Visit(operation);
             }
-        }
-
-        private void AssignVariable(FlowVariable variable, int lastVersion, Expression value)
-        {
-            this.OnVariableAssigned(variable, lastVersion, value);
-        }
-
-        private void RetractVariableAssignment(
-            FlowVariable variable,
-            int assignedVersion,
-            Expression value)
-        {
-            this.OnVariableAssignmentRetracted(variable, assignedVersion, value);
         }
 
         protected class VersionedNameProvider : INameProvider<Variable>
@@ -572,20 +559,17 @@ namespace AskTheCode.PathExploration
 
             public override void VisitAssignment(Assignment assignment)
             {
-                var variable = assignment.Variable;
-                var versionInfo = this.parent.variableVersions[variable];
-                int lastVersion = versionInfo.CurrentVersion;
-                versionInfo.PushNewVersion();
+                int lastVersion = this.PostIncrementVersion(assignment.Variable);
 
-                this.parent.AssignVariable(variable, lastVersion, assignment.Value);
+                this.parent.OnVariableAssigned(assignment.Variable, lastVersion, assignment.Value);
             }
 
             public override void VisitFieldRead(FieldRead fieldRead)
             {
-                // TODO: Increment result variable version (secure also the retraction)
+                int lastResultVersion = this.PostIncrementVersion(fieldRead.ResultStore);
 
                 this.parent.OnFieldReadAsserted(
-                    this.parent.GetVersioned(fieldRead.ResultStore),
+                    new VersionedVariable(fieldRead.ResultStore, lastResultVersion),
                     this.parent.GetVersioned(fieldRead.Reference),
                     fieldRead.Field);
             }
@@ -596,6 +580,14 @@ namespace AskTheCode.PathExploration
                     this.parent.GetVersioned(fieldWrite.Reference),
                     fieldWrite.Field,
                     fieldWrite.Value);
+            }
+
+            private int PostIncrementVersion(FlowVariable variable)
+            {
+                var versionInfo = this.parent.variableVersions[variable];
+                int lastVersion = versionInfo.CurrentVersion;
+                versionInfo.PushNewVersion();
+                return lastVersion;
             }
         }
 
@@ -611,17 +603,17 @@ namespace AskTheCode.PathExploration
             public override void VisitAssignment(Assignment assignment)
             {
                 var variable = assignment.Variable;
-                var versionInfo = this.parent.variableVersions[variable];
-                versionInfo.PopVersion();
-                int assignedVersion = versionInfo.CurrentVersion;
+                int assignedVersion = this.PreDecrementVersion(variable);
 
-                this.parent.RetractVariableAssignment(variable, assignedVersion, assignment.Value);
+                this.parent.OnVariableAssignmentRetracted(assignment.Variable, assignedVersion, assignment.Value);
             }
 
             public override void VisitFieldRead(FieldRead fieldRead)
             {
+                int resultVersion = this.PreDecrementVersion(fieldRead.ResultStore);
+
                 this.parent.OnFieldReadRetracted(
-                    this.parent.GetVersioned(fieldRead.ResultStore),
+                    new VersionedVariable(fieldRead.ResultStore, resultVersion),
                     this.parent.GetVersioned(fieldRead.Reference),
                     fieldRead.Field);
             }
@@ -632,6 +624,13 @@ namespace AskTheCode.PathExploration
                     this.parent.GetVersioned(fieldWrite.Reference),
                     fieldWrite.Field,
                     fieldWrite.Value);
+            }
+
+            private int PreDecrementVersion(FlowVariable variable)
+            {
+                var versionInfo = this.parent.variableVersions[variable];
+                versionInfo.PopVersion();
+                return versionInfo.CurrentVersion;
             }
         }
 
