@@ -10,13 +10,15 @@ namespace AskTheCode.SmtLibStandard.Z3
 {
     public class Model : IModel
     {
+        private Context context;
         private Microsoft.Z3.Model model;
 
         private Dictionary<int, FuncDecl> intConstDecls;
         private Dictionary<string, FuncDecl> stringConstDecls;
 
-        internal Model(Microsoft.Z3.Model z3model)
+        internal Model(Context context, Microsoft.Z3.Model z3model)
         {
+            this.context = context;
             this.model = z3model;
         }
 
@@ -81,20 +83,20 @@ namespace AskTheCode.SmtLibStandard.Z3
 
             var interprExpr = this.model.ConstInterp(constDecl);
 
-            if (interprExpr.IsBool && interprExpr.BoolValue != Z3_lbool.Z3_L_UNDEF)
-            {
-                bool value = (interprExpr.BoolValue == Z3_lbool.Z3_L_TRUE);
-                return ExpressionFactory.BoolInterpretation(value);
-            }
-            else if (interprExpr.IsIntNum)
-            {
-                var intNum = (IntNum)interprExpr;
-                return ExpressionFactory.IntInterpretation(intNum.Int64);
-            }
-            else
-            {
-                return null;
-            }
+            return TranslateInterpretation(interprExpr);
+        }
+
+        public Interpretation GetInterpretation<TVariable>(
+            INameProvider<TVariable> varNameProvider,
+            Expression expression)
+            where TVariable : Variable
+        {
+            var converter = this.context.ExpressionConverter;
+
+            var expr = converter.Convert(expression, varNameProvider);
+            var exprIntr = this.model.Eval(expr, completion: true);
+
+            return TranslateInterpretation(exprIntr);
         }
 
         public double GetValue(RealHandle handle)
@@ -120,6 +122,24 @@ namespace AskTheCode.SmtLibStandard.Z3
         public object GetValue(Variable variable)
         {
             throw new NotImplementedException();
+        }
+
+        private static Interpretation TranslateInterpretation(Expr interprExpr)
+        {
+            if (interprExpr.IsBool && interprExpr.BoolValue != Z3_lbool.Z3_L_UNDEF)
+            {
+                bool value = (interprExpr.BoolValue == Z3_lbool.Z3_L_TRUE);
+                return ExpressionFactory.BoolInterpretation(value);
+            }
+            else if (interprExpr.IsIntNum)
+            {
+                var intNum = (IntNum)interprExpr;
+                return ExpressionFactory.IntInterpretation(intNum.Int64);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

@@ -9,6 +9,9 @@ namespace AskTheCode.SmtLibStandard
     {
         Interpretation GetInterpretation(SymbolName variableName);
 
+        Interpretation GetInterpretation<TVariable>(INameProvider<TVariable> varNameProvider, Expression expression)
+            where TVariable : Variable;
+
         //Interpretation<bool> GetInterpretation(BoolHandle handle);
 
         //Interpretation<long> GetInterpretation(IntHandle handle);

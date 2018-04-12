@@ -50,7 +50,7 @@ namespace AskTheCode.SmtLibStandard.Z3
             {
                 if (this.model == null)
                 {
-                    this.model = new Model(this.solver.Model);
+                    this.model = new Model(this.context, this.solver.Model);
                 }
 
                 return this.model;
