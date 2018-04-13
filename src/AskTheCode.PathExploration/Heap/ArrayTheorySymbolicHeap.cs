@@ -119,10 +119,10 @@ namespace AskTheCode.PathExploration.Heap
 
         public IHeapModelRecorder GetModelRecorder(IModel smtModel)
         {
-            return new EmptyModelRecorder();
+            return new ModelRecorder(smtModel, this.CurrentState);
         }
 
-        private class VariableState
+        public class VariableState
         {
             public const int NullId = 0;
             public const int NullValue = 0;
@@ -204,6 +204,23 @@ namespace AskTheCode.PathExploration.Heap
                 this.fieldToVariableMap = fieldToVariableMap;
                 this.nextVariableStateId = nextVariableStateId;
                 this.nextReferenceValue = nextReferenceValue;
+            }
+
+            public VariableState GetVariableState(VersionedVariable variable)
+            {
+                if (this.variableToStateIdMap.TryGetValue(variable, out int stateId))
+                {
+                    return this.variableStates[stateId];
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            public ArrayHandle<IntHandle, Handle> GetFieldArray(IFieldDefinition field)
+            {
+                return this.fieldToVariableMap[field];
             }
 
             public ImmutableArray<BoolHandle> GetAssumptions()
