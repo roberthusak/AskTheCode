@@ -22,6 +22,7 @@ using AskTheCode.ControlFlowGraphs.Cli.Tests;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
 using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.ControlFlowGraphs.Tests;
+using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.PathExploration;
 using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
@@ -347,12 +348,26 @@ namespace ControlFlowGraphViewer
                 if (innerNode != null)
                 {
                     // Reference assignments must be separately handled by a heap model
-                    var valueAssignments = innerNode.Operations
-                        .OfType<Assignment>()
-                        .Where(a => !a.IsReference)
-                        .ToArray();
+                    var assignedVariables = new List<Variable>();
+                    foreach (var op in innerNode.Operations)
+                    {
+                        if (op is Assignment assignment)
+                        {
+                            if (!assignment.IsReference)
+                            {
+                                assignedVariables.Add(assignment.Variable);
+                            }
+                        }
+                        else if (op is FieldRead fieldRead)
+                        {
+                            if (!fieldRead.Field.IsReference())
+                            {
+                                assignedVariables.Add(fieldRead.ResultStore);
+                            }
+                        }
+                    }
 
-                    this.AddNodeModels(modelList, interpretations, (j) => valueAssignments[j].Variable);
+                    this.AddNodeModels(modelList, interpretations, (j) => assignedVariables[j]);
                 }
                 else if (node is EnterFlowNode)
                 {
@@ -394,10 +409,14 @@ namespace ControlFlowGraphViewer
 
         private void FoundPathsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // TODO: Use instead when implemented
-            ////var executionModel = this.foundPathModels[this.foundPathsView.SelectedIndex];
-            ////var heapModel = executionModel.HeapModel;
-            var heapModel = new SampleHeapModel();
+            if (this.foundPathsView.SelectedIndex < 0)
+            {
+                this.UpdateHeapModel(null, 0);
+                return;
+            }
+
+            var executionModel = this.foundPathModels[this.foundPathsView.SelectedIndex];
+            var heapModel = executionModel.HeapModel;
 
             this.heapSlider.IsEnabled = true;
             this.heapSlider.Minimum = 0;
@@ -415,19 +434,24 @@ namespace ControlFlowGraphViewer
 
         private void HeapSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            // TODO: Use instead when implemented
-            ////var executionModel = this.foundPathModels[this.foundPathsView.SelectedIndex];
-            ////var heapModel = executionModel.HeapModel;
-            var heapModel = new SampleHeapModel();
+            var executionModel = this.foundPathModels[this.foundPathsView.SelectedIndex];
 
-            this.UpdateHeapModel(heapModel, (int)e.NewValue);
+            this.UpdateHeapModel(executionModel.HeapModel, (int)e.NewValue);
         }
 
         private void UpdateHeapModel(IHeapModel heapModel, int version)
         {
-            var aglGraph = this.heapGraphConverter.Convert(heapModel, version);
-            aglGraph.Attr.LayerDirection = LayerDirection.LR;
-            this.aglHeapViewer.Graph = aglGraph;
+            if (heapModel == null)
+            {
+                this.heapSlider.IsEnabled = false;
+                this.aglHeapViewer.Graph = new Graph();
+            }
+            else
+            {
+                var aglGraph = this.heapGraphConverter.Convert(heapModel, version);
+                aglGraph.Attr.LayerDirection = LayerDirection.LR;
+                this.aglHeapViewer.Graph = aglGraph;
+            }
         }
     }
 }
