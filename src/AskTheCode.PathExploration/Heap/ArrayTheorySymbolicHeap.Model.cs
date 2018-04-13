@@ -83,7 +83,7 @@ namespace AskTheCode.PathExploration.Heap
                         // Note: This can't happen in higher level languages, because they always
                         //       initialize the fields (e.g. to zero)
                         throw new NotSupportedException(
-                            "Unable to model reading values of explicitly allocated but uninitialized objects");
+                            "Unable to model reading data of explicitly allocated but uninitialized objects");
                     }
                 }
                 else
@@ -171,6 +171,12 @@ namespace AskTheCode.PathExploration.Heap
 
             private void WriteField(int referenceId, IFieldDefinition field, Interpretation value)
             {
+                // If the reference is from the input heap, add it there, knowing that we will access it later
+                if (referenceId < VariableState.NullValue && !this.inputHeap.ContainsKey(referenceId))
+                {
+                    this.inputHeap.Add(referenceId, new LocationInfo() { LastModifiedVersion = 0 });
+                }
+
                 // Increment the version by performing a change
                 this.changes.Add(new FieldChange() { ReferenceId = referenceId, Field = field, Value = value });
 

@@ -230,31 +230,44 @@ namespace AskTheCode.PathExploration.Heap
                     .Select(kvp => (ArrayHandle<IntHandle, IntHandle>)kvp.Value.Expression)
                     .ToArray();
 
-                if (refFieldHandles.Length == 0)
-                {
-                    return ImmutableArray<BoolHandle>.Empty;
-                }
-
                 return this.variableStates.Values
                     .Where(s => s.IsInput)
                     .Select((s) =>
                     {
-                        // TODO: Use only the fields present in the corresponding class
-                        var readChecks = refFieldHandles
-                            .Select(h => (h.Select(s.Representation) <= VariableState.NullValue).Expression)
-                            .ToArray();
+                        // If there are no fields, only the object must be from the input heap
+                        if (refFieldHandles.Length == 0)
+                        {
+                            if (s.CanBeNull)
+                            {
+                                return s.Representation <= VariableState.NullValue;
+                            }
+                            else
+                            {
+                                return s.Representation < VariableState.NullValue;
+                            }
+                        }
 
-                        var readChecksAnd = (readChecks.Length == 1)
-                            ? (BoolHandle)readChecks[0]
-                            : (BoolHandle)ExpressionFactory.And(readChecks);
+                        // Both the referenced object and all the objects referenced by it
+                        // must be from the input heap (if not null)
+                        var readConjuncts = new List<Expression>()
+                        {
+                            s.Representation < VariableState.NullValue
+                        };
+
+                        // TODO: Use only the fields present in the corresponding class
+                        readConjuncts.AddRange(
+                            refFieldHandles
+                                .Select(h => (h.Select(s.Representation) <= VariableState.NullValue).Expression));
+
+                        var readAnd = (BoolHandle)ExpressionFactory.And(readConjuncts.ToArray());
 
                         if (s.CanBeNull)
                         {
-                            return s.Representation == VariableState.NullValue || readChecksAnd;
+                            return s.Representation == VariableState.NullValue || readAnd;
                         }
                         else
                         {
-                            return readChecksAnd;
+                            return readAnd;
                         }
                     })
                     .ToImmutableArray();
@@ -389,7 +402,7 @@ namespace AskTheCode.PathExploration.Heap
                 ISymbolicHeapContext context)
             {
                 (var stateWithLeft, var leftState) = this.GetOrAddVariable(left, context);
-                (var resultState, var rightState) = this.GetOrAddVariable(right, context);
+                (var resultState, var rightState) = stateWithLeft.GetOrAddVariable(right, context);
 
                 BoolHandle result;
                 if (leftState == rightState)
@@ -431,7 +444,7 @@ namespace AskTheCode.PathExploration.Heap
                 else
                 {
                     // Don't store scalar values in the state
-                    resultVar = result.Variable;
+                    resultVar = context.GetNamedVariable(result);
                 }
 
                 // Initialize the particular field
@@ -553,7 +566,7 @@ namespace AskTheCode.PathExploration.Heap
                 var algState = this;
 
                 // Secure that the reference variable is initialized and not null
-                var refState = this.GetVariableOrNull(reference);
+                var refState = algState.GetVariableOrNull(reference);
                 if (refState == null)
                 {
                     (algState, refState) = algState.MapToNewInputVariableState(

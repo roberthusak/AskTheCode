@@ -291,8 +291,12 @@ namespace AskTheCode.PathExploration
                     && outerEdge.From is CallFlowNode callNode
                     && callNode.IsConstructorCall)
                 {
-                    var newVar = callNode.ReturnAssignments[0];
-                    var versionedVar = new VersionedVariable(newVar, this.GetVariableVersion(newVar));
+                    // "this" must be the first variable in the constructor by convention
+                    var thisVar = edge.To.Graph.LocalVariables[0];
+
+                    Contract.Assert(thisVar.IsReference);
+
+                    var versionedVar = new VersionedVariable(thisVar, this.GetVariableVersion(thisVar));
                     this.heapModelRecorder.AllocateNew(versionedVar);
                 }
             }
