@@ -86,6 +86,11 @@ namespace AskTheCode.SmtLibStandard.Z3
             return TranslateInterpretation(interprExpr);
         }
 
+        public Interpretation GetInterpretation(Expression expression)
+        {
+            return this.GetInterpretation((INameProvider<Variable>)null, expression);
+        }
+
         public Interpretation GetInterpretation<TVariable>(
             INameProvider<TVariable> varNameProvider,
             Expression expression)
