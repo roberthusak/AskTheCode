@@ -50,7 +50,7 @@ namespace AskTheCode.ViewModel
                                 location,
                                 currentSegmentStart,
                                 i - currentSegmentStart);
-                            this.methodFlows.Insert(0, methodFlow);
+                            this.methodFlows.Add(methodFlow);
                             currentSegmentStart = i;
                             currentGraph = pathNodes[i].Graph;
                         }
@@ -62,7 +62,7 @@ namespace AskTheCode.ViewModel
                         locationLast,
                         currentSegmentStart,
                         pathNodes.Length - currentSegmentStart);
-                    this.methodFlows.Insert(0, methodFlowLast);
+                    this.methodFlows.Add(methodFlowLast);
                 }
 
                 return this.methodFlows;

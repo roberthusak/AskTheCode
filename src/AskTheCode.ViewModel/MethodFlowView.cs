@@ -74,7 +74,6 @@ namespace AskTheCode.ViewModel
                             ////}
                         }
 
-                        displayRecords.Reverse();
                         foreach (var displayRecord in displayRecords)
                         {
                             Contract.Assert(displayRecord != null);
@@ -94,7 +93,6 @@ namespace AskTheCode.ViewModel
                                 var modelFactory = toolView.GraphProvider.ModelManager.TryGetFactory(displayRecord.Type);
                                 var sortRequirements = modelFactory.GetExpressionSortRequirements(displayRecord.Type);
                                 var interpretations = nodeInterpretations
-                                    .Reverse()
                                     .Skip(displayRecord.FirstVariableIndex)
                                     .Take(sortRequirements.Count)
                                     .ToArray();
@@ -113,9 +111,6 @@ namespace AskTheCode.ViewModel
                             this.statementFlows.Add(statementFlow);
                         }
                     }
-
-                    // TODO: Consider doing this sooner (on the path level?)
-                    this.statementFlows.Reverse();
                 }
 
                 return this.statementFlows;

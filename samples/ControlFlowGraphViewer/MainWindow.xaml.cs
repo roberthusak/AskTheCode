@@ -347,41 +347,32 @@ namespace ControlFlowGraphViewer
                 var innerNode = node as InnerFlowNode;
                 if (innerNode != null)
                 {
-                    // Reference assignments must be separately handled by a heap model
-                    var assignedVariables = new List<Variable>();
+                    var assignedVariables = new List<FlowVariable>();
                     foreach (var op in innerNode.Operations)
                     {
                         if (op is Assignment assignment)
                         {
-                            if (!assignment.IsReference)
-                            {
-                                assignedVariables.Add(assignment.Variable);
-                            }
+                            assignedVariables.Add(assignment.Variable);
                         }
                         else if (op is FieldRead fieldRead)
                         {
-                            if (!fieldRead.Field.IsReference())
-                            {
-                                assignedVariables.Add(fieldRead.ResultStore);
-                            }
+                            assignedVariables.Add(fieldRead.ResultStore);
                         }
                     }
 
-                    this.AddNodeModels(modelList, interpretations, (j) => assignedVariables[j]);
+                    this.AddNodeModels(modelList, interpretations, assignedVariables);
                 }
                 else if (node is EnterFlowNode)
                 {
                     var enterNode = node as EnterFlowNode;
-                    this.AddNodeModels(modelList, interpretations, (j) => enterNode.Parameters[j]);
+                    this.AddNodeModels(modelList, interpretations, enterNode.Parameters);
                 }
                 else if (node is CallFlowNode)
                 {
                     var callNode = node as CallFlowNode;
-                    this.AddNodeModels(modelList, interpretations, (j) => callNode.ReturnAssignments[j]);
+                    this.AddNodeModels(modelList, interpretations, callNode.ReturnAssignments);
                 }
             }
-
-            modelList.Reverse();
 
             await this.Dispatcher.InvokeAsync(() =>
             {
@@ -392,18 +383,27 @@ namespace ControlFlowGraphViewer
             });
         }
 
-        private void AddNodeModels(List<string> modelList, ImmutableArray<Interpretation> interpretations, Func<int, Variable> variableProvider)
+        private void AddNodeModels(
+            List<string> modelList,
+            ImmutableArray<Interpretation> interpretations,
+            IReadOnlyList<FlowVariable> variables)
         {
-            for (int i = 0; i < interpretations.Length; i++)
+            int intrIndex = 0;
+            foreach (var variable in variables)
             {
-                int reversedIndex = interpretations.Length - 1 - i;
-                string paramName = variableProvider(reversedIndex).DisplayName;
-                var interpretation = interpretations[i];
-                if (interpretation != null)
+                string value = null;
+
+                // TODO: Handle also references from the heap model
+                if (!variable.IsReference)
                 {
-                    string line = $"{paramName} = {interpretation.Value}";
-                    modelList.Add(line);
+                    var interpretation = interpretations[intrIndex];
+                    value = interpretation?.Value.ToString();
+
+                    intrIndex++;
                 }
+
+                string line = $"{variable.DisplayName} = {value ?? "<any>"}";
+                modelList.Add(line);
             }
         }
 

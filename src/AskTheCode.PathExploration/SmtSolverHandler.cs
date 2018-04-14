@@ -169,9 +169,9 @@ namespace AskTheCode.PathExploration
             creator.CreateExecutionModel();
             return new ExecutionModel(
                 heapModelRecorder.GetModel(),
-                creator.NodeStack.ToImmutableArray(),
-                creator.InterpretationStack.ToImmutableArray(),
-                creator.ReferenceModelStack.ToImmutableArray());
+                creator.Nodes.ToImmutableArray(),
+                creator.Interpretations.ToImmutableArray(),
+                creator.ReferenceModels.ToImmutableArray());
         }
 
         private class SolverSymbolicHeapContext : ISymbolicHeapContext
@@ -212,10 +212,10 @@ namespace AskTheCode.PathExploration
             private readonly IModel smtModel;
             private readonly IHeapModelRecorder heapModelRecorder;
 
-            private Stack<Interpretation> currentNodeInterpretations = new Stack<Interpretation>();
-            private Stack<Interpretation> nextNodeInterpretations = new Stack<Interpretation>();
-            private Stack<HeapModelLocation> currentNodeHeapLocations = new Stack<HeapModelLocation>();
-            private Stack<HeapModelLocation> nextNodeHeapLocations = new Stack<HeapModelLocation>();
+            private List<Interpretation> currentNodeInterpretations = new List<Interpretation>();
+            private List<Interpretation> nextNodeInterpretations = new List<Interpretation>();
+            private List<HeapModelLocation> currentNodeHeapLocations = new List<HeapModelLocation>();
+            private List<HeapModelLocation> nextNodeHeapLocations = new List<HeapModelLocation>();
             private bool areAssignmentsPostponedToNextNode = false;
 
             public ExecutionModelCreator(
@@ -230,25 +230,25 @@ namespace AskTheCode.PathExploration
                 this.heapModelRecorder = heapModelRecorder;
             }
 
-            public Stack<FlowNode> NodeStack { get; private set; }
+            public List<FlowNode> Nodes { get; private set; }
 
-            public Stack<ImmutableArray<Interpretation>> InterpretationStack { get; private set; }
+            public List<ImmutableArray<Interpretation>> Interpretations { get; private set; }
 
-            public Stack<ImmutableArray<HeapModelLocation>> ReferenceModelStack { get; private set; }
+            public List<ImmutableArray<HeapModelLocation>> ReferenceModels { get; private set; }
 
             /// <remarks>
             /// This function is expected to be called only once.
             /// </remarks>
             public void CreateExecutionModel()
             {
-                if (this.NodeStack != null)
+                if (this.Nodes != null)
                 {
                     throw new InvalidOperationException();
                 }
 
-                this.NodeStack = new Stack<FlowNode>();
-                this.InterpretationStack = new Stack<ImmutableArray<Interpretation>>();
-                this.ReferenceModelStack = new Stack<ImmutableArray<HeapModelLocation>>();
+                this.Nodes = new List<FlowNode>();
+                this.Interpretations = new List<ImmutableArray<Interpretation>>();
+                this.ReferenceModels = new List<ImmutableArray<HeapModelLocation>>();
 
                 var enterNode = this.Path.Node as EnterFlowNode;
                 if (enterNode != null)
@@ -258,20 +258,20 @@ namespace AskTheCode.PathExploration
                         int version = this.GetVariableVersion(param);
                         var symbolName = this.smtContextHandler.GetVariableVersionSymbol(param, version);
                         var interpretation = this.smtModel.GetInterpretation(symbolName);
-                        this.nextNodeInterpretations.Push(interpretation);
+                        this.nextNodeInterpretations.Add(interpretation);
                     }
                 }
 
                 this.RetractToRoot();
 
-                this.NodeStack.Push(this.Path.Node);
+                this.Nodes.Add(this.Path.Node);
                 this.RetractStartingNode();
                 this.PushNodeInterpretations();
             }
 
             protected override void OnBeforePathStepRetracted(FlowEdge edge)
             {
-                this.NodeStack.Push(edge.From);
+                this.Nodes.Add(edge.From);
                 this.areAssignmentsPostponedToNextNode = edge is OuterFlowEdge;
 
                 // Swap the next node interpretations with the emptied stack of the current one making it ready for the
@@ -369,11 +369,11 @@ namespace AskTheCode.PathExploration
                     var heapLocation = this.heapModelRecorder.GetLocation(variable);
                     if (this.areAssignmentsPostponedToNextNode)
                     {
-                        this.nextNodeHeapLocations.Push(heapLocation);
+                        this.nextNodeHeapLocations.Add(heapLocation);
                     }
                     else
                     {
-                        this.currentNodeHeapLocations.Push(heapLocation);
+                        this.currentNodeHeapLocations.Add(heapLocation);
                     }
                 }
                 else
@@ -384,21 +384,21 @@ namespace AskTheCode.PathExploration
                     var interpretation = this.smtModel.GetInterpretation(symbolName);
                     if (this.areAssignmentsPostponedToNextNode)
                     {
-                        this.nextNodeInterpretations.Push(interpretation);
+                        this.nextNodeInterpretations.Add(interpretation);
                     }
                     else
                     {
-                        this.currentNodeInterpretations.Push(interpretation);
+                        this.currentNodeInterpretations.Add(interpretation);
                     }
                 }
             }
 
             private void PushNodeInterpretations()
             {
-                this.InterpretationStack.Push(this.currentNodeInterpretations.ToImmutableArray());
+                this.Interpretations.Add(this.currentNodeInterpretations.ToImmutableArray());
                 this.currentNodeInterpretations.Clear();
 
-                this.ReferenceModelStack.Push(this.currentNodeHeapLocations.ToImmutableArray());
+                this.ReferenceModels.Add(this.currentNodeHeapLocations.ToImmutableArray());
                 this.currentNodeHeapLocations.Clear();
             }
         }
