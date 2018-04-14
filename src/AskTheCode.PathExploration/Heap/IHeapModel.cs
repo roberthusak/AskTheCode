@@ -36,6 +36,8 @@ namespace AskTheCode.PathExploration.Heap
         public int HeapVersion { get; }
 
         public bool IsNull => this.Id == NullId;
+
+        public override string ToString() => this.IsNull ? "NULL" : $"[{this.Id}] #{this.HeapVersion}";
     }
 
     public struct HeapModelReference

@@ -20,7 +20,7 @@ namespace ControlFlowGraphViewer
                 var node = graph.AddNode(location.Id.ToString());
                 nodes.Add(location.Id, node);
 
-                node.LabelText = location.IsNull ? "NULL" : $"[{location.Id}] #{location.HeapVersion}";
+                node.LabelText = location.ToString();
 
                 foreach (var reference in heap.GetReferences(location))
                 {

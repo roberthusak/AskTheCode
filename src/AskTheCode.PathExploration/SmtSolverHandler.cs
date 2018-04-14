@@ -253,13 +253,15 @@ namespace AskTheCode.PathExploration
                 var enterNode = this.Path.Node as EnterFlowNode;
                 if (enterNode != null)
                 {
+                    // Simulate passing the arguments from a non-existent call node
+                    this.areAssignmentsPostponedToNextNode = true;
+
                     foreach (var param in enterNode.Parameters)
                     {
-                        int version = this.GetVariableVersion(param);
-                        var symbolName = this.smtContextHandler.GetVariableVersionSymbol(param, version);
-                        var interpretation = this.smtModel.GetInterpretation(symbolName);
-                        this.nextNodeInterpretations.Add(interpretation);
+                        this.PushInterpretation(this.GetVersioned(param));
                     }
+
+                    this.areAssignmentsPostponedToNextNode = false;
                 }
 
                 this.RetractToRoot();

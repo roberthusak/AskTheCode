@@ -344,6 +344,7 @@ namespace ControlFlowGraphViewer
             {
                 var node = executionModel.PathNodes[i];
                 var interpretations = executionModel.NodeInterpretations[i];
+                var heapLocations = executionModel.HeapLocations[i];
                 var innerNode = node as InnerFlowNode;
                 if (innerNode != null)
                 {
@@ -360,17 +361,21 @@ namespace ControlFlowGraphViewer
                         }
                     }
 
-                    this.AddNodeModels(modelList, interpretations, assignedVariables);
+                    this.AddNodeModels(modelList, interpretations, heapLocations, assignedVariables);
                 }
                 else if (node is EnterFlowNode)
                 {
                     var enterNode = node as EnterFlowNode;
-                    this.AddNodeModels(modelList, interpretations, enterNode.Parameters);
+                    this.AddNodeModels(modelList, interpretations, heapLocations, enterNode.Parameters);
                 }
                 else if (node is CallFlowNode)
                 {
-                    var callNode = node as CallFlowNode;
-                    this.AddNodeModels(modelList, interpretations, callNode.ReturnAssignments);
+                    // The values are provided only for the second pass of the call node, after returning
+                    if (interpretations.Length > 0 || heapLocations.Length > 0)
+                    {
+                        var callNode = node as CallFlowNode;
+                        this.AddNodeModels(modelList, interpretations, heapLocations, callNode.ReturnAssignments);
+                    }
                 }
             }
 
@@ -386,15 +391,23 @@ namespace ControlFlowGraphViewer
         private void AddNodeModels(
             List<string> modelList,
             ImmutableArray<Interpretation> interpretations,
+            ImmutableArray<HeapModelLocation> heapLocations,
             IReadOnlyList<FlowVariable> variables)
         {
             int intrIndex = 0;
+            int locIndex = 0;
             foreach (var variable in variables)
             {
                 string value = null;
 
-                // TODO: Handle also references from the heap model
-                if (!variable.IsReference)
+                if (variable.IsReference)
+                {
+                    var location = heapLocations[locIndex];
+                    value = location.ToString();
+
+                    locIndex++;
+                }
+                else
                 {
                     var interpretation = interpretations[intrIndex];
                     value = interpretation?.Value.ToString();
