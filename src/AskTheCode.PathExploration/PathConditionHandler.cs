@@ -83,11 +83,13 @@ namespace AskTheCode.PathExploration
         protected override void OnAfterPathStepRetracted(FlowEdge edge)
         {
             if (edge is OuterFlowEdge outerEdge
-                && outerEdge.Kind == OuterFlowEdgeKind.Return
-                && outerEdge.To is CallFlowNode callNode
-                && callNode.IsConstructorCall)
+                && (outerEdge.Kind == OuterFlowEdgeKind.MethodCall || outerEdge.Kind == OuterFlowEdgeKind.Return))
             {
-                this.Heap.Retract();
+                var callNode = outerEdge.From as CallFlowNode ?? (CallFlowNode)outerEdge.To;
+                if (callNode.IsConstructorCall)
+                {
+                    this.Heap.Retract();
+                }
             }
         }
 
