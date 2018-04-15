@@ -45,7 +45,7 @@ namespace AskTheCode.PathExploration.Heap
             return new ArrayTheorySymbolicHeap(context, this.stateStack);
         }
 
-        public void AllocateNew(VersionedVariable result)
+        public void AllocateNew(VersionedVariable result, bool mightBeRepeated)
         {
             if (!this.CanBeSatisfiable)
             {
@@ -53,7 +53,7 @@ namespace AskTheCode.PathExploration.Heap
                 return;
             }
 
-            var newState = this.CurrentState.AllocateNew(result, this.context);
+            var newState = this.CurrentState.AllocateNew(result, this.context, mightBeRepeated);
             this.stateStack.Push(newState);
         }
 
@@ -144,7 +144,11 @@ namespace AskTheCode.PathExploration.Heap
 
             public int? Value { get; }
 
+            public bool IsNull => this.Id == NullId;
+
             public bool IsInput => this.Value == null;
+
+            public bool IsExplicitlyAllocated => !this.IsInput && !this.IsNull;
 
             public static VariableState CreateInput(int id, NamedVariable namedVariable, bool canBeNull)
             {
@@ -273,8 +277,20 @@ namespace AskTheCode.PathExploration.Heap
                     .ToImmutableArray();
             }
 
-            public AlgorithmState AllocateNew(VersionedVariable result, ISymbolicHeapContext context)
+            public AlgorithmState AllocateNew(
+                VersionedVariable result,
+                ISymbolicHeapContext context,
+                bool mightBeRepeated)
             {
+                if (mightBeRepeated)
+                {
+                    var resultState = this.GetVariableState(result);
+                    if (resultState.IsExplicitlyAllocated)
+                    {
+                        return this;
+                    }
+                }
+
                 (var state, var newVarState) = this.MapToNewValueVariableState(result);
 
                 var origVarState = this.GetVariableOrNull(result);

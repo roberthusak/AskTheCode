@@ -141,6 +141,7 @@ namespace AskTheCode.PathExploration
 
                 this.OnBeforePathStepExtended(edge);
                 this.Extend(edge);
+                this.OnAfterPathStepExtended(edge);
 
                 this.Path = currentPath;
             }
@@ -213,6 +214,10 @@ namespace AskTheCode.PathExploration
         }
 
         protected virtual void OnBeforePathStepExtended(FlowEdge edge)
+        {
+        }
+
+        protected virtual void OnAfterPathStepExtended(FlowEdge edge)
         {
         }
 
@@ -434,8 +439,9 @@ namespace AskTheCode.PathExploration
                 }
             }
 
-            // Assert the argument passing
-            for (int i = 0; i < paramVersions.Length; i++)
+            // Assert the argument passing, skipping the first parameter in the case of constructor
+            int startParamIndex = callNode.IsConstructorCall ? 1 : 0;
+            for (int i = startParamIndex; i < paramVersions.Length; i++)
             {
                 this.OnVariableAssigned(enterNode.Parameters[i], paramVersions[i], callNode.Arguments[i]);
             }

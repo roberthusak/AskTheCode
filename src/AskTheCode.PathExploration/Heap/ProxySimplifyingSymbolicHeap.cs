@@ -48,7 +48,7 @@ namespace AskTheCode.PathExploration.Heap
 
         ISymbolicHeap ISymbolicHeap.Clone(ISymbolicHeapContext context) => this.Clone(context);
 
-        public void AllocateNew(VersionedVariable result)
+        public void AllocateNew(VersionedVariable result, bool mightBeRepeated)
         {
             if (!this.CanBeSatisfiable)
             {

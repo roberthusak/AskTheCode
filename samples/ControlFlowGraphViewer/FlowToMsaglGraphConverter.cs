@@ -95,7 +95,21 @@ namespace ControlFlowGraphViewer
 
                 labelBuild.Append(callNode.Location.ToString());
                 labelBuild.Append('(');
-                labelBuild.Append(string.Join(", ", callNode.Arguments));
+
+                if (callNode.IsConstructorCall)
+                {
+                    labelBuild.Append($"_ ({callNode.Arguments[0]})");
+                    if (callNode.Arguments.Count > 1)
+                    {
+                        labelBuild.Append(", ");
+                        labelBuild.Append(string.Join(", ", callNode.Arguments.Skip(1)));
+                    }
+                }
+                else
+                {
+                    labelBuild.Append(string.Join(", ", callNode.Arguments)); 
+                }
+
                 labelBuild.Append(')');
 
                 label.Text = labelBuild.ToString();
