@@ -24,6 +24,8 @@ namespace AskTheCode.PathExploration
         private readonly OperationAssertionHandler operationAssertionHandler;
         private readonly OperationRetractionHandler operationRetractionHandler;
 
+        private Stack<CallExtensionKind> callExtensionKindStack;
+
         public PathVariableVersionHandler(
             Path path,
             StartingNodeInfo startingNode,
@@ -37,6 +39,7 @@ namespace AskTheCode.PathExploration
             this.startingNode = startingNode;
             this.callStack = new Stack<LocalFlowVariableOverlay<int>>();
             this.variableVersions = new FlowGraphsVariableOverlay<VariableVersionInfo>(() => new VariableVersionInfo());
+            this.callExtensionKindStack = new Stack<CallExtensionKind>();
             this.Path = path;
             this.SmtContextHandler = smtContextHandler;
         }
@@ -50,6 +53,7 @@ namespace AskTheCode.PathExploration
             this.variableVersions = other.variableVersions.Clone(varInfo => varInfo.Clone());
             this.Path = other.Path;
             this.SmtContextHandler = other.SmtContextHandler;
+            this.callExtensionKindStack = new Stack<CallExtensionKind>(other.callExtensionKindStack.Reverse());
         }
 
         private PathVariableVersionHandler()
@@ -58,6 +62,12 @@ namespace AskTheCode.PathExploration
             this.operationRetractionHandler = new OperationRetractionHandler(this);
 
             this.NameProvider = new VersionedNameProvider(this);
+        }
+
+        private enum CallExtensionKind : byte
+        {
+            Free,
+            CallStackBound
         }
 
         public Path Path { get; private set; }
@@ -401,9 +411,10 @@ namespace AskTheCode.PathExploration
                 .Select((variable) => this.variableVersions[variable].CurrentVersion)
                 .ToArray();
 
-            // TODO: Distinguish in the retracting
             if (this.callStack.Count > 0)
             {
+                this.callExtensionKindStack.Push(CallExtensionKind.CallStackBound);
+
                 // Restore the versions from the last call of the method
                 var frame = this.callStack.Pop();
                 foreach (var variable in callerGraph.LocalVariables)
@@ -413,6 +424,8 @@ namespace AskTheCode.PathExploration
             }
             else
             {
+                this.callExtensionKindStack.Push(CallExtensionKind.Free);
+
                 // TODO: Create new versions only in the case of recursion
                 // When there is no known call stack, make new versions of local variables
                 foreach (var variable in callerGraph.LocalVariables)
@@ -430,14 +443,19 @@ namespace AskTheCode.PathExploration
 
         private void RetractCall(OuterFlowEdge outerEdge)
         {
-            var callerGraph = outerEdge.From.Graph;
-            var frame = new LocalFlowVariableOverlay<int>();
-            foreach (var variable in callerGraph.LocalVariables)
+            if (this.callExtensionKindStack.Pop() == CallExtensionKind.CallStackBound)
             {
-                frame[variable] = this.variableVersions[variable].PopVersion();
-            }
+                // If we know we might return to this stack frame during the further retraction,
+                // store the current variable versions to the call stack
+                var callerGraph = outerEdge.From.Graph;
+                var frame = new LocalFlowVariableOverlay<int>();
+                foreach (var variable in callerGraph.LocalVariables)
+                {
+                    frame[variable] = this.variableVersions[variable].PopVersion();
+                }
 
-            this.callStack.Push(frame);
+                this.callStack.Push(frame);
+            }
 
             var enterNode = (EnterFlowNode)outerEdge.To;
             foreach (var param in enterNode.Parameters)
@@ -447,7 +465,6 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        // TODO: Handle ISymbolicHeap.AllocateNew
         private void ExtendReturn(OuterFlowEdge outerEdge)
         {
             Contract.Requires(outerEdge.Kind == OuterFlowEdgeKind.Return);
