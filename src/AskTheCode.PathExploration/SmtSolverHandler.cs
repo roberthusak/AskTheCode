@@ -258,7 +258,7 @@ namespace AskTheCode.PathExploration
 
                     foreach (var param in enterNode.Parameters)
                     {
-                        this.PushInterpretation(this.GetVersioned(param));
+                        this.AddVariableValue(this.GetVersioned(param));
                     }
 
                     this.areAssignmentsPostponedToNextNode = false;
@@ -268,7 +268,7 @@ namespace AskTheCode.PathExploration
 
                 this.Nodes.Add(this.Path.Node);
                 this.RetractStartingNode();
-                this.PushNodeInterpretations();
+                this.AddNodeValues();
             }
 
             protected override void OnBeforePathStepRetracted(FlowEdge edge)
@@ -305,12 +305,12 @@ namespace AskTheCode.PathExploration
 
             protected override void OnAfterPathStepRetracted(FlowEdge edge)
             {
-                this.PushNodeInterpretations();
+                this.AddNodeValues();
             }
 
             protected override void OnRandomVariableRetracted(FlowVariable variable, int version)
             {
-                this.PushInterpretation(new VersionedVariable(variable, version));
+                this.AddVariableValue(new VersionedVariable(variable, version));
             }
 
             protected override void OnVariableAssignmentRetracted(
@@ -318,7 +318,7 @@ namespace AskTheCode.PathExploration
                 int assignedVersion,
                 Expression value)
             {
-                this.PushInterpretation(new VersionedVariable(variable, assignedVersion));
+                this.AddVariableValue(new VersionedVariable(variable, assignedVersion));
             }
 
             protected override void OnReferenceEqualityRetracted(
@@ -340,7 +340,7 @@ namespace AskTheCode.PathExploration
                 IFieldDefinition field)
             {
                 this.heapModelRecorder.ReadField(reference, field);
-                this.PushInterpretation(result);
+                this.AddVariableValue(result);
             }
 
             protected override void OnFieldWriteRetracted(
@@ -362,40 +362,56 @@ namespace AskTheCode.PathExploration
                     var valueInterpretation = this.smtModel.GetInterpretation(this.NameProvider, value);
                     this.heapModelRecorder.WriteValueField(reference, field, valueInterpretation);
                 }
+
+                this.AddVariableHeapLocation(reference);
             }
 
-            private void PushInterpretation(VersionedVariable variable)
+            private void AddVariableValue(VersionedVariable variable)
             {
                 if (variable.Variable.IsReference)
                 {
-                    var heapLocation = this.heapModelRecorder.GetLocation(variable);
-                    if (this.areAssignmentsPostponedToNextNode)
-                    {
-                        this.nextNodeHeapLocations.Add(heapLocation);
-                    }
-                    else
-                    {
-                        this.currentNodeHeapLocations.Add(heapLocation);
-                    }
+                    this.AddVariableHeapLocation(variable);
                 }
                 else
                 {
-                    var symbolName = this.smtContextHandler.GetVariableVersionSymbol(
-                        variable.Variable,
-                        variable.Version);
-                    var interpretation = this.smtModel.GetInterpretation(symbolName);
-                    if (this.areAssignmentsPostponedToNextNode)
-                    {
-                        this.nextNodeInterpretations.Add(interpretation);
-                    }
-                    else
-                    {
-                        this.currentNodeInterpretations.Add(interpretation);
-                    }
+                    this.AddVariableInterpretation(variable);
                 }
             }
 
-            private void PushNodeInterpretations()
+            private void AddVariableHeapLocation(VersionedVariable variable)
+            {
+                Contract.Requires(variable.Variable.IsReference);
+
+                var heapLocation = this.heapModelRecorder.GetLocation(variable);
+                if (this.areAssignmentsPostponedToNextNode)
+                {
+                    this.nextNodeHeapLocations.Add(heapLocation);
+                }
+                else
+                {
+                    this.currentNodeHeapLocations.Add(heapLocation);
+                }
+            }
+
+            private void AddVariableInterpretation(VersionedVariable variable)
+            {
+                Contract.Requires(!variable.Variable.IsReference);
+
+                var symbolName = this.smtContextHandler.GetVariableVersionSymbol(
+                    variable.Variable,
+                    variable.Version);
+                var interpretation = this.smtModel.GetInterpretation(symbolName);
+                if (this.areAssignmentsPostponedToNextNode)
+                {
+                    this.nextNodeInterpretations.Add(interpretation);
+                }
+                else
+                {
+                    this.currentNodeInterpretations.Add(interpretation);
+                }
+            }
+
+            private void AddNodeValues()
             {
                 this.Interpretations.Add(this.currentNodeInterpretations.ToImmutableArray());
                 this.currentNodeInterpretations.Clear();

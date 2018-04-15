@@ -359,6 +359,10 @@ namespace ControlFlowGraphViewer
                         {
                             assignedVariables.Add(fieldRead.ResultStore);
                         }
+                        else if (op is FieldWrite fieldWrite)
+                        {
+                            assignedVariables.Add(fieldWrite.Reference);
+                        }
                     }
 
                     this.AddNodeModels(modelList, interpretations, heapLocations, assignedVariables);
