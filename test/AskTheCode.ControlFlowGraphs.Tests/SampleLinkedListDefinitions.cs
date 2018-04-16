@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
-using AskTheCode.ControlFlowGraphs.TypeSystem;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs.Tests

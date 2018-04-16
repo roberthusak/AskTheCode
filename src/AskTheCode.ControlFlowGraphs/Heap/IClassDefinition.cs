@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
 
-namespace AskTheCode.ControlFlowGraphs.TypeSystem
+namespace AskTheCode.ControlFlowGraphs.Heap
 {
     public interface IClassDefinition
     {

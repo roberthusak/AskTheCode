@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs

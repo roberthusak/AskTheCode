@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
-using AskTheCode.PathExploration.Heap;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.SmtLibStandard;
 using CodeContractsRevival.Runtime;
 

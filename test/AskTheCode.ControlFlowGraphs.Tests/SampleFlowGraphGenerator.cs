@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.ControlFlowGraphs.Operations;
-using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 

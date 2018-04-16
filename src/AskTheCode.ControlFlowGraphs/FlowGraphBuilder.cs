@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AskTheCode.Common;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;

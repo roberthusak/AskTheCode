@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
+using AskTheCode.ControlFlowGraphs.Heap;
 
 namespace AskTheCode.PathExploration
 {

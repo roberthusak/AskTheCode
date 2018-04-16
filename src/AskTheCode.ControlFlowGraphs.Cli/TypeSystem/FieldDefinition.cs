@@ -1,4 +1,4 @@
-﻿using AskTheCode.ControlFlowGraphs.TypeSystem;
+﻿using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.SmtLibStandard;
 using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;

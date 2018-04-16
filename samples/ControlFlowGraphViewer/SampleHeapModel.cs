@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.ControlFlowGraphs.Tests;
-using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 
 namespace ControlFlowGraphViewer

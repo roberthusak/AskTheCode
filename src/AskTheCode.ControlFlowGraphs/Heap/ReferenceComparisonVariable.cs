@@ -7,7 +7,7 @@ using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
 
-namespace AskTheCode.ControlFlowGraphs
+namespace AskTheCode.ControlFlowGraphs.Heap
 {
     public class ReferenceComparisonVariable : LocalFlowVariable
     {

@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AskTheCode.ControlFlowGraphs.TypeSystem;
 using AskTheCode.SmtLibStandard;
 
-namespace AskTheCode.PathExploration.Heap
+namespace AskTheCode.ControlFlowGraphs.Heap
 {
     public interface IHeapModel
     {

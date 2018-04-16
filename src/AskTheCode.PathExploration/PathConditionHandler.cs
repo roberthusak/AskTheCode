@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
-using AskTheCode.ControlFlowGraphs.TypeSystem;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.PathExploration.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;

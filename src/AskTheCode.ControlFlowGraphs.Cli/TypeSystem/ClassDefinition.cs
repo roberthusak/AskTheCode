@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AskTheCode.Common;
-using AskTheCode.ControlFlowGraphs.TypeSystem;
+using AskTheCode.ControlFlowGraphs.Heap;
 using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 

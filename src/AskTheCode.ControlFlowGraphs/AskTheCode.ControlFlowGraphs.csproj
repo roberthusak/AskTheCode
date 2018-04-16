@@ -131,14 +131,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Heap\IHeapModel.cs" />
     <Compile Include="Operations\FieldOperation.cs" />
     <Compile Include="Operations\FieldRead.cs" />
     <Compile Include="Operations\FieldWrite.cs" />
-    <Compile Include="ReferenceComparisonVariable.cs" />
-    <Compile Include="References.cs" />
+    <Compile Include="Heap\ReferenceComparisonVariable.cs" />
+    <Compile Include="Heap\References.cs" />
     <Compile Include="SpecialFlowVariable.cs" />
-    <Compile Include="TypeSystem\IClassDefinition.cs" />
-    <Compile Include="TypeSystem\IFieldDefinition.cs" />
+    <Compile Include="Heap\IClassDefinition.cs" />
+    <Compile Include="Heap\IFieldDefinition.cs" />
     <Compile Include="IRoutineLocation.cs" />
     <Compile Include="Operations\Operation.cs" />
     <Compile Include="Operations\Assignment.cs" />
