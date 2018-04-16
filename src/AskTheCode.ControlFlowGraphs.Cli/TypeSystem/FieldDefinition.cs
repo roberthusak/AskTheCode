@@ -34,7 +34,5 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
         public IClassDefinition ReferencedClass { get; }
 
         internal IFieldSymbol Symbol { get; }
-
-
     }
 }

@@ -49,24 +49,27 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeSystem
         {
             var result = new List<FieldDefinition>();
 
-            var modelFactory = this.modelManager.TryGetFactory(symbol.Type);
-            if (modelFactory != null)
-            {
-                var sorts = modelFactory.GetExpressionSortRequirements(symbol.Type);
-                for (int i = 0; i < sorts.Count; i++)
-                {
-                    int? orderNumber = (sorts.Count == 0) ? (int?)null : i;
-                    result.Add(new FieldDefinition(symbol, sorts[i], orderNumber));
-                }
-            }
-            else if (symbol.Type.IsReferenceType)
+            if (symbol.Type.IsReferenceType)
             {
                 var referencedClass = this.GetClassDefinition(symbol.Type);
                 result.Add(new FieldDefinition(symbol, referencedClass));
             }
             else
             {
-                // TODO: Store a warning somewhere
+                var modelFactory = this.modelManager.TryGetFactory(symbol.Type);
+                if (modelFactory != null)
+                {
+                    var sorts = modelFactory.GetExpressionSortRequirements(symbol.Type);
+                    for (int i = 0; i < sorts.Count; i++)
+                    {
+                        int? orderNumber = (sorts.Count == 0) ? (int?)null : i;
+                        result.Add(new FieldDefinition(symbol, sorts[i], orderNumber));
+                    }
+                }
+                else
+                {
+                    // TODO: Store a warning somewhere
+                }
             }
 
             return result.ToImmutableArray();

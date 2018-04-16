@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.ControlFlowGraphs.Operations;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
@@ -506,9 +507,16 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             public override Expression VisitVariable(Variable variable)
             {
-                Contract.Assert(variable is BuildVariable);
+                Contract.Assert(variable is BuildVariable || variable == References.Null);
 
-                return this.owner.TranslateVariable((BuildVariable)variable);
+                if (variable == References.Null)
+                {
+                    return variable;
+                }
+                else
+                {
+                    return this.owner.TranslateVariable((BuildVariable)variable);
+                }
             }
         }
     }

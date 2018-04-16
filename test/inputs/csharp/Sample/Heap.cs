@@ -21,6 +21,12 @@ namespace Sample
 
     public static class Heap
     {
+        public static void SimpleReferencePassing(Node a, Node b, Node c)
+        {
+            a = b;
+            c = null;
+        }
+
         public static void SimpleConstructor()
         {
             var n = new Node(0, null);

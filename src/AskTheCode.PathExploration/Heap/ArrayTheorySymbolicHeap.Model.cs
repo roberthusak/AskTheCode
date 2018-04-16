@@ -155,7 +155,12 @@ namespace AskTheCode.PathExploration.Heap
             private Interpretation GetInterpretation(VersionedVariable reference)
             {
                 var varState = this.state.GetVariableState(reference);
-                if (varState.IsInput)
+                if (varState == null)
+                {
+                    // References with no operations or constraints imposed upon them will be null
+                    return (Interpretation)VariableState.Null.Representation;
+                }
+                else if (varState.IsInput)
                 {
                     Contract.Assert(varState.Representation.Expression.Kind == ExpressionKind.Variable);
 

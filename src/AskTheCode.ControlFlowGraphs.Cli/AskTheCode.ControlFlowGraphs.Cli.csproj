@@ -271,6 +271,11 @@
     <Compile Include="TypeModels\ITypeModel.cs" />
     <Compile Include="TypeModels\ITypeModelFactory.cs" />
     <Compile Include="TypeModels\IValueModel.cs" />
+    <Compile Include="TypeModels\NullReferenceModel.cs" />
+    <Compile Include="TypeModels\ReferenceModel.cs" />
+    <Compile Include="TypeModels\ReferenceModelFactory.cs" />
+    <Compile Include="TypeModels\ReferenceValueModel.cs" />
+    <Compile Include="TypeModels\ReferenceVariableModel.cs" />
     <Compile Include="TypeModels\TypeModelManager.cs" />
     <Compile Include="TypeSystem\ClassDefinition.cs" />
     <Compile Include="TypeSystem\FieldDefinition.cs" />

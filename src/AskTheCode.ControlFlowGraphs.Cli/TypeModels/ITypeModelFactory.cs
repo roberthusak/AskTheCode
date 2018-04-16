@@ -3,14 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.SmtLibStandard;
 using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
+    public enum ValueModelKind
+    {
+        Interpretation,
+        Reference
+    }
+
     public interface ITypeModelFactory
     {
+        ValueModelKind ValueKind { get; }
+
         bool IsTypeSupported(ITypeSymbol type);
 
         IReadOnlyList<Sort> GetExpressionSortRequirements(ITypeSymbol type);
@@ -18,6 +27,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
         ITypeModel GetExpressionModel(ITypeSymbol type, IEnumerable<Expression> expressions);
 
         IValueModel GetValueModel(ITypeSymbol type, IEnumerable<Interpretation> values);
+
+        IValueModel GetValueModel(ITypeSymbol type, HeapModelLocation location, IHeapModel heap);
 
         void ModelOperation(IModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments);
 

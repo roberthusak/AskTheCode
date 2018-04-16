@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
@@ -21,6 +22,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
         }
 
         public static BooleanModelFactory Instance { get; } = new BooleanModelFactory();
+
+        public ValueModelKind ValueKind => ValueModelKind.Interpretation;
 
         // TODO: Pre-create upon the initialization (thread safely) instead of caching and publish
         //       (we need to obtain ITypeSymbol for Boolean to do that)
@@ -75,6 +78,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 
                 return False;
             }
+        }
+
+        public IValueModel GetValueModel(ITypeSymbol type, HeapModelLocation location, IHeapModel heap)
+        {
+            throw new NotSupportedException();
         }
 
         public IValueModel GetLiteralValueModel(ITypeSymbol type, object literalValue)

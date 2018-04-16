@@ -162,6 +162,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     case SyntaxKind.UnaryPlusExpression:
                     case SyntaxKind.CharacterLiteralExpression:
                     case SyntaxKind.StringLiteralExpression:
+                    case SyntaxKind.NullLiteralExpression:
                         return this.TryGetValueModel(syntax);
 
                     case SyntaxKind.Parameter:
@@ -189,7 +190,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     return null;
                 }
 
-                var type = this.SemanticModel.GetTypeInfo(syntax).Type;
+                var typeInfo = this.SemanticModel.GetTypeInfo(syntax);
+                var type = typeInfo.Type ?? typeInfo.ConvertedType;     // e.g. for null
                 if (type == null)
                 {
                     return null;

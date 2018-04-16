@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.Common;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
@@ -15,6 +16,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
     public class IntegerModelFactory : ITypeModelFactory
     {
         private static readonly ImmutableArray<Sort> SortRequirements = ImmutableArray.Create(Sort.Int);
+
+        public ValueModelKind ValueKind => ValueModelKind.Interpretation;
 
         public bool IsTypeSupported(ITypeSymbol type)
         {
@@ -57,6 +60,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             Contract.Requires(this.AreSortsMatching(type, values));
 
             return new IntegerValueModel(this, type, (IntHandle)values.Single());
+        }
+
+        public IValueModel GetValueModel(ITypeSymbol type, HeapModelLocation location, IHeapModel heap)
+        {
+            throw new NotSupportedException();
         }
 
         public IValueModel GetLiteralValueModel(ITypeSymbol type, object literalValue)
