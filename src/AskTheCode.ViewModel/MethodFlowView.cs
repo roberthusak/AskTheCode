@@ -57,7 +57,6 @@ namespace AskTheCode.ViewModel
                     for (int i = this.startIndex; i < this.startIndex + this.length; i++)
                     {
                         var flowNode = executionModel.PathNodes[i];
-                        var nodeInterpretations = executionModel.NodeInterpretations[i];
 
                         var displayRecords = new List<DisplayNodeRecord>();
                         foreach (var displayNode in displayGraph.Nodes)
@@ -82,28 +81,59 @@ namespace AskTheCode.ViewModel
                             string type = null;
                             if (displayRecord.Type != null)
                             {
-                                // Hide the remaining portion of the inner CFG node where the exploration started from
-                                if (i == 0
-                                    && displayRecord.FlowNode is InnerFlowNode
-                                    && displayRecord.FirstVariableIndex >= nodeInterpretations.Length)
-                                {
-                                    continue;
-                                }
+                                bool isLastInnerNode =
+                                    (i == executionModel.PathNodes.Length - 1)
+                                    && displayRecord.FlowNode is InnerFlowNode;
 
                                 var modelFactory = toolView.GraphProvider.ModelManager.TryGetFactory(displayRecord.Type);
-                                var sortRequirements = modelFactory.GetExpressionSortRequirements(displayRecord.Type);
-                                var interpretations = nodeInterpretations
-                                    .Skip(displayRecord.FirstVariableIndex)
-                                    .Take(sortRequirements.Count)
-                                    .ToArray();
-
-                                if (interpretations.Length != 0
-                                    && interpretations.All(interpretation => interpretation != null))
+                                if (modelFactory.ValueKind == ValueModelKind.Interpretation)
                                 {
-                                    var valueModel = modelFactory.GetValueModel(displayRecord.Type, interpretations);
-                                    Contract.Assert(valueModel != null);
-                                    value = valueModel.ValueText;
-                                    type = displayRecord.Type.Name;
+                                    var nodeInterpretations = executionModel.NodeInterpretations[i];
+
+                                    // Hide the remaining portion of the inner CFG node where the exploration started from
+                                    if (isLastInnerNode && displayRecord.FirstVariableIndex >= nodeInterpretations.Length)
+                                    {
+                                        continue;
+                                    }
+
+                                    var sortRequirements = modelFactory.GetExpressionSortRequirements(displayRecord.Type);
+                                    var interpretations = nodeInterpretations
+                                        .Skip(displayRecord.FirstVariableIndex)
+                                        .Take(sortRequirements.Count)
+                                        .ToArray();
+
+                                    if (interpretations.Length != 0
+                                        && interpretations.All(interpretation => interpretation != null))
+                                    {
+                                        var valueModel = modelFactory.GetValueModel(displayRecord.Type, interpretations);
+
+                                        value = valueModel.ValueText;
+                                        type = displayRecord.Type.Name;
+                                    }
+                                }
+                                else
+                                {
+                                    Contract.Assert(modelFactory.ValueKind == ValueModelKind.Reference);
+
+                                    var heapLocations = executionModel.HeapLocations[i];
+                                    bool locationExists = displayRecord.FirstVariableIndex < heapLocations.Length;
+
+                                    // Hide the remaining portion of the inner CFG node where the exploration started from
+                                    if (isLastInnerNode && !locationExists)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (locationExists)
+                                    {
+                                        var valueModel = modelFactory.GetValueModel(
+                                            displayRecord.Type,
+                                            heapLocations[displayRecord.FirstVariableIndex],
+                                            executionModel.HeapModel);
+
+                                        value = valueModel.ValueText;
+                                        type = displayRecord.Type.Name;
+                                    }
                                 }
                             }
 
