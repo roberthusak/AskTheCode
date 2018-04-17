@@ -17,6 +17,16 @@ namespace Sample
             this.value = value;
             this.next = next;
         }
+
+        public void SetNext(Node nextNode)
+        {
+            next = nextNode;
+            DoNothing(next);
+        }
+
+        private void DoNothing(Node a)
+        {
+        }
     }
 
     public static class Heap
@@ -38,6 +48,13 @@ namespace Sample
             a.next.next = c;
             a = c.next.next;
             a.next.next = b.next.next;
+        }
+
+        public static void SimpleMethodCall(Node a, Node b)
+        {
+            a.SetNext(b);
+            a.next.SetNext(b);
+            a.next.SetNext(b.next);
         }
 
         public static void SimpleConstructor()
@@ -77,7 +94,7 @@ namespace Sample
                 Debug.Assert(a.value != b.value);
             }
         }
-        
+
         public static void DelayedComparison(Node a, Node b, int i)
         {
             bool wereEqual = (a == b);

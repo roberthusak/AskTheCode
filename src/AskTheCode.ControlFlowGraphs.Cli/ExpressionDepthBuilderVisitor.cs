@@ -117,25 +117,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     return;
                 }
 
-                ISymbol referenceSymbol = null;
-                if (fieldOp.Instance.Kind == OperationKind.ParameterReference
-                    && fieldOp.Instance is IParameterReferenceOperation paramInstance)
-                {
-                    referenceSymbol = paramInstance.Parameter;
-                }
-                else if (fieldOp.Instance.Kind == OperationKind.LocalReference
-                    && fieldOp.Instance is ILocalReferenceOperation localInstance)
-                {
-                    referenceSymbol = localInstance.Local;
-                }
-
-                ReferenceModel referenceModel;
-                if (referenceSymbol != null)
-                {
-                    // Use the variable directly if present
-                    referenceModel = (ReferenceModel)this.Context.TryGetDefinedVariableModel(referenceSymbol);
-                }
-                else
+                var referenceModel = this.TryGetVariableFromOperation(fieldOp.Instance) as ReferenceModel;
+                if (referenceModel == null)
                 {
                     // Compute the reference in a separate node if it is not a variable
                     referenceModel = (ReferenceModel)this.Context.CreateTemporaryVariableModel(
@@ -256,6 +239,30 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
 
             var argumentModels = new List<ITypeModel>();
+
+            if (!expressionSymbol.IsStatic)
+            {
+                var callOp = this.Context.SemanticModel.GetOperation(expressionSyntax) as IInvocationOperation;
+                if (callOp?.Instance == null)
+                {
+                    // TODO: Report a warning
+                    return;
+                }
+
+                var instanceModel = this.TryGetVariableFromOperation(callOp.Instance) as ReferenceModel;
+                if (instanceModel == null)
+                {
+                    // Compute the instance in a separate node if it is not a variable
+                    instanceModel = (ReferenceModel)this.Context.CreateTemporaryVariableModel(
+                        this.Context.ModelManager.TryGetFactory(callOp.Instance.Type),
+                        callOp.Instance.Type);
+                    var instanceNode = this.Context.PrependCurrentNode(callOp.Instance.Syntax, DisplayNodeConfig.Inherit);
+                    instanceNode.VariableModel = instanceModel;
+                }
+
+                argumentModels.Add(instanceModel);
+            }
+
             foreach (var argument in arguments)
             {
                 var model = this.ProcessArgument(argument);
@@ -376,6 +383,34 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             left.AddEdge(right, ExpressionFactory.False);
 
             return;
+        }
+
+        private ITypeModel TryGetVariableFromOperation(IOperation operation)
+        {
+            if (operation.Kind == OperationKind.InstanceReference)
+            {
+                // Reference to "this"
+                return this.Context.GetLocalInstanceModel(operation.Type);
+            }
+
+            ISymbol referenceSymbol = null;
+            if (operation.Kind == OperationKind.ParameterReference
+                && operation is IParameterReferenceOperation paramInstance)
+            {
+                referenceSymbol = paramInstance.Parameter;
+            }
+            else if (operation.Kind == OperationKind.LocalReference
+                && operation is ILocalReferenceOperation localInstance)
+            {
+                referenceSymbol = localInstance.Local;
+            }
+
+            if (referenceSymbol == null)
+            {
+                return null;
+            }
+
+            return this.Context.TryGetDefinedVariableModel(referenceSymbol);
         }
     }
 }

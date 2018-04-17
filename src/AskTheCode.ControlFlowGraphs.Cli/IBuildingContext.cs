@@ -41,5 +41,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         ITypeModel TryGetModel(SyntaxNode syntax);
 
         IValueModel TryGetValueModel(SyntaxNode syntax);
+
+        ReferenceModel GetLocalInstanceModel(ITypeSymbol localType);
     }
 }

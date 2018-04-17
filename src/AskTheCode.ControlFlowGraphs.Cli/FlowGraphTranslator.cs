@@ -53,7 +53,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             var visitedNodes = new OrdinalOverlay<BuildNodeId, BuildNode, bool>();
 
             var buildParameters = this.BuildGraph.Variables
-                .Where(variable => variable.Origin == VariableOrigin.Parameter);
+                .Where(v => v.Origin == VariableOrigin.Parameter || v.Origin == VariableOrigin.This);
             var flowParameters = new List<FlowVariable>();
             foreach (var parameter in buildParameters)
             {
@@ -519,7 +519,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 if (flowVariable == null)
                 {
-                    flowVariable = this.builder.AddLocalVariable(buildVariable.Sort, buildVariable.Symbol?.Name);
+                    flowVariable = this.builder.AddLocalVariable(
+                        buildVariable.Sort,
+                        (buildVariable.Origin != VariableOrigin.Temporary) ? buildVariable.ToString() : null);
                     this.buildToFlowVariablesMap[buildVariable] = flowVariable;
                 }
 

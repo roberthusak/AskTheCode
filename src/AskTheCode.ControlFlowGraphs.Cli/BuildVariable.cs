@@ -14,7 +14,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
     {
         Temporary,
         Parameter,
-        Local
+        Local,
+        This,
     }
 
     internal class BuildVariable : Variable, IIdReferenced<BuildVariableId>
@@ -37,7 +38,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             {
                 if (this.Symbol == null)
                 {
-                    return $"tmp!{this.Id.Value}";
+                    return (this.Origin == VariableOrigin.This) ? "this" : $"tmp!{this.Id.Value}";
                 }
                 else
                 {

@@ -40,6 +40,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private readonly HashSet<BuildingContext> pending = new HashSet<BuildingContext>();
         private readonly DocumentId documentId;
 
+        private ReferenceModel localInstanceModel;
+
         public CSharpGraphBuilder(
             TypeModelManager modelManager,
             DocumentId documentId,
@@ -269,6 +271,24 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             public ITypeModel CreateTemporaryVariableModel(ITypeModelFactory factory, ITypeSymbol type)
             {
                 return this.CreateVariableModel(factory, type, null, VariableOrigin.Temporary);
+            }
+
+            public ReferenceModel GetLocalInstanceModel(ITypeSymbol localType)
+            {
+                Contract.Requires(
+                    this.builder.localInstanceModel == null 
+                    || this.builder.localInstanceModel.Type == localType);
+
+                if (this.builder.localInstanceModel == null)
+                {
+                    this.builder.localInstanceModel = (ReferenceModel)this.CreateVariableModel(
+                        this.ModelManager.TryGetFactory(localType),
+                        localType,
+                        null,
+                        VariableOrigin.This);
+                }
+
+                return this.builder.localInstanceModel;
             }
 
             public IModellingContext GetModellingContext()
