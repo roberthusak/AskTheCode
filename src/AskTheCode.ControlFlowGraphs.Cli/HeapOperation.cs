@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,20 +12,23 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 {
     internal class HeapOperation : SpecialOperation
     {
-        public HeapOperation(SpecialOperationKind kind, ReferenceModel reference, FieldDefinition field)
+        public HeapOperation(
+            SpecialOperationKind kind,
+            ReferenceModel reference,
+            ImmutableArray<FieldDefinition> fields)
             : base(kind)
         {
             Contract.Requires(IsKindSupported(kind));
             Contract.Requires<ArgumentNullException>(reference != null, nameof(reference));
-            Contract.Requires<ArgumentNullException>(field != null, nameof(field));
+            Contract.Requires<ArgumentNullException>(fields != null, nameof(fields));
 
             this.Reference = reference;
-            this.Field = field;
+            this.Fields = fields;
         }
 
         public ReferenceModel Reference { get; }
 
-        public FieldDefinition Field { get; }
+        public ImmutableArray<FieldDefinition> Fields { get; }
 
         public static bool IsKindSupported(SpecialOperationKind kind)
         {

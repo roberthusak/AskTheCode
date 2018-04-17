@@ -60,5 +60,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
                 return this.lazyText;
             }
         }
+
+        public override string ToString() => this.ValueText;
     }
 }

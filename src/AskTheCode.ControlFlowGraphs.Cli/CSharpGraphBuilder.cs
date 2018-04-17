@@ -317,10 +317,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             public BuildNode PrependCurrentNode(
                 SyntaxNode prependedSyntax,
-                DisplayNodeConfig displayConfig = DisplayNodeConfig.Ignore)
+                DisplayNodeConfig displayConfig = DisplayNodeConfig.Ignore,
+                bool isFinal = false)
             {
                 // The syntaxes will be swaped subsequently
-                var prependedCurrent = this.ReenqueueCurrentNode(this.CurrentNode.Syntax);
+                var prependedCurrent = isFinal
+                    ? this.CurrentNode
+                    : this.ReenqueueCurrentNode(this.CurrentNode.Syntax);
                 var newCurrent = this.AddFinalNode(prependedSyntax);
 
                 // Swaping contents will change the outgoing edges, i.a.

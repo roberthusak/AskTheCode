@@ -292,7 +292,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 if (borderOp.Kind == SpecialOperationKind.MethodCall)
                 {
                     var returnAssignments = buildNode.VariableModel?.AssignmentLeft
-                        .Select(buildVar => this.TranslateVariable((BuildVariable)buildVar));
+                        .Select(buildVar => this.TranslateVariable(buildVar));
 
                     return this.builder.AddCallNode(location, flowArguments, returnAssignments);
                 }
@@ -327,14 +327,19 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             while (true)
             {
-                if (curNode.Operation != null)
-                {
-                    Contract.Assert(curNode.Operation.Kind == SpecialOperationKind.Assertion);
-                }
-                else
+                if (curNode.Operation == null)
                 {
                     var nodeAssignments = this.TranslateAssignments(curNode.VariableModel, curNode.ValueModel);
                     operations.AddRange(nodeAssignments);
+                }
+                else if (curNode.Operation is HeapOperation heapOp)
+                {
+                    var heapOps = this.TranslateHeapOperations(curNode.VariableModel, curNode.ValueModel, heapOp);
+                    operations.AddRange(heapOps);
+                }
+                else
+                {
+                    Contract.Assert(curNode.Operation.Kind == SpecialOperationKind.Assertion);
                 }
 
                 if (curNode.OutgoingEdges.Count != 1)
@@ -344,7 +349,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 var nextNode = curNode.OutgoingEdges.Single().To;
 
-                if ((nextNode.Operation != null && nextNode.Operation.Kind != SpecialOperationKind.Assertion)
+                if ((nextNode.Operation is BorderOperation && nextNode.Operation.Kind != SpecialOperationKind.Assertion)
                     || this.ingoingEdges[nextNode].Count > 1)
                 {
                     break;
@@ -357,7 +362,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             lastBuildNode = curNode;
         }
 
-        private IEnumerable<Assignment> TranslateAssignments(ITypeModel variableModel, ITypeModel valueModel)
+        private IEnumerable<Assignment> TranslateAssignments(
+            ITypeModel variableModel,
+            ITypeModel valueModel)
         {
             if (variableModel == null || valueModel == null || variableModel.AssignmentLeft.Count == 0)
             {
@@ -374,12 +381,63 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             {
                 Contract.Assert(variables[i].Sort == values[i].Sort);
 
-                var translatedVariable = this.TranslateVariable((BuildVariable)variables[i]);
+                var translatedVariable = this.TranslateVariable(variables[i]);
                 var translatedValue = this.TranslateExpression(values[i]);
                 Contract.Assert(translatedVariable.Sort == variables[i].Sort);
                 Contract.Assert(translatedVariable.Sort == translatedValue.Sort);
 
                 yield return new Assignment(translatedVariable, translatedValue);
+            }
+        }
+
+        private IEnumerable<Operation> TranslateHeapOperations(
+            ITypeModel variableModel,
+            ITypeModel valueModel,
+            HeapOperation heapOp)
+        {
+            if (heapOp.Kind == SpecialOperationKind.FieldRead)
+            {
+                if (variableModel == null)
+                {
+                    yield break;
+                }
+
+                var translatedReference = this.TranslateVariable(heapOp.Reference.AssignmentLeft.Single());
+                var variables = variableModel.AssignmentLeft;
+                Contract.Assert(variables.Count == heapOp.Fields.Length);
+
+                for (int i = 0; i < variables.Count; i++)
+                {
+                    Contract.Assert(variables[i].Sort == heapOp.Fields[i].Sort);
+
+                    yield return new FieldRead(
+                        this.TranslateVariable(variables[i]),
+                        translatedReference,
+                        heapOp.Fields[i]);
+                }
+            }
+            else
+            {
+                Contract.Assert(heapOp.Kind == SpecialOperationKind.FieldWrite);
+
+                if (valueModel == null)
+                {
+                    yield break;
+                }
+
+                var translatedReference = this.TranslateVariable(heapOp.Reference.AssignmentLeft.Single());
+                var values = valueModel.AssignmentRight;
+                Contract.Assert(values.Count == heapOp.Fields.Length);
+
+                for (int i = 0; i < values.Count; i++)
+                {
+                    Contract.Assert(values[i].Sort == heapOp.Fields[i].Sort);
+
+                    yield return new FieldWrite(
+                        translatedReference,
+                        heapOp.Fields[i],
+                        this.TranslateExpression(values[i]));
+                }
             }
         }
 
@@ -396,7 +454,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 Contract.Assert(buildFrom.VariableModel is BooleanModel);
 
                 var variable = buildFrom.VariableModel.AssignmentLeft.Single();
-                condition = (BoolHandle)this.TranslateVariable((BuildVariable)variable);
+                condition = (BoolHandle)this.TranslateVariable(variable);
                 if (buildEdge.ValueCondition == ExpressionFactory.False)
                 {
                     condition = !condition;
@@ -411,7 +469,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 Contract.Assert(buildFrom.VariableModel != null);
 
                 var variables = buildFrom.VariableModel.AssignmentLeft
-                    .Select(buildVar => this.TranslateVariable((BuildVariable)buildVar))
+                    .Select(buildVar => this.TranslateVariable(buildVar))
                     .ToArray();
 
                 // TODO: Update when BuildEdge.ValueCondition is changed to IValueModel
@@ -446,17 +504,27 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             return this.builder.AddEdge(flowFrom, flowTo, condition);
         }
 
-        private FlowVariable TranslateVariable(BuildVariable buildVariable)
+        private FlowVariable TranslateVariable(Variable variable)
         {
-            var flowVariable = this.buildToFlowVariablesMap[buildVariable];
+            Contract.Requires(variable is BuildVariable || variable == References.Null);
 
-            if (flowVariable == null)
+            if (variable == References.Null)
             {
-                flowVariable = this.builder.AddLocalVariable(buildVariable.Sort, buildVariable.Symbol?.Name);
-                this.buildToFlowVariablesMap[buildVariable] = flowVariable;
+                return References.Null;
             }
+            else
+            {
+                var buildVariable = (BuildVariable)variable;
+                var flowVariable = this.buildToFlowVariablesMap[buildVariable];
 
-            return flowVariable;
+                if (flowVariable == null)
+                {
+                    flowVariable = this.builder.AddLocalVariable(buildVariable.Sort, buildVariable.Symbol?.Name);
+                    this.buildToFlowVariablesMap[buildVariable] = flowVariable;
+                }
+
+                return flowVariable;
+            }
         }
 
         private Expression TranslateExpression(Expression expression)
@@ -509,14 +577,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             {
                 Contract.Assert(variable is BuildVariable || variable == References.Null);
 
-                if (variable == References.Null)
-                {
-                    return variable;
-                }
-                else
-                {
-                    return this.owner.TranslateVariable((BuildVariable)variable);
-                }
+                return this.owner.TranslateVariable(variable);
             }
         }
     }

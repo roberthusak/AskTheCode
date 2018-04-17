@@ -27,6 +27,19 @@ namespace Sample
             c = null;
         }
 
+        public static void SimpleFieldAccess(Node a, Node b)
+        {
+            int a_val = a.value;
+            b.value = 10;
+            Node c = a.next;
+            b.next = c;
+
+            a.next = b.next;
+            a.next.next = c;
+            a = c.next.next;
+            a.next.next = b.next.next;
+        }
+
         public static void SimpleConstructor()
         {
             var n = new Node(0, null);
@@ -64,7 +77,7 @@ namespace Sample
                 Debug.Assert(a.value != b.value);
             }
         }
-
+        
         public static void DelayedComparison(Node a, Node b, int i)
         {
             bool wereEqual = (a == b);

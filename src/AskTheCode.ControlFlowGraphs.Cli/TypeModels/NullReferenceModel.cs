@@ -23,5 +23,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
         public override bool IsLValue => false;
 
         public string ValueText => "null";
+
+        public override string ToString() => this.ValueText;
     }
 }

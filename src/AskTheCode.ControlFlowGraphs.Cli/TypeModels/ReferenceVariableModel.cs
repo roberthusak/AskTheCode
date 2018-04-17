@@ -12,20 +12,22 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
     public class ReferenceVariableModel : ReferenceModel
     {
-        private readonly Variable variable;
-
         internal ReferenceVariableModel(ReferenceModelFactory factory, Variable variable)
             : base(factory)
         {
             Contract.Requires(variable != References.Null);
 
-            this.variable = variable;
+            this.Variable = variable;
         }
 
-        public override IReadOnlyList<Variable> AssignmentLeft => this.variable.ToSingular();
+        public Variable Variable { get; }
 
-        public override IReadOnlyList<Expression> AssignmentRight => this.variable.ToSingular();
+        public override IReadOnlyList<Variable> AssignmentLeft => this.Variable.ToSingular();
+
+        public override IReadOnlyList<Expression> AssignmentRight => this.Variable.ToSingular();
 
         public override bool IsLValue => true;
+
+        public override string ToString() => this.Variable.DisplayName;
     }
 }

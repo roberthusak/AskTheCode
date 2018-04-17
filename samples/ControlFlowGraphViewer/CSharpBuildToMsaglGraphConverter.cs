@@ -72,8 +72,8 @@ namespace ControlFlowGraphViewer
                     }
                 }
 
-                var borderKind = buildNode.Operation?.Kind;
-                if (borderKind == null || borderKind == SpecialOperationKind.MethodCall)
+                var opKind = buildNode.Operation?.Kind;
+                if (opKind == null || opKind == SpecialOperationKind.MethodCall)
                 {
                     text.Append(" \u2190 ");
                 }
@@ -81,6 +81,7 @@ namespace ControlFlowGraphViewer
                 if (buildNode.Operation != null)
                 {
                     BorderOperation borderOp;
+                    HeapOperation heapOp;
 
                     switch (buildNode.Operation.Kind)
                     {
@@ -107,8 +108,6 @@ namespace ControlFlowGraphViewer
                             break;
 
                         case SpecialOperationKind.ExceptionThrow:
-                        default:
-                            Contract.Assert(buildNode.Operation.Kind == SpecialOperationKind.ExceptionThrow);
                             Contract.Assert(buildNode.ValueModel == null);
 
                             borderOp = (BorderOperation)buildNode.Operation;
@@ -116,6 +115,24 @@ namespace ControlFlowGraphViewer
                             string constructorArgumentsText = this.FormatTypeModelList(borderOp.Arguments);
                             text.Append(
                                 $"throw {exceptionConstructor.ContainingType.Name}({constructorArgumentsText})");
+                            break;
+
+                        case SpecialOperationKind.FieldRead:
+                            Contract.Assert(buildNode.ValueModel == null);
+
+                            heapOp = (HeapOperation)buildNode.Operation;
+                            text.Append($" \u2190 {heapOp.Reference}.{heapOp.Fields[0].Symbol.Name}");
+                            break;
+
+                        case SpecialOperationKind.FieldWrite:
+                            Contract.Assert(buildNode.VariableModel == null);
+
+                            heapOp = (HeapOperation)buildNode.Operation;
+                            text.Append($"{heapOp.Reference}.{heapOp.Fields[0].Symbol.Name} \u2190 ");
+                            break;
+
+                        default:
+                            text.Append(buildNode.Operation.Kind.ToString());
                             break;
                     }
                 }

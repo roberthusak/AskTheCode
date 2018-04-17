@@ -14,8 +14,6 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
     // TODO: Add working with global variables
     public class TypeModelManager
     {
-        private readonly TypeContext typeContext;
-
         private readonly ConcurrentDictionary<ITypeSymbol, ReferenceModelFactory> classToFactoryMap =
             new ConcurrentDictionary<ITypeSymbol, ReferenceModelFactory>();
 
@@ -23,8 +21,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 
         public TypeModelManager()
         {
-            this.typeContext = new TypeContext(this);
+            this.TypeContext = new TypeContext(this);
         }
+
+        internal TypeContext TypeContext { get; }
 
         public ITypeModelFactory TryGetFactory(ITypeSymbol type)
         {
@@ -34,7 +34,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
             {
                 return this.classToFactoryMap.GetOrAdd(
                     type,
-                    t => new ReferenceModelFactory(this.typeContext.GetClassDefinition(t)));
+                    t => new ReferenceModelFactory(this.TypeContext.GetClassDefinition(t)));
             }
             else if (BooleanModelFactory.Instance.IsTypeSupported(type))
             {

@@ -27,7 +27,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         IModellingContext GetModellingContext();
 
-        BuildNode PrependCurrentNode(SyntaxNode prependedSyntax, DisplayNodeConfig displayConfig = DisplayNodeConfig.Ignore);
+        BuildNode PrependCurrentNode(
+            SyntaxNode prependedSyntax,
+            DisplayNodeConfig displayConfig = DisplayNodeConfig.Ignore,
+            bool isFinal = false);
 
         BuildNode ReenqueueCurrentNode(SyntaxNode syntaxUpdate, bool createDisplayNode = false);
 
