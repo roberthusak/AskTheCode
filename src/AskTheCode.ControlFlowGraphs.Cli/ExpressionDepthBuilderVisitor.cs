@@ -53,6 +53,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 Contract.Assert(this.Context.CurrentNode.ValueModel == null);
                 this.Context.CurrentNode.ValueModel = valueModel;
             }
+            else
+            {
+                var op = this.Context.SemanticModel.GetOperation(nameSyntax);
+                if (op?.Kind == OperationKind.FieldReference && op is IFieldReferenceOperation fieldOp)
+                {
+                    this.ProcessFieldReferenceOperation(fieldOp);
+                }
+            }
         }
 
         public sealed override void VisitVariableDeclarator(VariableDeclaratorSyntax declaratorSyntax)
@@ -78,7 +86,18 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             var leftModel = this.Context.TryGetModel(assignmentSyntax.Left);
             if (leftModel == null)
             {
-                this.Visit(assignmentSyntax.Left);
+                var leftOp = this.Context.SemanticModel.GetOperation(assignmentSyntax.Left);
+                if (leftOp?.Kind == OperationKind.FieldReference && leftOp is IFieldReferenceOperation fieldLeftOp)
+                {
+                    // Case for field references with implicit "this" (from the syntactic perspective
+                    // they look like local variable access)
+                    this.ProcessFieldReferenceOperation(fieldLeftOp);
+                }
+                else
+                {
+                    this.Visit(assignmentSyntax.Left);
+                }
+
                 this.Context.CurrentNode.LabelOverride = assignmentSyntax;
                 this.Context.ReenqueueCurrentNode(assignmentSyntax.Right);
             }
@@ -110,61 +129,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             if (op?.Kind == OperationKind.FieldReference && op is IFieldReferenceOperation fieldOp)
             {
-                if (fieldOp.Instance == null)
-                {
-                    // Static members are not supported now
-                    // TODO: Report a warning
-                    return;
-                }
-
-                var referenceModel = this.TryGetVariableFromOperation(fieldOp.Instance) as ReferenceModel;
-                if (referenceModel == null)
-                {
-                    // Compute the reference in a separate node if it is not a variable
-                    referenceModel = (ReferenceModel)this.Context.CreateTemporaryVariableModel(
-                        this.Context.ModelManager.TryGetFactory(fieldOp.Instance.Type),
-                        fieldOp.Instance.Type);
-                    var referenceNode = this.Context.PrependCurrentNode(fieldOp.Instance.Syntax, DisplayNodeConfig.Inherit);
-                    referenceNode.VariableModel = referenceModel;
-                }
-
-                var fields = this.Context.ModelManager.TypeContext.GetFieldDefinitions(fieldOp.Field);
-
-                if (this.Context.CurrentNode.VariableModel == null && this.Context.CurrentNode.Operation == null)
-                {
-                    // Start by filling the left side of the assignment, if not filled already
-                    // (by a variable or an operation)
-                    this.Context.CurrentNode.Operation = new HeapOperation(
-                        SpecialOperationKind.FieldWrite,
-                        referenceModel,
-                        fields);
-                }
-                else
-                {
-                    Contract.Assert(this.Context.CurrentNode.ValueModel == null);
-
-                    // Otherwise, fill the right side of the assignment
-                    var readOp = new HeapOperation(SpecialOperationKind.FieldRead, referenceModel, fields);
-
-                    if (this.Context.CurrentNode.Operation == null)
-                    {
-                        this.Context.CurrentNode.Operation = readOp;
-                    }
-                    else
-                    {
-                        // If there is already an operation (such as field write), put the read to a new node
-                        var readResult = this.Context.CreateTemporaryVariableModel(
-                            this.Context.ModelManager.TryGetFactory(fieldOp.Type),
-                            fieldOp.Type);
-                        var readNode = this.Context.PrependCurrentNode(
-                            fieldOp.Syntax,
-                            DisplayNodeConfig.Inherit,
-                            isFinal: true);
-                        readNode.VariableModel = readResult;
-                        readNode.Operation = readOp;
-                        this.Context.CurrentNode.ValueModel = readResult;
-                    }
-                }
+                this.ProcessFieldReferenceOperation(fieldOp);
             }
         }
 
@@ -317,6 +282,65 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
 
             return argumentModel;
+        }
+
+        private void ProcessFieldReferenceOperation(IFieldReferenceOperation fieldOp)
+        {
+            if (fieldOp.Instance == null)
+            {
+                // Static members are not supported now
+                // TODO: Report a warning
+                return;
+            }
+
+            var referenceModel = this.TryGetVariableFromOperation(fieldOp.Instance) as ReferenceModel;
+            if (referenceModel == null)
+            {
+                // Compute the reference in a separate node if it is not a variable
+                referenceModel = (ReferenceModel)this.Context.CreateTemporaryVariableModel(
+                    this.Context.ModelManager.TryGetFactory(fieldOp.Instance.Type),
+                    fieldOp.Instance.Type);
+                var referenceNode = this.Context.PrependCurrentNode(fieldOp.Instance.Syntax, DisplayNodeConfig.Inherit);
+                referenceNode.VariableModel = referenceModel;
+            }
+
+            var fields = this.Context.ModelManager.TypeContext.GetFieldDefinitions(fieldOp.Field);
+
+            if (this.Context.CurrentNode.VariableModel == null && this.Context.CurrentNode.Operation == null)
+            {
+                // Start by filling the left side of the assignment, if not filled already
+                // (by a variable or an operation)
+                this.Context.CurrentNode.Operation = new HeapOperation(
+                    SpecialOperationKind.FieldWrite,
+                    referenceModel,
+                    fields);
+            }
+            else
+            {
+                Contract.Assert(this.Context.CurrentNode.ValueModel == null);
+
+                // Otherwise, fill the right side of the assignment
+                var readOp = new HeapOperation(SpecialOperationKind.FieldRead, referenceModel, fields);
+
+                if (this.Context.CurrentNode.Operation == null)
+                {
+                    this.Context.CurrentNode.Operation = readOp;
+                }
+                else
+                {
+                    // If there is already an operation (such as field write), put the read to a new node
+                    var readResult = this.Context.CreateTemporaryVariableModel(
+                        this.Context.ModelManager.TryGetFactory(fieldOp.Type),
+                        fieldOp.Type);
+                    var readNode = this.Context.PrependCurrentNode(
+                        fieldOp.Syntax,
+                        DisplayNodeConfig.Inherit,
+                        isFinal: true);
+                    readNode.VariableModel = readResult;
+                    readNode.Operation = readOp;
+                    this.Context.CurrentNode.ValueModel = readResult;
+                }
+            }
         }
 
         private void ProcessLogicalAndExpression(BinaryExpressionSyntax andSyntax)

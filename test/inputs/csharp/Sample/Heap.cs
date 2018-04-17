@@ -21,6 +21,7 @@ namespace Sample
         public void SetNext(Node nextNode)
         {
             next = nextNode;
+            int myValue = value;
             DoNothing(next);
         }
 
