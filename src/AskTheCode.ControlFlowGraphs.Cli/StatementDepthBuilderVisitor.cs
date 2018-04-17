@@ -37,7 +37,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 var implicitReturn = this.Context.AddFinalNode(
                     methodSyntax.Body.CloseBraceToken,
                     createDisplayNode: true);
-                implicitReturn.BorderData = new BorderData(BorderDataKind.Return, null, null);
+                implicitReturn.Operation = new BorderOperation(SpecialOperationKind.Return, null, null);
                 body.AddEdge(implicitReturn);
             }
 
@@ -47,7 +47,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public sealed override void VisitReturnStatement(ReturnStatementSyntax returnSyntax)
         {
             this.Context.CurrentNode.OutgoingEdges.Clear();
-            this.Context.CurrentNode.BorderData = new BorderData(BorderDataKind.Return, null, null);
+            this.Context.CurrentNode.Operation = new BorderOperation(SpecialOperationKind.Return, null, null);
 
             // Get rid of the semicolon
             int expressionEnd = returnSyntax.SemicolonToken.FullSpan.Start;
@@ -80,8 +80,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     this.Context.SemanticModel.GetSymbolInfo(constructorSyntax).Symbol as IMethodSymbol;
                 Contract.Assert(constructorSymbol != null);
 
-                this.Context.CurrentNode.BorderData = new BorderData(
-                    BorderDataKind.ExceptionThrow,
+                this.Context.CurrentNode.Operation = new BorderOperation(
+                    SpecialOperationKind.ExceptionThrow,
                     constructorSymbol,
                     Enumerable.Empty<ITypeModel>());
             }

@@ -22,7 +22,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.DocumentId = documentId;
 
             this.EnterNode = this.AddNode(methodSyntax);
-            this.EnterNode.BorderData = new BorderData(BorderDataKind.Enter, null, null);
+            this.EnterNode.Operation = new BorderOperation(SpecialOperationKind.Enter, null, null);
         }
 
         public DocumentId DocumentId { get; private set; }

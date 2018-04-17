@@ -192,8 +192,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             if (!modelled)
             {
-                this.Context.CurrentNode.BorderData = new BorderData(
-                    BorderDataKind.MethodCall,
+                this.Context.CurrentNode.Operation = new BorderOperation(
+                    SpecialOperationKind.MethodCall,
                     expressionSymbol,
                     argumentModels);
             }

@@ -55,7 +55,7 @@ namespace ControlFlowGraphViewer
             var text = new StringBuilder(buildNode.Label.ToString());
 
             if (depth == GraphDepth.Value
-                && (buildNode.VariableModel != null || buildNode.ValueModel != null || buildNode.BorderData != null))
+                && (buildNode.VariableModel != null || buildNode.ValueModel != null || buildNode.Operation != null))
             {
                 text.AppendLine();
                 text.Append("[ ");
@@ -72,21 +72,23 @@ namespace ControlFlowGraphViewer
                     }
                 }
 
-                var borderKind = buildNode.BorderData?.Kind;
-                if (borderKind == null || borderKind == BorderDataKind.MethodCall)
+                var borderKind = buildNode.Operation?.Kind;
+                if (borderKind == null || borderKind == SpecialOperationKind.MethodCall)
                 {
                     text.Append(" \u2190 ");
                 }
 
-                if (buildNode.BorderData != null)
+                if (buildNode.Operation != null)
                 {
-                    switch (buildNode.BorderData.Kind)
+                    BorderOperation borderOp;
+
+                    switch (buildNode.Operation.Kind)
                     {
-                        case BorderDataKind.Enter:
+                        case SpecialOperationKind.Enter:
                             text.Append("enter");
                             break;
 
-                        case BorderDataKind.Return:
+                        case SpecialOperationKind.Return:
                             text.Append("return");
                             if (buildNode.ValueModel != null)
                             {
@@ -95,21 +97,23 @@ namespace ControlFlowGraphViewer
 
                             break;
 
-                        case BorderDataKind.MethodCall:
+                        case SpecialOperationKind.MethodCall:
                             Contract.Assert(buildNode.ValueModel == null);
 
-                            var method = buildNode.BorderData.Method;
-                            string argumentsText = FormatTypeModelList(buildNode.BorderData.Arguments);
+                            borderOp = (BorderOperation)buildNode.Operation;
+                            var method = borderOp.Method;
+                            string argumentsText = this.FormatTypeModelList(borderOp.Arguments);
                             text.Append($"{method.ContainingType}.{method.Name}({argumentsText})");
                             break;
 
-                        case BorderDataKind.ExceptionThrow:
+                        case SpecialOperationKind.ExceptionThrow:
                         default:
-                            Contract.Assert(buildNode.BorderData.Kind == BorderDataKind.ExceptionThrow);
+                            Contract.Assert(buildNode.Operation.Kind == SpecialOperationKind.ExceptionThrow);
                             Contract.Assert(buildNode.ValueModel == null);
 
-                            var exceptionConstructor = buildNode.BorderData.Method;
-                            string constructorArgumentsText = FormatTypeModelList(buildNode.BorderData.Arguments);
+                            borderOp = (BorderOperation)buildNode.Operation;
+                            var exceptionConstructor = borderOp.Method;
+                            string constructorArgumentsText = this.FormatTypeModelList(borderOp.Arguments);
                             text.Append(
                                 $"throw {exceptionConstructor.ContainingType.Name}({constructorArgumentsText})");
                             break;

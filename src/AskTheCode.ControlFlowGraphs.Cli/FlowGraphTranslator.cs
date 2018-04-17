@@ -158,7 +158,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                         continue;
                     }
 
-                    if (buildNode.BorderData?.Kind == BorderDataKind.Enter)
+                    if (buildNode.Operation?.Kind == SpecialOperationKind.Enter)
                     {
                         int assignmentOffset = 0;
                         foreach (var parameterSyntax in ((ParameterListSyntax)buildNode.Syntax).Parameters)
@@ -260,21 +260,21 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         private FlowNode TryTranslateBorderNode(BuildNode buildNode)
         {
-            var borderData = buildNode.BorderData;
-            if (borderData == null || borderData.Kind == BorderDataKind.Assertion)
+            var borderOp = buildNode.Operation as BorderOperation;
+            if (borderOp == null || borderOp.Kind == SpecialOperationKind.Assertion)
             {
                 return null;
             }
 
-            if (borderData.Kind == BorderDataKind.MethodCall || borderData.Kind == BorderDataKind.ExceptionThrow)
+            if (borderOp.Kind == SpecialOperationKind.MethodCall || borderOp.Kind == SpecialOperationKind.ExceptionThrow)
             {
                 MethodLocation location;
                 IEnumerable<Expression> flowArguments;
 
-                if (borderData.Arguments.Any(arg => arg == null))
+                if (borderOp.Arguments.Any(arg => arg == null))
                 {
                     // We cannot model method calls without properly modelling all their arguments first
-                    location = new MethodLocation(borderData.Method, isExplorationDisabled: true);
+                    location = new MethodLocation(borderOp.Method, isExplorationDisabled: true);
                     flowArguments = Enumerable.Empty<Expression>();
                 }
                 else
@@ -282,14 +282,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     // TODO: Enable a configurable and extensible approach instead of this hack
                     // Disable exploring the methods from the tool evaluation
                     bool isExplorationDisabled =
-                        borderData.Method.ContainingType.ToString() == "EvaluationTests.Annotations.Evaluation";
+                        borderOp.Method.ContainingType.ToString() == "EvaluationTests.Annotations.Evaluation";
 
-                    location = new MethodLocation(borderData.Method, isExplorationDisabled);
-                    var buildArguments = borderData.Arguments.SelectMany(typeModel => typeModel.AssignmentRight);
+                    location = new MethodLocation(borderOp.Method, isExplorationDisabled);
+                    var buildArguments = borderOp.Arguments.SelectMany(typeModel => typeModel.AssignmentRight);
                     flowArguments = buildArguments.Select(expression => this.TranslateExpression(expression));
                 }
 
-                if (borderData.Kind == BorderDataKind.MethodCall)
+                if (borderOp.Kind == SpecialOperationKind.MethodCall)
                 {
                     var returnAssignments = buildNode.VariableModel?.AssignmentLeft
                         .Select(buildVar => this.TranslateVariable((BuildVariable)buildVar));
@@ -298,14 +298,14 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 }
                 else
                 {
-                    Contract.Assert(borderData.Kind == BorderDataKind.ExceptionThrow);
+                    Contract.Assert(borderOp.Kind == SpecialOperationKind.ExceptionThrow);
 
                     return this.builder.AddThrowExceptionNode(location, flowArguments);
                 }
             }
             else
             {
-                Contract.Assert(borderData.Kind == BorderDataKind.Return);
+                Contract.Assert(borderOp.Kind == SpecialOperationKind.Return);
 
                 var returnValues = buildNode.ValueModel?.AssignmentRight
                     .Select(expression => this.TranslateExpression(expression));
@@ -327,9 +327,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             while (true)
             {
-                if (curNode.BorderData != null)
+                if (curNode.Operation != null)
                 {
-                    Contract.Assert(curNode.BorderData.Kind == BorderDataKind.Assertion);
+                    Contract.Assert(curNode.Operation.Kind == SpecialOperationKind.Assertion);
                 }
                 else
                 {
@@ -344,7 +344,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 var nextNode = curNode.OutgoingEdges.Single().To;
 
-                if ((nextNode.BorderData != null && nextNode.BorderData.Kind != BorderDataKind.Assertion)
+                if ((nextNode.Operation != null && nextNode.Operation.Kind != SpecialOperationKind.Assertion)
                     || this.ingoingEdges[nextNode].Count > 1)
                 {
                     break;

@@ -18,7 +18,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         private SyntaxNodeOrToken? labelOverride;
         private ITypeModel variableModel;
         private ITypeModel valueModel;
-        private BorderData borderData;
+        private SpecialOperation operation;
         private DisplayNode displayNode;
 
         public BuildNode(BuildNodeId id, SyntaxNode syntax)
@@ -64,10 +64,10 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             set { DataHelper.SetOnceAssert(ref this.valueModel, value); }
         }
 
-        public BorderData BorderData
+        public SpecialOperation Operation
         {
-            get { return this.borderData; }
-            set { DataHelper.SetOnceAssert(ref this.borderData, value); }
+            get { return this.operation; }
+            set { DataHelper.SetOnceAssert(ref this.operation, value); }
         }
 
         public DisplayNode DisplayNode
@@ -103,7 +103,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public void SwapBorderData(BuildNode other)
         {
-            DataHelper.Swap(ref this.borderData, ref other.borderData);
+            DataHelper.Swap(ref this.operation, ref other.operation);
         }
 
         public void SwapDisplayNode(BuildNode other)

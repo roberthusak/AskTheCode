@@ -237,7 +237,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssertionMethodRecognizer.cs" />
-    <Compile Include="BorderData.cs" />
+    <Compile Include="BorderOperation.cs" />
     <Compile Include="BuildEdge.cs" />
     <Compile Include="BuilderVisitor.cs" />
     <Compile Include="BuildGraph.cs" />
@@ -256,10 +256,12 @@
     <Compile Include="FlowGraphTranslator.cs" />
     <Compile Include="FlowNodeMappedInfo.cs" />
     <Compile Include="GeneratedGraphs.cs" />
+    <Compile Include="HeapOperation.cs" />
     <Compile Include="IBuildingContext.cs" />
     <Compile Include="MethodLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RoslynExtensions.cs" />
+    <Compile Include="SpecialOperation.cs" />
     <Compile Include="StatementDepthBuilderVisitor.cs" />
     <Compile Include="TypeModels\BooleanModel.cs" />
     <Compile Include="TypeModels\BooleanModelFactory.cs" />
