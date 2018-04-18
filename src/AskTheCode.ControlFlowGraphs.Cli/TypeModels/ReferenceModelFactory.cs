@@ -58,9 +58,17 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 
         public IValueModel GetLiteralValueModel(ITypeSymbol type, object literalValue)
         {
-            Contract.Requires<ArgumentException>(literalValue == null, nameof(literalValue));
+            if (literalValue == null)
+            {
+                return this.NullModel;
+            }
+            else
+            {
+                Contract.Assert(type.SpecialType == SpecialType.System_String);
 
-            return this.NullModel;
+                // String and its literals are not supported yet
+                return null;
+            }
         }
 
         public void ModelOperation(IModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments)
