@@ -20,40 +20,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public sealed override void VisitMethodDeclaration(MethodDeclarationSyntax methodSyntax)
         {
-            Contract.Requires(this.Context.CurrentNode.OutgoingEdges.Count == 0);
+            this.ProcessMethodDeclaration(methodSyntax);
+        }
 
-            var methodSymbol = this.Context.SemanticModel.GetDeclaredSymbol(methodSyntax);
-            if (methodSymbol == null)
-            {
-                return;
-            }
-
-            var enter = this.Context.ReenqueueCurrentNode(methodSyntax.ParameterList, createDisplayNode: true);
-            var body = this.Context.EnqueueNode(methodSyntax.Body);
-            enter.AddEdge(body);
-
-            if (!methodSymbol.IsStatic)
-            {
-                // This must be the first variable added to the list, hence the first paramater
-                this.Context.GetLocalInstanceModel(methodSymbol.ContainingType);
-            }
-
-            // Create the variables representing parameters
-            foreach (var parameterSyntax in methodSyntax.ParameterList.Parameters)
-            {
-                this.Context.TryGetModel(parameterSyntax);
-            }
-
-            if ((methodSyntax.ReturnType as PredefinedTypeSyntax)?.Keyword.Text == "void")
-            {
-                var implicitReturn = this.Context.AddFinalNode(
-                    methodSyntax.Body.CloseBraceToken,
-                    createDisplayNode: true);
-                implicitReturn.Operation = new BorderOperation(SpecialOperationKind.Return, null, null);
-                body.AddEdge(implicitReturn);
-            }
-
-            return;
+        public override void VisitConstructorDeclaration(ConstructorDeclarationSyntax constructorSyntax)
+        {
+            this.ProcessMethodDeclaration(constructorSyntax);
         }
 
         public sealed override void VisitReturnStatement(ReturnStatementSyntax returnSyntax)
@@ -217,6 +189,42 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                     precedingStatement.OutgoingEdges.AddRange(outEdges);
                 }
+            }
+        }
+
+        private void ProcessMethodDeclaration(BaseMethodDeclarationSyntax methodSyntax)
+        {
+            Contract.Assert(this.Context.CurrentNode.OutgoingEdges.Count == 0);
+
+            var methodSymbol = this.Context.SemanticModel.GetDeclaredSymbol(methodSyntax);
+            if (methodSymbol == null)
+            {
+                return;
+            }
+
+            var enter = this.Context.ReenqueueCurrentNode(methodSyntax.ParameterList, createDisplayNode: true);
+            var body = this.Context.EnqueueNode(methodSyntax.Body);
+            enter.AddEdge(body);
+
+            if (!methodSymbol.IsStatic)
+            {
+                // This must be the first variable added to the list, hence the first paramater
+                this.Context.GetLocalInstanceModel(methodSymbol.ContainingType);
+            }
+
+            // Create the variables representing parameters
+            foreach (var parameterSyntax in methodSyntax.ParameterList.Parameters)
+            {
+                this.Context.TryGetModel(parameterSyntax);
+            }
+
+            if (methodSymbol.ReturnsVoid)
+            {
+                var implicitReturn = this.Context.AddFinalNode(
+                    methodSyntax.Body.CloseBraceToken,
+                    createDisplayNode: true);
+                implicitReturn.Operation = new BorderOperation(SpecialOperationKind.Return, null, null);
+                body.AddEdge(implicitReturn);
             }
         }
     }

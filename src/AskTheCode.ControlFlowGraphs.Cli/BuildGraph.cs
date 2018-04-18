@@ -20,12 +20,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         public BuildGraph(DocumentId documentId, BaseMethodDeclarationSyntax methodSyntax)
         {
             this.DocumentId = documentId;
+            this.MethodSyntax = methodSyntax;
 
             this.EnterNode = this.AddNode(methodSyntax);
             this.EnterNode.Operation = new BorderOperation(SpecialOperationKind.Enter, null, null);
         }
 
         public DocumentId DocumentId { get; private set; }
+
+        public BaseMethodDeclarationSyntax MethodSyntax { get; }
 
         public BuildNode EnterNode { get; private set; }
 

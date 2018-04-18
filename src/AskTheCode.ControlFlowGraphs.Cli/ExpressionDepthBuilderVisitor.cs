@@ -183,6 +183,12 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.ProcessOperation(invocationSyntax, arguments);
         }
 
+        public sealed override void VisitObjectCreationExpression(ObjectCreationExpressionSyntax creationSyntax)
+        {
+            var arguments = creationSyntax.ArgumentList.Arguments.Select(arg => arg.Expression).ToArray();
+            this.ProcessOperation(creationSyntax, arguments);
+        }
+
         private void ProcessOperation(ExpressionSyntax expressionSyntax, params ExpressionSyntax[] arguments)
         {
             var expressionSymbol = this.Context.SemanticModel.GetSymbolInfo(expressionSyntax).Symbol as IMethodSymbol;
@@ -207,25 +213,35 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             if (!expressionSymbol.IsStatic)
             {
-                var callOp = this.Context.SemanticModel.GetOperation(expressionSyntax) as IInvocationOperation;
-                if (callOp?.Instance == null)
+                var callOp = this.Context.SemanticModel.GetOperation(expressionSyntax);
+                if (callOp.Kind == OperationKind.Invocation && callOp is IInvocationOperation invokeOp)
                 {
-                    // TODO: Report a warning
-                    return;
-                }
+                    if (invokeOp?.Instance == null)
+                    {
+                        // TODO: Report a warning
+                        return;
+                    }
 
-                var instanceModel = this.TryGetVariableFromOperation(callOp.Instance) as ReferenceModel;
-                if (instanceModel == null)
+                    var instanceModel = this.TryGetVariableFromOperation(invokeOp.Instance) as ReferenceModel;
+                    if (instanceModel == null)
+                    {
+                        // Compute the instance in a separate node if it is not a variable
+                        instanceModel = (ReferenceModel)this.Context.CreateTemporaryVariableModel(
+                            this.Context.ModelManager.TryGetFactory(invokeOp.Instance.Type),
+                            invokeOp.Instance.Type);
+                        var instanceNode = this.Context.PrependCurrentNode(invokeOp.Instance.Syntax, DisplayNodeConfig.Inherit);
+                        instanceNode.VariableModel = instanceModel;
+                    }
+
+                    argumentModels.Add(instanceModel);
+                }
+                else if (callOp.Kind == OperationKind.ObjectCreation && callOp is IObjectCreationOperation newOp)
                 {
-                    // Compute the instance in a separate node if it is not a variable
-                    instanceModel = (ReferenceModel)this.Context.CreateTemporaryVariableModel(
-                        this.Context.ModelManager.TryGetFactory(callOp.Instance.Type),
-                        callOp.Instance.Type);
-                    var instanceNode = this.Context.PrependCurrentNode(callOp.Instance.Syntax, DisplayNodeConfig.Inherit);
-                    instanceNode.VariableModel = instanceModel;
+                    // By conventin, pass null as the first argument, which would be ignored during the search
+                    var createdTypeFactory = this.Context.ModelManager.TryGetFactory(callOp.Type);
+                    var nullModel = ((ReferenceModelFactory)createdTypeFactory).NullModel;
+                    argumentModels.Add(nullModel);
                 }
-
-                argumentModels.Add(instanceModel);
             }
 
             foreach (var argument in arguments)

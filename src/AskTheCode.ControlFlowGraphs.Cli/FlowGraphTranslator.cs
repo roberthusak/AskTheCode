@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
@@ -19,7 +21,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
     internal class FlowGraphTranslator
     {
-        private FlowGraphId flowGraphId;
+        private readonly FlowGraphId flowGraphId;
+
         private FlowGraphBuilder builder;
         private IngoingEdgesOverlay ingoingEdges;
         private ExpressionTranslator expressionTranslator;
@@ -33,11 +36,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.flowGraphId = flowGraphId;
         }
 
-        public BuildGraph BuildGraph { get; private set; }
+        public BuildGraph BuildGraph { get; }
 
         public FlowGraph FlowGraph { get; private set; }
 
-        public DisplayGraph DisplayGraph { get; private set; }
+        public DisplayGraph DisplayGraph { get; }
 
         // TODO: Consider splitting into multiple methods to increase readability
         public GeneratedGraphs Translate()
@@ -294,7 +297,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     var returnAssignments = buildNode.VariableModel?.AssignmentLeft
                         .Select(buildVar => this.TranslateVariable(buildVar));
 
-                    return this.builder.AddCallNode(location, flowArguments, returnAssignments);
+                    // We don't allow calling base constructors, so the only way to call it is with the "new" operator
+                    // TODO: Propagate the information about constructor call other way when the above is supported
+                    bool isObjectCreation = (borderOp.Method.MethodKind == MethodKind.Constructor);
+
+                    return this.builder.AddCallNode(location, flowArguments, returnAssignments, isObjectCreation);
                 }
                 else
                 {
@@ -308,7 +315,16 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 Contract.Assert(borderOp.Kind == SpecialOperationKind.Return);
 
                 var returnValues = buildNode.ValueModel?.AssignmentRight
-                    .Select(expression => this.TranslateExpression(expression));
+                    .Select(expression => this.TranslateExpression(expression))
+                    .ToImmutableArray();
+
+                if ((returnValues == null || returnValues.Value.Length == 0)
+                    && this.BuildGraph.MethodSyntax.Kind() == SyntaxKind.ConstructorDeclaration)
+                {
+                    // A constructor returns "this" variable by convention
+                    var buildThis = this.BuildGraph.Variables.First(v => v.Origin == VariableOrigin.This);
+                    returnValues = ImmutableArray.Create((Expression)this.TranslateVariable(buildThis));
+                }
 
                 return this.builder.AddReturnNode(returnValues);
             }
