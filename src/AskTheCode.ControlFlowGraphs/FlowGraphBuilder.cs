@@ -226,6 +226,7 @@ namespace AskTheCode.ControlFlowGraphs
         {
             var variableId = this.variableIdProvider.GenerateNewId();
 
+            // TODO: Cache the existing variables
             var variable = new ReferenceComparisonVariable(this.Graph, variableId, areEqual, left, right);
             this.Graph.MutableLocalVariables.Add(variable);
             Contract.Assert(variableId.Value == this.Graph.MutableLocalVariables.IndexOf(variable));

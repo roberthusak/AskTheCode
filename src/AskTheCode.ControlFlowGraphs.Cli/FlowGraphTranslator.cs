@@ -453,15 +453,39 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 Contract.Assert(buildFrom.VariableModel != null);
                 Contract.Assert(buildFrom.VariableModel is BooleanModel);
 
-                var variable = buildFrom.VariableModel.AssignmentLeft.Single();
-                condition = (BoolHandle)this.TranslateVariable(variable);
-                if (buildEdge.ValueCondition == ExpressionFactory.False)
+                var variable = (BuildVariable)buildFrom.VariableModel.AssignmentLeft.Single();
+
+                if (variable.Origin == VariableOrigin.Temporary
+                    && buildFrom.ValueModel?.AssignmentRight?.Single() is Expression valExpr
+                    && this.TranslateExpression(valExpr) is ReferenceComparisonVariable refComp)
                 {
-                    condition = !condition;
+                    // Reference comparison stored to a temporary variable
+                    // (as such, we suppose it is not used anywhere else)
+                    if (buildEdge.ValueCondition == ExpressionFactory.False)
+                    {
+                        condition = this.builder.AddReferenceComparisonVariable(
+                            !refComp.AreEqual,
+                            refComp.Left,
+                            refComp.Right);
+                    }
+                    else
+                    {
+                        Contract.Assert(buildEdge.ValueCondition == ExpressionFactory.True);
+                        condition = refComp;
+                    }
                 }
                 else
                 {
-                    Contract.Assert(buildEdge.ValueCondition == ExpressionFactory.True);
+                    // General boolean variable
+                    condition = (BoolHandle)this.TranslateVariable(variable);
+                    if (buildEdge.ValueCondition == ExpressionFactory.False)
+                    {
+                        condition = !condition;
+                    }
+                    else
+                    {
+                        Contract.Assert(buildEdge.ValueCondition == ExpressionFactory.True);
+                    }
                 }
             }
             else if (buildEdge.ValueCondition != null)
