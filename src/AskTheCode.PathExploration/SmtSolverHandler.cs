@@ -291,7 +291,7 @@ namespace AskTheCode.PathExploration
                 if (edge is OuterFlowEdge outerEdge
                     && outerEdge.Kind == OuterFlowEdgeKind.MethodCall
                     && outerEdge.From is CallFlowNode callNode
-                    && callNode.IsConstructorCall)
+                    && callNode.IsObjectCreation)
                 {
                     // "this" must be the first variable in the constructor by convention
                     var thisVar = edge.To.Graph.LocalVariables[0];

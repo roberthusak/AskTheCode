@@ -52,7 +52,7 @@ namespace AskTheCode.PathExploration
             {
                 if (outerEdge.Kind == OuterFlowEdgeKind.MethodCall
                     && outerEdge.To is EnterFlowNode enterNode
-                    && ((CallFlowNode)outerEdge.From).IsConstructorCall)
+                    && ((CallFlowNode)outerEdge.From).IsObjectCreation)
                 {
                     // This is needed in the case when the exploration itself started from a constructor (or from a
                     // method called by it). We need to let the heap know that this object is not a part of the input
@@ -69,7 +69,7 @@ namespace AskTheCode.PathExploration
             if (edge is OuterFlowEdge outerEdge)
             {
                 if (outerEdge.Kind == OuterFlowEdgeKind.Return
-                    && ((CallFlowNode)outerEdge.To).IsConstructorCall)
+                    && ((CallFlowNode)outerEdge.To).IsObjectCreation)
                 {
                     // When first encountering the constructor call, assert that the resulting reference must be
                     // a newly allocated object that couldn't have be marked as such before.
@@ -86,7 +86,7 @@ namespace AskTheCode.PathExploration
                 && (outerEdge.Kind == OuterFlowEdgeKind.MethodCall || outerEdge.Kind == OuterFlowEdgeKind.Return))
             {
                 var callNode = outerEdge.From as CallFlowNode ?? (CallFlowNode)outerEdge.To;
-                if (callNode.IsConstructorCall)
+                if (callNode.IsObjectCreation)
                 {
                     this.Heap.Retract();
                 }

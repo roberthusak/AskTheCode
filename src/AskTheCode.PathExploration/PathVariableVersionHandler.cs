@@ -439,7 +439,7 @@ namespace AskTheCode.PathExploration
             }
 
             // Assert the argument passing, skipping the first parameter in the case of constructor
-            int startParamIndex = callNode.IsConstructorCall ? 1 : 0;
+            int startParamIndex = callNode.IsObjectCreation ? 1 : 0;
             for (int i = startParamIndex; i < paramVersions.Length; i++)
             {
                 this.OnVariableAssigned(enterNode.Parameters[i], paramVersions[i], callNode.Arguments[i]);

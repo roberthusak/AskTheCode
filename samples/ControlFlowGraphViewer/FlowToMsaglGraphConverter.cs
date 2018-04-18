@@ -88,7 +88,7 @@ namespace ControlFlowGraphViewer
                     }
                 }
 
-                if (callNode.IsConstructorCall)
+                if (callNode.IsObjectCreation)
                 {
                     labelBuild.Append("new ");
                 }
@@ -96,7 +96,7 @@ namespace ControlFlowGraphViewer
                 labelBuild.Append(callNode.Location.ToString());
                 labelBuild.Append('(');
 
-                if (callNode.IsConstructorCall)
+                if (callNode.IsObjectCreation)
                 {
                     labelBuild.Append($"_ ({callNode.Arguments[0]})");
                     if (callNode.Arguments.Count > 1)

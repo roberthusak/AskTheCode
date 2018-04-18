@@ -17,20 +17,20 @@ namespace AskTheCode.ControlFlowGraphs
             IRoutineLocation location,
             IEnumerable<Expression> arguments,
             IEnumerable<FlowVariable> returnAssignments,
-            bool isAllocationCall)
+            bool isObjectCreation)
             : base(graph, id)
         {
             Contract.Requires(location != null);
             Contract.Requires(arguments != null);
             Contract.Requires(returnAssignments != null);
             Contract.Requires(
-                !isAllocationCall || VerifyConstructorUsage(location, returnAssignments),
-                nameof(isAllocationCall));
+                !isObjectCreation || VerifyConstructorUsage(location, returnAssignments),
+                nameof(isObjectCreation));
 
             this.Location = location;
             this.Arguments = arguments.ToImmutableArray();
             this.ReturnAssignments = returnAssignments.ToImmutableArray();
-            this.IsConstructorCall = isAllocationCall;
+            this.IsObjectCreation = isObjectCreation;
         }
 
         public IRoutineLocation Location { get; }
@@ -39,7 +39,7 @@ namespace AskTheCode.ControlFlowGraphs
 
         public IReadOnlyList<FlowVariable> ReturnAssignments { get; }
 
-        public bool IsConstructorCall { get; }
+        public bool IsObjectCreation { get; }
 
         private static bool VerifyConstructorUsage(
             IRoutineLocation location,
