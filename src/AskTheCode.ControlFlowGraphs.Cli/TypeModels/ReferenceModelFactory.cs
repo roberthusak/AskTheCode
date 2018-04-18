@@ -4,9 +4,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.Common;
 using AskTheCode.ControlFlowGraphs.Cli.TypeSystem;
 using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.SmtLibStandard;
+using AskTheCode.SmtLibStandard.Handles;
 using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 
@@ -63,7 +65,49 @@ namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 
         public void ModelOperation(IModellingContext context, IMethodSymbol method, IEnumerable<ITypeModel> arguments)
         {
-            context.SetUnsupported();
+            if (method.MethodKind != MethodKind.BuiltinOperator
+                || method.Parameters.Length != 2)
+            {
+                context.SetUnsupported();
+                return;
+            }
+
+            var boolResult = this.GetOperationResult(context, method, arguments);
+
+            if (boolResult.Expression != null)
+            {
+                var resultModel = BooleanModelFactory.Instance.GetExpressionModel(
+                    method.ReturnType,
+                    boolResult.Expression.ToSingular());
+                context.SetResultValue(resultModel);
+            }
+            else
+            {
+                context.SetUnsupported();
+            }
+        }
+
+        private BoolHandle GetOperationResult(
+            IModellingContext context,
+            IMethodSymbol method,
+            IEnumerable<ITypeModel> arguments)
+        {
+            if (method.Name == "op_Equality")
+            {
+                return (BoolHandle)ExpressionFactory.Equal(
+                    arguments.First().AssignmentRight[0],
+                    arguments.ElementAt(1).AssignmentRight[0]);
+            }
+            else if (method.Name == "op_Inequality")
+            {
+                return (BoolHandle)ExpressionFactory.Distinct(
+                    arguments.First().AssignmentRight[0],
+                    arguments.ElementAt(1).AssignmentRight[0]);
+            }
+            else
+            {
+                return default(BoolHandle);
+            }
         }
     }
 }

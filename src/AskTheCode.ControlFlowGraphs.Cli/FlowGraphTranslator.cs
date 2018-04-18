@@ -581,6 +581,39 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 return this.owner.TranslateVariable(variable);
             }
+
+            public override Expression VisitFunction(Function function)
+            {
+                var flowFunction = base.VisitFunction(function);
+
+                if ((flowFunction.Kind == ExpressionKind.Equal || flowFunction.Kind == ExpressionKind.Distinct)
+                    && flowFunction.GetChild(0).Sort == References.Sort)
+                {
+                    Expression left = flowFunction.GetChild(0);
+                    Expression right = flowFunction.GetChild(1);
+
+                    // Instances of the reference sort cannot be a result of a function, so they must be variables
+                    Contract.Assert(right.Sort == References.Sort);
+                    Contract.Assert(flowFunction.Children.All(ch => ch.Kind == ExpressionKind.Variable));
+
+                    return this.owner.builder.AddReferenceComparisonVariable(
+                        flowFunction.Kind == ExpressionKind.Equal,
+                        (FlowVariable)left,
+                        (FlowVariable)right);
+                }
+                else if (flowFunction.Kind == ExpressionKind.Not
+                    && flowFunction.GetChild(0) is ReferenceComparisonVariable refComp)
+                {
+                    return this.owner.builder.AddReferenceComparisonVariable(
+                        !refComp.AreEqual,
+                        refComp.Left,
+                        refComp.Right);
+                }
+                else
+                {
+                    return flowFunction;
+                }
+            }
         }
     }
 }
