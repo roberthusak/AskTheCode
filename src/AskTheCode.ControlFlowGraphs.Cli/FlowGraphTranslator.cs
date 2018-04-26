@@ -90,17 +90,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 }
                 else
                 {
-                    List<Operation> operations;
-
-                    this.ProcessInnerNodesSequence(buildNode, out firstBuildNode, out lastBuildNode, out operations);
-
+                    this.ProcessInnerNodesSequence(buildNode, out firstBuildNode, out lastBuildNode, out var operations);
                     flowNode = this.builder.AddInnerNode(operations);
-                    int assignmentOffset = 0;
-                    foreach (var processedNode in this.GetBuildNodesSequenceRange(firstBuildNode, lastBuildNode))
-                    {
-                        this.buildToFlowNodesMap[processedNode] = new FlowNodeMappedInfo(flowNode, assignmentOffset);
-                        assignmentOffset += processedNode.VariableModel?.AssignmentLeft.Count ?? 0;
-                    }
+                    this.MapAssignmentsToFlowNode(firstBuildNode, lastBuildNode, flowNode);
                 }
 
                 // TODO: Try to get rid of the empty nodes (empty blocks etc.)
@@ -163,7 +155,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                     if (buildNode.Operation?.Kind == SpecialOperationKind.Enter)
                     {
-                        int assignmentOffset = 0;
+                        int valAssignOffset = 0;
+                        int refAssignOffset = 0;
                         foreach (var parameterSyntax in ((ParameterListSyntax)buildNode.Syntax).Parameters)
                         {
                             string parameterName = parameterSyntax.Identifier.Text;
@@ -174,14 +167,23 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                             if (parameterModel != null)
                             {
+                                bool isRefModel = parameterModel.Factory.ValueKind == ValueModelKind.Reference;
+
                                 var record = new DisplayNodeRecord(
                                     flowNodeInfo.FlowNode,
                                     parameterSyntax.Span,
-                                    assignmentOffset,
+                                    isRefModel ? valAssignOffset : refAssignOffset,
                                     parameterModel.Type);
                                 displayNode.AddRecord(record);
 
-                                assignmentOffset += parameterModel.AssignmentLeft.Count;
+                                if (isRefModel)
+                                {
+                                    refAssignOffset += parameterModel.AssignmentLeft.Count;
+                                }
+                                else
+                                {
+                                    valAssignOffset += parameterModel.AssignmentLeft.Count;
+                                }
                             }
                         }
                     }
@@ -194,6 +196,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                         {
                             assignmentOffset = flowNodeInfo.AssignmentOffset;
                             type = buildNode.VariableModel.Type;
+                        }
+                        else if (buildNode.Operation?.Kind == SpecialOperationKind.FieldWrite)
+                        {
+                            assignmentOffset = flowNodeInfo.AssignmentOffset;
+                            type = ((HeapOperation)buildNode.Operation).Reference.Type;
                         }
 
                         var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span, assignmentOffset, type);
@@ -376,6 +383,45 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
 
             lastBuildNode = curNode;
+        }
+
+        private void MapAssignmentsToFlowNode(
+            BuildNode firstBuildNode,
+            BuildNode lastBuildNode,
+            FlowNode flowNode)
+        {
+            int valAssignOffset = 0;
+            int refAssignOffset = 0;
+            foreach (var processedNode in this.GetBuildNodesSequenceRange(firstBuildNode, lastBuildNode))
+            {
+                // Note that result of the field write will be the updated reference and a new heap version
+                bool isRefModel =
+                    processedNode.Operation?.Kind == SpecialOperationKind.FieldWrite
+                    || processedNode.VariableModel?.Factory.ValueKind == ValueModelKind.Reference;
+
+                this.buildToFlowNodesMap[processedNode] = new FlowNodeMappedInfo(
+                    flowNode,
+                    isRefModel ? refAssignOffset : valAssignOffset);
+
+                if (isRefModel)
+                {
+                    if (processedNode.VariableModel?.AssignmentLeft.Count is int count)
+                    {
+                        refAssignOffset += count;
+                    }
+                    else
+                    {
+                        Contract.Assert(processedNode.Operation.Kind == SpecialOperationKind.FieldWrite);
+
+                        var heapOp = (HeapOperation)processedNode.Operation;
+                        refAssignOffset += heapOp.Reference.AssignmentLeft.Count;
+                    }
+                }
+                else
+                {
+                    valAssignOffset += processedNode.VariableModel?.AssignmentLeft.Count ?? 0;
+                }
+            }
         }
 
         private IEnumerable<Assignment> TranslateAssignments(
