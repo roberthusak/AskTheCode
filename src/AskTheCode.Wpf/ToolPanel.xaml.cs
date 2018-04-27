@@ -22,7 +22,7 @@ namespace AskTheCode.Wpf
         private void SelectedMethodFlowChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             var toolView = this.DataContext as ToolView;
-            if (toolView != null)
+            if (toolView?.SelectedPath != null)
             {
                 toolView.SelectedPath.SelectedMethodFlow = e.NewValue as MethodFlowView;
             }
