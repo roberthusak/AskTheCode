@@ -1,8 +1,9 @@
-﻿namespace AskTheCode.Wpf
+﻿using AskTheCode.ViewModel;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace AskTheCode.Wpf
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.Windows;
-    using System.Windows.Controls;
 
     /// <summary>
     /// Interaction logic for ToolPanel.
@@ -15,6 +16,16 @@
         public ToolPanel()
         {
             this.InitializeComponent();
+        }
+
+        // TODO: Replace with a behaviour eventually
+        private void SelectedMethodFlowChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            var toolView = this.DataContext as ToolView;
+            if (toolView != null)
+            {
+                toolView.SelectedPath.SelectedMethodFlow = e.NewValue as MethodFlowView;
+            }
         }
     }
 }
