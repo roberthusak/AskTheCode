@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
+using AskTheCode.PathExploration;
 using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis.Text;
 
@@ -96,11 +97,9 @@ namespace AskTheCode.ViewModel
             ////var document = toolView.CurrentSolution.GetDocument(syntaxTree);  // TODO: Consider storing this
 
             var executionModel = this.PathView.ExecutionModel;
-            var flowGraph = executionModel.PathNodes[this.startIndex].Graph;
-            var flowGraphId = flowGraph.Id;
+            var flowGraphId = executionModel.PathNodes[this.startIndex].Graph.Id;
             var displayGraph = toolView.GraphProvider.GetDisplayGraph(flowGraphId);
 
-            // TODO: Divide into more functions to make more readable
             for (int i = this.startIndex; i <= this.endIndex; i++)
             {
                 var flowNode = executionModel.PathNodes[i];
@@ -108,130 +107,51 @@ namespace AskTheCode.ViewModel
                 if (flowNode is CallFlowNode && i != this.endIndex)
                 {
                     // Traverse nested method calls, possibly modifying i
-                    int nestedLevel = 0;
-                    int calleeStart = i + 1;
-                    int calleeEnd;
-                    for (int j = calleeStart; j <= this.endIndex; j++)
-                    {
-                        var calleeflowNode = executionModel.PathNodes[j];
-                        if (calleeflowNode is EnterFlowNode)
-                        {
-                            // Method call; notice that this must happen on the first iteration (when j == calleeStart)
-                            nestedLevel++;
-                        }
-                        else if (calleeflowNode is ReturnFlowNode)
-                        {
-                            // Returning from a method
-                            nestedLevel--;
-
-                            if (nestedLevel == 0)
-                            {
-                                // Produce method called from the original call node
-                                calleeEnd = j;
-                                this.AddCallee(calleeStart, calleeEnd);
-
-                                // Update i to correspond to the second part of the call node (stored in flowNode)
-                                i = calleeEnd + 1;
-                                Contract.Assert(flowNode == executionModel.PathNodes[i]);
-
-                                break;
-                            }
-                        }
-                    }
-
-                    if (nestedLevel != 0)
-                    {
-                        // The execution model ends in the called function, so keep i the same and just display the call
-                        calleeEnd = this.endIndex;
-                        this.AddCallee(calleeStart, calleeEnd);
-                    }
+                    i = this.ProcessCalls(executionModel, i + 1);
+                    Contract.Assert(flowNode == executionModel.PathNodes[i]);
                 }
 
                 // Produce statements from display nodes
-                bool isLastInnerNode =
-                    (i == executionModel.PathNodes.Length - 1)
-                    && flowNode is InnerFlowNode;
-                var nodeInterpretations = executionModel.NodeInterpretations[i];
-                var heapLocations = executionModel.HeapLocations[i];
+                this.ProcessStatements(text, displayGraph, executionModel, i);
+            }
+        }
 
-                // TODO: Consider optimizing
-                // TODO: Group the records by their display nodes
-                var displayRecords = new List<DisplayNodeRecord>();
-                foreach (var displayNode in displayGraph.Nodes)
+        private int ProcessCalls(ExecutionModel executionModel, int calleeStart)
+        {
+            int nestedLevel = 0;
+            int calleeEnd;
+            for (int j = calleeStart; j <= this.endIndex; j++)
+            {
+                var calleeflowNode = executionModel.PathNodes[j];
+                if (calleeflowNode is EnterFlowNode)
                 {
-                    displayRecords.AddRange(displayNode.Records.Where(record => record.FlowNode == flowNode));
-
-                    // Temporary: Replace by this if only the last result of a DisplayNode is important
-                    // (Behaves weirdly in case of methods and their arguments, as they are distributed between
-                    //  two FlowNodes)
-                    ////var displayRecord = displayNode.Records.LastOrDefault(record => record.FlowNode == flowNode);
-                    ////if (displayRecord != null)
-                    ////{
-                    ////    displayRecords.Add(displayRecord);
-                    ////}
+                    // Method call; notice that this must happen on the first iteration (when j == calleeStart)
+                    nestedLevel++;
                 }
-
-                foreach (var displayRecord in displayRecords)
+                else if (calleeflowNode is ReturnFlowNode)
                 {
-                    Contract.Assert(displayRecord != null);
-                    string statement = text.ToString(displayRecord.Span);
-                    string value = null;
-                    string type = null;
-                    if (displayRecord.Type != null)
+                    // Returning from a method
+                    nestedLevel--;
+
+                    if (nestedLevel == 0)
                     {
-                        var modelFactory = toolView.GraphProvider.ModelManager.TryGetFactory(displayRecord.Type);
-                        if (modelFactory.ValueKind == ValueModelKind.Interpretation)
-                        {
-                            // Hide the remaining portion of the inner CFG node where the exploration started from
-                            if (isLastInnerNode && displayRecord.FirstVariableIndex >= nodeInterpretations.Length)
-                            {
-                                continue;
-                            }
+                        // Produce method called from the original call node
+                        calleeEnd = j;
+                        this.AddCallee(calleeStart, calleeEnd);
 
-                            var sortRequirements = modelFactory.GetExpressionSortRequirements(displayRecord.Type);
-                            var interpretations = nodeInterpretations
-                                .Skip(displayRecord.FirstVariableIndex)
-                                .Take(sortRequirements.Count)
-                                .ToArray();
-
-                            if (interpretations.Length != 0
-                                && interpretations.All(interpretation => interpretation != null))
-                            {
-                                var valueModel = modelFactory.GetValueModel(displayRecord.Type, interpretations);
-
-                                value = valueModel.ValueText;
-                                type = displayRecord.Type.Name;
-                            }
-                        }
-                        else
-                        {
-                            Contract.Assert(modelFactory.ValueKind == ValueModelKind.Reference);
-
-                            bool locationExists = displayRecord.FirstVariableIndex < heapLocations.Length;
-
-                            // Hide the remaining portion of the inner CFG node where the exploration started from
-                            if (isLastInnerNode && !locationExists)
-                            {
-                                continue;
-                            }
-
-                            if (locationExists)
-                            {
-                                var valueModel = modelFactory.GetValueModel(
-                                    displayRecord.Type,
-                                    heapLocations[displayRecord.FirstVariableIndex],
-                                    executionModel.HeapModel);
-
-                                value = valueModel.ValueText;
-                                type = displayRecord.Type.Name;
-                            }
-                        }
+                        // Update i to correspond to the second part of the call node (stored in flowNode)
+                        return calleeEnd + 1;
                     }
-
-                    var statementFlow = new StatementFlowView(this, displayRecord, statement, value, type);
-                    this.statementFlows.Add(statementFlow);
                 }
             }
+
+            Contract.Assert(nestedLevel != 0);
+
+            // The execution model ends in the called function, so just display the call in this method
+            calleeEnd = this.endIndex;
+            this.AddCallee(calleeStart, calleeEnd);
+
+            return calleeStart;
         }
 
         private void AddCallee(int calleeStart, int calleeEnd)
@@ -246,6 +166,99 @@ namespace AskTheCode.ViewModel
                 calleeStart,
                 calleeEnd);
             this.callees.Add(callee);
+        }
+
+        private void ProcessStatements(
+            SourceText text,
+            DisplayGraph displayGraph,
+            ExecutionModel executionModel,
+            int nodeIndex)
+        {
+            var modelManager = this.PathView.ToolView.GraphProvider.ModelManager;
+            var flowNode = executionModel.PathNodes[nodeIndex];
+            bool isLastInnerNode =
+                (nodeIndex == executionModel.PathNodes.Length - 1)
+                && flowNode is InnerFlowNode;
+            var nodeInterpretations = executionModel.NodeInterpretations[nodeIndex];
+            var heapLocations = executionModel.HeapLocations[nodeIndex];
+
+            // TODO: Consider optimizing
+            // TODO: Group the records by their display nodes
+            var displayRecords = new List<DisplayNodeRecord>();
+            foreach (var displayNode in displayGraph.Nodes)
+            {
+                displayRecords.AddRange(displayNode.Records.Where(record => record.FlowNode == flowNode));
+
+                // Temporary: Replace by this if only the last result of a DisplayNode is important
+                // (Behaves weirdly in case of methods and their arguments, as they are distributed between
+                //  two FlowNodes)
+                ////var displayRecord = displayNode.Records.LastOrDefault(record => record.FlowNode == flowNode);
+                ////if (displayRecord != null)
+                ////{
+                ////    displayRecords.Add(displayRecord);
+                ////}
+            }
+
+            foreach (var displayRecord in displayRecords)
+            {
+                Contract.Assert(displayRecord != null);
+                string statement = text.ToString(displayRecord.Span);
+                string value = null;
+                string type = null;
+                if (displayRecord.Type != null)
+                {
+                    var modelFactory = modelManager.TryGetFactory(displayRecord.Type);
+                    if (modelFactory.ValueKind == ValueModelKind.Interpretation)
+                    {
+                        // Hide the remaining portion of the inner CFG node where the exploration started from
+                        if (isLastInnerNode && displayRecord.FirstVariableIndex >= nodeInterpretations.Length)
+                        {
+                            continue;
+                        }
+
+                        var sortRequirements = modelFactory.GetExpressionSortRequirements(displayRecord.Type);
+                        var interpretations = nodeInterpretations
+                            .Skip(displayRecord.FirstVariableIndex)
+                            .Take(sortRequirements.Count)
+                            .ToArray();
+
+                        if (interpretations.Length != 0
+                            && interpretations.All(interpretation => interpretation != null))
+                        {
+                            var valueModel = modelFactory.GetValueModel(displayRecord.Type, interpretations);
+
+                            value = valueModel.ValueText;
+                            type = displayRecord.Type.Name;
+                        }
+                    }
+                    else
+                    {
+                        Contract.Assert(modelFactory.ValueKind == ValueModelKind.Reference);
+
+                        bool locationExists = displayRecord.FirstVariableIndex < heapLocations.Length;
+
+                        // Hide the remaining portion of the inner CFG node where the exploration started from
+                        if (isLastInnerNode && !locationExists)
+                        {
+                            continue;
+                        }
+
+                        if (locationExists)
+                        {
+                            var valueModel = modelFactory.GetValueModel(
+                                displayRecord.Type,
+                                heapLocations[displayRecord.FirstVariableIndex],
+                                executionModel.HeapModel);
+
+                            value = valueModel.ValueText;
+                            type = displayRecord.Type.Name;
+                        }
+                    }
+                }
+
+                var statementFlow = new StatementFlowView(this, displayRecord, statement, value, type);
+                this.statementFlows.Add(statementFlow);
+            }
         }
 
         private async void UpdateSelectedStatement()
