@@ -173,7 +173,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                                     flowNodeInfo.FlowNode,
                                     parameterSyntax.Span,
                                     isRefModel ? valAssignOffset : refAssignOffset,
-                                    parameterModel.Type);
+                                    parameterModel.Type,
+                                    parameterSyntax.Identifier.Text);
                                 displayNode.AddRecord(record);
 
                                 if (isRefModel)
@@ -192,10 +193,16 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                         // Offset and type
                         int assignmentOffset = -1;
                         ITypeSymbol type = null;
+                        string variableName = null;
                         if (buildNode.VariableModel != null)
                         {
                             assignmentOffset = flowNodeInfo.AssignmentOffset;
                             type = buildNode.VariableModel.Type;
+                            if (buildNode.VariableModel.AssignmentLeft.FirstOrDefault() is BuildVariable buildVar
+                                && buildVar.Origin != VariableOrigin.Temporary)
+                            {
+                                variableName = buildVar.DisplayName;
+                            }
                         }
                         else if (buildNode.Operation?.Kind == SpecialOperationKind.FieldWrite)
                         {
@@ -203,7 +210,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                             type = ((HeapOperation)buildNode.Operation).Reference.Type;
                         }
 
-                        var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span, assignmentOffset, type);
+                        var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span, assignmentOffset, type, variableName);
                         displayNode.AddRecord(record);
                     }
 

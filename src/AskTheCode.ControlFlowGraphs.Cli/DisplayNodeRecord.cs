@@ -15,20 +15,24 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             FlowNode flowNode,
             TextSpan span,
             int firstVariableIndex = -1,
-            ITypeSymbol type = null)
+            ITypeSymbol type = null,
+            string variableName = null)
         {
             this.FlowNode = flowNode;
             this.Span = span;
             this.FirstVariableIndex = firstVariableIndex;
             this.Type = type;
+            this.VariableName = variableName;
         }
 
-        public FlowNode FlowNode { get; private set; }
+        public FlowNode FlowNode { get; }
 
-        public TextSpan Span { get; private set; }
+        public TextSpan Span { get; }
 
-        public int FirstVariableIndex { get; private set; }
+        public int FirstVariableIndex { get; }
 
-        public ITypeSymbol Type { get; private set; }
+        public ITypeSymbol Type { get; }
+
+        public string VariableName { get; }
     }
 }
