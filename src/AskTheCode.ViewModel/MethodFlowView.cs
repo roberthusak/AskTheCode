@@ -23,6 +23,9 @@ namespace AskTheCode.ViewModel
         private StatementFlowView selectedStatementFlow;
         private List<MethodFlowView> callees;
 
+        private bool isExpanded;
+        private bool isSelected;
+
         internal MethodFlowView(
             PathView pathView,
             MethodFlowView caller,
@@ -76,6 +79,18 @@ namespace AskTheCode.ViewModel
             }
         }
 
+        public bool IsExpanded
+        {
+            get { return this.isExpanded; }
+            set { this.SetProperty(ref this.isExpanded, value); }
+        }
+
+        public bool IsSelected
+        {
+            get { return this.isSelected; }
+            set { this.SetProperty(ref this.isSelected, value); }
+        }
+
         internal PathView PathView { get; }
 
         protected override void OnPropertyChanged<T>(string propertyName, T previousValue)
@@ -83,6 +98,17 @@ namespace AskTheCode.ViewModel
             if (propertyName == nameof(this.SelectedStatementFlow))
             {
                 this.UpdateSelectedStatement();
+            }
+            else if (propertyName == nameof(this.IsSelected))
+            {
+                if (this.IsSelected)
+                {
+                    this.PathView.SelectedMethodFlow = this;
+                }
+                else if (this.PathView.SelectedMethodFlow == this)
+                {
+                    this.PathView.SelectedMethodFlow = null;
+                }
             }
         }
 

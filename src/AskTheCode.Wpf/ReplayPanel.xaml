@@ -22,7 +22,7 @@
         </Grid.ColumnDefinitions>
 
         <Label Content="Variables:" Padding="0,0,0,5" />
-        <DataGrid Grid.Row="1" Margin="0,0,5,0" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False"
+        <DataGrid Grid.Row="1" Margin="0,0,5,0" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" SelectionMode="Single"
                           ItemsSource="{Binding Variables}" SelectedItem="{Binding SelectedVariable}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Variable" Binding="{Binding Variable}" Width="*" />

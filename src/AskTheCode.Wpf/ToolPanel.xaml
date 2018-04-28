@@ -45,7 +45,13 @@
 
         <Label Grid.Column="3" Content="Path control flow:" Padding="0,5,5,5" />
         <TreeView Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="0,0,5,0"
-                         ItemsSource="{Binding SelectedPath.MethodFlows}" SelectedItemChanged="SelectedMethodFlowChanged">
+                         ItemsSource="{Binding SelectedPath.MethodFlows}">
+            <TreeView.Resources>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                </Style>
+            </TreeView.Resources>
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate DataType="{x:Type vm:MethodFlowView}" ItemsSource="{Binding Callees}">
                     <TextBlock Text="{Binding Name}" />
@@ -54,7 +60,7 @@
         </TreeView>
 
         <Label Grid.Column="4" Grid.ColumnSpan="2" Content="Method control flow:" Padding="0,5,5,5" />
-        <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False"
+        <DataGrid Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Grid.ColumnSpan="3" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" SelectionMode="Single"
                           ItemsSource="{Binding SelectedPath.SelectedMethodFlow.StatementFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow.SelectedStatementFlow}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Statement" Binding="{Binding Statement}" Width="2*" />

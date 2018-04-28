@@ -16,15 +16,5 @@ namespace AskTheCode.Wpf
         {
             this.InitializeComponent();
         }
-
-        // TODO: Replace with a behaviour eventually
-        private void SelectedMethodFlowChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            var toolView = this.DataContext as ToolView;
-            if (toolView?.SelectedPath != null)
-            {
-                toolView.SelectedPath.SelectedMethodFlow = e.NewValue as MethodFlowView;
-            }
-        }
     }
 }

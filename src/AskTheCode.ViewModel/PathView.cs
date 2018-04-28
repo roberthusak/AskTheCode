@@ -57,5 +57,37 @@ namespace AskTheCode.ViewModel
         internal ToolView ToolView { get; private set; }
 
         internal ExecutionModel ExecutionModel { get; private set; }
+
+        protected override void OnPropertyChanged<T>(string propertyName, T previousValue)
+        {
+            if (propertyName == nameof(this.SelectedMethodFlow))
+            {
+                this.UpdateSelectedMethod(previousValue as MethodFlowView);
+            }
+        }
+
+        private void UpdateSelectedMethod(MethodFlowView previousValue)
+        {
+            if (previousValue != null)
+            {
+                previousValue.IsSelected = false;
+            }
+
+            if (this.SelectedMethodFlow == null)
+            {
+                return;
+            }
+
+            // Select the appropriate method
+            this.SelectedMethodFlow.IsSelected = true;
+
+            // Expand all the methods leading to it in the chain
+            var caller = this.SelectedMethodFlow.Caller;
+            while (caller != null)
+            {
+                caller.IsExpanded = true;
+                caller = caller.Caller;
+            }
+        }
     }
 }
