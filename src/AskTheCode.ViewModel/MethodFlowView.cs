@@ -258,7 +258,8 @@ namespace AskTheCode.ViewModel
                     }
                 }
 
-                var statementFlow = new StatementFlowView(this, displayRecord, statement, value, type);
+                int statementIndex = this.statementFlows.Count;
+                var statementFlow = new StatementFlowView(this, statementIndex, displayRecord, statement, value, type);
                 this.statementFlows.Add(statementFlow);
             }
         }

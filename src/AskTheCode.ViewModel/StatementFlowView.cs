@@ -12,17 +12,21 @@ namespace AskTheCode.ViewModel
     {
         internal StatementFlowView(
             MethodFlowView methodFlowView,
+            int index,
             DisplayNodeRecord displayRecord,
             string statement,
             string value,
             string type)
         {
             this.MethodFlowView = methodFlowView;
+            this.Index = index;
             this.DisplayRecord = displayRecord;
             this.Statement = statement;
             this.Value = value;
             this.Type = type;
         }
+
+        public int Index { get; }
 
         public string Statement { get; private set; }
 

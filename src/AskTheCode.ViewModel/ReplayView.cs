@@ -9,13 +9,16 @@ namespace AskTheCode.ViewModel
 {
     public class ReplayView : NotifyPropertyChangedBase
     {
-        //private MethodFlowView currentMethod;
+        private StatementFlowView nextStatement;
 
         private VariableReplayView selectedVariable;
 
         internal ReplayView(ToolView toolView)
         {
             this.ToolView = toolView;
+            this.StepOutCommand = new Command(this.StepOut);
+            this.StepBackCommand = new Command(this.StepBack);
+            this.StepOverCommand = new Command(this.StepOver);
             this.StepIntoCommand = new Command(this.StepInto);
         }
 
@@ -28,6 +31,12 @@ namespace AskTheCode.ViewModel
             set { this.SetProperty(ref this.selectedVariable, value); }
         }
 
+        public Command StepOutCommand { get; }
+
+        public Command StepBackCommand { get; }
+
+        public Command StepOverCommand { get; }
+
         public Command StepIntoCommand { get; }
 
         internal ToolView ToolView { get; }
@@ -38,16 +47,17 @@ namespace AskTheCode.ViewModel
         {
             this.Variables.Clear();
 
-            if (nextStatement == null)
+            this.nextStatement = nextStatement;
+            if (this.nextStatement == null)
             {
                 return;
             }
 
             var varMap = new Dictionary<string, VariableReplayView>();
 
-            foreach (var statement in nextStatement.MethodFlowView.StatementFlows)
+            foreach (var statement in this.nextStatement.MethodFlowView.StatementFlows)
             {
-                if (statement == nextStatement)
+                if (statement == this.nextStatement)
                 {
                     break;
                 }
@@ -67,9 +77,52 @@ namespace AskTheCode.ViewModel
             }
         }
 
+        private void StepOut()
+        {
+            // TODO
+        }
+
+        private void StepBack()
+        {
+            if (this.nextStatement == null)
+            {
+                return;
+            }
+
+            var statements = this.nextStatement.MethodFlowView.StatementFlows;
+            int trgStatementIndex = this.nextStatement.Index - 1;
+            if (trgStatementIndex >= 0)
+            {
+                this.UpdateToolSelectedStatement(statements[trgStatementIndex]);
+            }
+        }
+
+        private void StepOver()
+        {
+            if (this.nextStatement == null)
+            {
+                return;
+            }
+
+            var statements = this.nextStatement.MethodFlowView.StatementFlows;
+            int trgStatementIndex = this.nextStatement.Index + 1;
+            if (trgStatementIndex < statements.Count)
+            {
+                this.UpdateToolSelectedStatement(statements[trgStatementIndex]);
+            }
+        }
+
         private void StepInto()
         {
             // TODO
+        }
+
+        private void UpdateToolSelectedStatement(StatementFlowView statement)
+        {
+            // The last assignment will cause calling this.Update(statement)
+            this.ToolView.SelectedPath = statement.MethodFlowView.PathView;
+            this.ToolView.SelectedPath.SelectedMethodFlow = statement.MethodFlowView;
+            this.ToolView.SelectedPath.SelectedMethodFlow.SelectedStatementFlow = statement;
         }
     }
 }
