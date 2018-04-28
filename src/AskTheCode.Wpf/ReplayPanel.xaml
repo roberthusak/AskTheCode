@@ -35,10 +35,11 @@
         <local:MsaglGraphPresenter Grid.Column="1" Grid.Row="1" GraphViewerConsumer="{Binding Heap}" />
 
         <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-            <Button Content="Step out" Command="{Binding StepOutCommand}" Padding="5,0,5,0" Margin="0,5,5,0" />
+            <Button Content="Step away" Command="{Binding StepAwayCommand}" Padding="5,0,5,0" Margin="0,5,5,0" />
             <Button Content="Step back" Command="{Binding StepBackCommand}" Padding="5,0,5,0" Margin="0,5,5,0" />
             <Button Content="Step over" Command="{Binding StepOverCommand}" Padding="5,0,5,0" Margin="0,5,5,0" />
             <Button Content="Step into" Command="{Binding StepIntoCommand}" Padding="5,0,5,0" Margin="0,5,5,0" />
+            <Button Content="Step out" Command="{Binding StepOutCommand}" Padding="5,0,5,0" Margin="0,5,5,0" />
         </StackPanel>
     </Grid>
 </UserControl>

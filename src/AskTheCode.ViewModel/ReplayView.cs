@@ -22,10 +22,11 @@ namespace AskTheCode.ViewModel
         {
             this.ToolView = toolView;
             this.heap = new HeapView(this);
-            this.StepOutCommand = new Command(this.StepOut);
+            this.StepAwayCommand = new Command(this.StepAway);
             this.StepBackCommand = new Command(this.StepBack);
             this.StepOverCommand = new Command(this.StepOver);
             this.StepIntoCommand = new Command(this.StepInto);
+            this.StepOutCommand = new Command(this.StepOut);
         }
 
         public ObservableCollection<VariableReplayView> Variables { get; } =
@@ -39,13 +40,15 @@ namespace AskTheCode.ViewModel
 
         public IGraphViewerConsumer Heap => this.heap;
 
-        public Command StepOutCommand { get; }
+        public Command StepAwayCommand { get; }
 
         public Command StepBackCommand { get; }
 
         public Command StepOverCommand { get; }
 
         public Command StepIntoCommand { get; }
+
+        public Command StepOutCommand { get; }
 
         internal ToolView ToolView { get; }
 
@@ -109,7 +112,7 @@ namespace AskTheCode.ViewModel
             this.heap.Redraw();
         }
 
-        private void StepOut()
+        private void StepAway()
         {
             var caller = this.nextStatement?.MethodFlowView?.Caller;
             if (caller == null)
@@ -154,6 +157,10 @@ namespace AskTheCode.ViewModel
             {
                 this.UpdateToolSelectedStatement(statements[trgStatementIndex]);
             }
+            else
+            {
+                this.StepOut();
+            }
         }
 
         private void StepInto()
@@ -169,6 +176,23 @@ namespace AskTheCode.ViewModel
             var afterParamsStmt = called.StatementFlows
                 .FirstOrDefault(s => !(s.DisplayRecord.FlowNode is EnterFlowNode));
             this.UpdateToolSelectedStatement(afterParamsStmt ?? called.StatementFlows.First());
+        }
+
+        private void StepOut()
+        {
+            var caller = this.nextStatement?.MethodFlowView?.Caller;
+            if (caller == null)
+            {
+                return;
+            }
+
+            var curMethod = this.nextStatement.MethodFlowView;
+            var callSite = caller.StatementFlows.First(s => s.CalledMethod == curMethod);
+            int trgStatementIndex = callSite.Index + 1;
+            if (trgStatementIndex < caller.StatementFlows.Count)
+            {
+                this.UpdateToolSelectedStatement(caller.StatementFlows[trgStatementIndex]);
+            }
         }
 
         private void UpdateToolSelectedStatement(StatementFlowView statement)
