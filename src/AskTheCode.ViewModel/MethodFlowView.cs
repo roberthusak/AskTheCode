@@ -107,7 +107,7 @@ namespace AskTheCode.ViewModel
                 if (flowNode is CallFlowNode && i != this.endIndex)
                 {
                     // Traverse nested method calls, possibly modifying i
-                    i = this.ProcessCalls(executionModel, i + 1);
+                    i = this.ProcessCalls(executionModel, i);
                     Contract.Assert(flowNode == executionModel.PathNodes[i]);
                 }
 
@@ -116,9 +116,10 @@ namespace AskTheCode.ViewModel
             }
         }
 
-        private int ProcessCalls(ExecutionModel executionModel, int calleeStart)
+        private int ProcessCalls(ExecutionModel executionModel, int callNodeIndex)
         {
             int nestedLevel = 0;
+            int calleeStart = callNodeIndex + 1;
             int calleeEnd;
             for (int j = calleeStart; j <= this.endIndex; j++)
             {
@@ -147,11 +148,12 @@ namespace AskTheCode.ViewModel
 
             Contract.Assert(nestedLevel != 0);
 
+            // TODO: Propagate this information to Initialize() to skip searching for next display nodes
             // The execution model ends in the called function, so just display the call in this method
             calleeEnd = this.endIndex;
             this.AddCallee(calleeStart, calleeEnd);
 
-            return calleeStart;
+            return callNodeIndex;
         }
 
         private void AddCallee(int calleeStart, int calleeEnd)
