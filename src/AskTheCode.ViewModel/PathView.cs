@@ -39,7 +39,8 @@ namespace AskTheCode.ViewModel
                     Contract.Assert(pathNodes.Length > 0);
 
                     var rootLocation = this.ToolView.GraphProvider.GetLocation(pathNodes[0].Graph.Id);
-                    var root = new MethodFlowView(this, null, rootLocation, 0, pathNodes.Length - 1);
+                    int maxHeapVersion = this.ExecutionModel.HeapModel.MaxVersion;
+                    var root = new MethodFlowView(this, null, rootLocation, 0, pathNodes.Length - 1, 0, maxHeapVersion);
 
                     this.methodFlows.Add(root);
                 }

@@ -32,7 +32,7 @@
         </DataGrid>
 
         <Label Grid.Column="1" Content="Heap:" Padding="0,0,0,5" />
-        <local:MsaglGraphPresenter Grid.Column="1" Grid.Row="1" />
+        <local:MsaglGraphPresenter Grid.Column="1" Grid.Row="1" GraphViewerConsumer="{Binding Heap}" />
 
         <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
             <Button Content="Step out" Command="{Binding StepOutCommand}" Padding="5,0,5,0" Margin="0,5,5,0" />

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.TypeModels;
+using AskTheCode.ControlFlowGraphs.Heap;
 using AskTheCode.PathExploration;
 using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis.Text;
@@ -31,13 +32,17 @@ namespace AskTheCode.ViewModel
             MethodFlowView caller,
             MethodLocation location,
             int startIndex,
-            int endIndex)
+            int endIndex,
+            int startHeapVersion,
+            int endHeapVersion)
         {
             this.PathView = pathView;
             this.Caller = caller;
             this.location = location;
             this.startIndex = startIndex;
             this.endIndex = endIndex;
+            this.StartHeapVersion = startHeapVersion;
+            this.EndHeapVersion = endHeapVersion;
         }
 
         public string Name
@@ -79,6 +84,10 @@ namespace AskTheCode.ViewModel
             }
         }
 
+        public int StartHeapVersion { get; }
+
+        public int EndHeapVersion { get; }
+
         public bool IsExpanded
         {
             get { return this.isExpanded; }
@@ -112,6 +121,15 @@ namespace AskTheCode.ViewModel
             }
         }
 
+        private static int AdvanceHeapVersion(int heapVersion, ExecutionModel executionModel, int nodeIndex)
+        {
+            int nodeMaxHeapVersion = executionModel.HeapLocations[nodeIndex]
+                .Select(l => l.HeapVersion)
+                .DefaultIfEmpty()
+                .Max();
+            return Math.Max(heapVersion, nodeMaxHeapVersion);
+        }
+
         private void Initialize()
         {
             this.statementFlows = new List<StatementFlowView>();
@@ -126,21 +144,25 @@ namespace AskTheCode.ViewModel
             var flowGraphId = executionModel.PathNodes[this.startIndex].Graph.Id;
             var displayGraph = toolView.GraphProvider.GetDisplayGraph(flowGraphId);
 
+            int heapVersion = this.StartHeapVersion;
             bool endLoop = false;
             for (int i = this.startIndex; i <= this.endIndex && !endLoop; i++)
             {
+                heapVersion = AdvanceHeapVersion(heapVersion, executionModel, i);
+
                 var flowNode = executionModel.PathNodes[i];
                 MethodFlowView callee = null;
 
                 if (flowNode is CallFlowNode && i != this.endIndex)
                 {
                     // Traverse nested method calls
-                    callee = this.ProcessCallee(executionModel, i);
+                    callee = this.ProcessCallee(executionModel, i, heapVersion);
 
                     if (callee.endIndex < this.endIndex)
                     {
                         // Nested call whose result is displayed in the subsequent flow of this method
                         i = callee.endIndex + 1;
+                        heapVersion = callee.EndHeapVersion;
                         Contract.Assert(flowNode == executionModel.PathNodes[i]);
                     }
                     else
@@ -153,15 +175,20 @@ namespace AskTheCode.ViewModel
                 // Produce statements from display nodes
                 this.ProcessStatements(text, displayGraph, executionModel, i, callee);
             }
+
+            Contract.Assert(heapVersion <= this.EndHeapVersion);
         }
 
-        private MethodFlowView ProcessCallee(ExecutionModel executionModel, int callNodeIndex)
+        private MethodFlowView ProcessCallee(ExecutionModel executionModel, int callNodeIndex, int heapVersion)
         {
             int nestedLevel = 0;
-            int calleeStart = callNodeIndex + 1;
-            int calleeEnd;
-            for (int j = calleeStart; j <= this.endIndex; j++)
+            int startIndex = callNodeIndex + 1;
+            int endIndex;
+            int startHeapVersion = heapVersion;
+            for (int j = startIndex; j <= this.endIndex; j++)
             {
+                heapVersion = AdvanceHeapVersion(heapVersion, executionModel, j);
+
                 var calleeflowNode = executionModel.PathNodes[j];
                 if (calleeflowNode is EnterFlowNode)
                 {
@@ -176,11 +203,11 @@ namespace AskTheCode.ViewModel
                     if (nestedLevel == 0)
                     {
                         // Produce method called from the original call node
-                        calleeEnd = j;
-                        var callee = this.AddCallee(calleeStart, calleeEnd);
+                        endIndex = j;
+                        var callee = this.AddCallee(startIndex, endIndex, startHeapVersion, heapVersion);
 
                         // Update i to correspond to the second part of the call node (stored in flowNode)
-                        callNodeIndex = calleeEnd + 1;
+                        callNodeIndex = endIndex + 1;
 
                         return callee;
                     }
@@ -190,21 +217,23 @@ namespace AskTheCode.ViewModel
             Contract.Assert(nestedLevel != 0);
 
             // The execution model ends in the called function, so just display the call in this method
-            calleeEnd = this.endIndex;
-            return this.AddCallee(calleeStart, calleeEnd);
+            endIndex = this.endIndex;
+            return this.AddCallee(startIndex, endIndex, startHeapVersion, heapVersion);
         }
 
-        private MethodFlowView AddCallee(int calleeStart, int calleeEnd)
+        private MethodFlowView AddCallee(int startIndex, int endIndex, int startHeapVersion, int endHeapVersion)
         {
             var toolView = this.PathView.ToolView;
-            var graph = this.PathView.ExecutionModel.PathNodes[calleeStart].Graph;
+            var graph = this.PathView.ExecutionModel.PathNodes[startIndex].Graph;
             var calleeLocation = toolView.GraphProvider.GetLocation(graph.Id);
             var callee = new MethodFlowView(
                 this.PathView,
                 this,
                 calleeLocation,
-                calleeStart,
-                calleeEnd);
+                startIndex,
+                endIndex,
+                startHeapVersion,
+                endHeapVersion);
             this.callees.Add(callee);
 
             return callee;
@@ -248,6 +277,7 @@ namespace AskTheCode.ViewModel
                 string statement = text.ToString(displayRecord.Span);
                 string value = null;
                 string type = null;
+                HeapModelLocation? heapLocation = null;
                 if (displayRecord.Type != null)
                 {
                     var modelFactory = modelManager.TryGetFactory(displayRecord.Type);
@@ -288,9 +318,10 @@ namespace AskTheCode.ViewModel
 
                         if (locationExists)
                         {
+                            heapLocation = heapLocations[displayRecord.FirstVariableIndex];
                             var valueModel = modelFactory.GetValueModel(
                                 displayRecord.Type,
-                                heapLocations[displayRecord.FirstVariableIndex],
+                                heapLocation.Value,
                                 executionModel.HeapModel);
 
                             value = valueModel.ValueText;
@@ -303,8 +334,15 @@ namespace AskTheCode.ViewModel
                 // (In future, display node records concerning argument evaluation might be added)
                 var called = (calledMethod != null && displayRecord == displayRecords.Last()) ? calledMethod : null;
 
-                int index = this.statementFlows.Count;
-                var statementFlow = new StatementFlowView(this, index, displayRecord, statement, value, type, called);
+                var statementFlow = new StatementFlowView(
+                    this,
+                    this.statementFlows.Count,
+                    displayRecord,
+                    statement,
+                    value,
+                    type,
+                    heapLocation,
+                    called);
                 this.statementFlows.Add(statementFlow);
             }
         }

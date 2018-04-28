@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs.Cli;
+using AskTheCode.ControlFlowGraphs.Heap;
 
 namespace AskTheCode.ViewModel
 {
@@ -17,6 +18,7 @@ namespace AskTheCode.ViewModel
             string statement,
             string value,
             string type,
+            HeapModelLocation? heapLocation = null,
             MethodFlowView calledMethod = null)
         {
             this.MethodFlowView = methodFlowView;
@@ -25,6 +27,7 @@ namespace AskTheCode.ViewModel
             this.Statement = statement;
             this.Value = value;
             this.Type = type;
+            this.HeapLocation = heapLocation;
             this.CalledMethod = calledMethod;
         }
 
@@ -35,6 +38,8 @@ namespace AskTheCode.ViewModel
         public string Value { get; }
 
         public string Type { get; }
+
+        public HeapModelLocation? HeapLocation { get; }
 
         internal MethodFlowView MethodFlowView { get; }
 

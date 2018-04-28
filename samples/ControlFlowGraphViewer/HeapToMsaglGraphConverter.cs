@@ -13,12 +13,10 @@ namespace ControlFlowGraphViewer
         public Graph Convert(IHeapModel heap, int version)
         {
             var graph = new Graph();
-            var nodes = new Dictionary<int, Node>();
 
             foreach (var location in heap.GetLocations(version))
             {
                 var node = graph.AddNode(location.Id.ToString());
-                nodes.Add(location.Id, node);
 
                 node.LabelText = location.ToString();
 

@@ -5,18 +5,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
+using Microsoft.Msagl.Drawing;
 
 namespace AskTheCode.ViewModel
 {
     public class ReplayView : NotifyPropertyChangedBase
     {
+        private HeapView heap;
+
         private StatementFlowView nextStatement;
+        private int heapVersion;
 
         private VariableReplayView selectedVariable;
 
         internal ReplayView(ToolView toolView)
         {
             this.ToolView = toolView;
+            this.heap = new HeapView(this);
             this.StepOutCommand = new Command(this.StepOut);
             this.StepBackCommand = new Command(this.StepBack);
             this.StepOverCommand = new Command(this.StepOver);
@@ -31,6 +36,8 @@ namespace AskTheCode.ViewModel
             get { return this.selectedVariable; }
             set { this.SetProperty(ref this.selectedVariable, value); }
         }
+
+        public IGraphViewerConsumer Heap => this.heap;
 
         public Command StepOutCommand { get; }
 
@@ -56,8 +63,11 @@ namespace AskTheCode.ViewModel
             this.nextStatement = nextStatement;
             if (this.nextStatement == null)
             {
+                this.heapVersion = 0;
                 return;
             }
+
+            this.heapVersion = this.nextStatement.MethodFlowView.StartHeapVersion;
 
             var varMap = new Dictionary<string, VariableReplayView>();
 
@@ -72,15 +82,31 @@ namespace AskTheCode.ViewModel
                 {
                     if (!varMap.TryGetValue(varName, out var varView))
                     {
-                        varView = new VariableReplayView(varName, statement.Value, statement.Type, null);
+                        varView = new VariableReplayView(
+                            varName,
+                            statement.Value,
+                            statement.Type,
+                            statement.HeapLocation);
                         varMap.Add(varName, varView);
                         this.Variables.Add(varView);
                     }
 
                     varView.Value = statement.Value;
                     varView.Type = statement.Type;
+                    varView.HeapLocation = statement.HeapLocation;
+                }
+
+                if (statement.HeapLocation?.HeapVersion > this.heapVersion)
+                {
+                    this.heapVersion = statement.HeapLocation.Value.HeapVersion;
+                }
+                else if (statement.CalledMethod?.EndHeapVersion > this.heapVersion)
+                {
+                    this.heapVersion = statement.CalledMethod.EndHeapVersion;
                 }
             }
+
+            this.heap.Redraw();
         }
 
         private void StepOut()
@@ -158,6 +184,78 @@ namespace AskTheCode.ViewModel
             }
 
             this.ToolView.SelectedPath.SelectedMethodFlow.SelectedStatementFlow = statement;
+        }
+
+        private class HeapView : NotifyPropertyChangedBase, IGraphViewerConsumer
+        {
+            private readonly ReplayView owner;
+
+            private IViewer graphViewer;
+
+            public HeapView(ReplayView owner)
+            {
+                this.owner = owner;
+            }
+
+            public IViewer GraphViewer
+            {
+                get { return this.graphViewer; }
+                set { this.SetProperty(ref this.graphViewer, value); }
+            }
+
+            public void Redraw()
+            {
+                if (this.GraphViewer == null)
+                {
+                    return;
+                }
+
+                var graph = new Graph();
+                graph.Attr.LayerDirection = LayerDirection.LR;
+
+                if (this.owner.nextStatement != null)
+                {
+                    var heap = this.owner.nextStatement.MethodFlowView.PathView.ExecutionModel.HeapModel;
+                    int version = this.owner.heapVersion;
+
+                    var stackNode = graph.AddNode("stack");
+                    stackNode.LabelText = "Stack";
+
+                    // TODO: Consider creating null as a separate location for each null field
+                    foreach (var location in heap.GetLocations(version))
+                    {
+                        var node = graph.AddNode(location.Id.ToString());
+
+                        node.LabelText = location.IsNull ? "NULL" : $"[#{location.Id}]";
+
+                        foreach (var reference in heap.GetReferences(location))
+                        {
+                            graph.AddEdge(location.Id.ToString(), reference.Field.ToString(), reference.LocationId.ToString());
+                        }
+
+                        // TODO: Use proper value models to display these
+                        foreach (var value in heap.GetValues(location))
+                        {
+                            node.LabelText += $"\n{value.Field} = {value.Value}";
+                        }
+                    }
+
+                    foreach (var stackVar in this.owner.Variables.Where(v => v.HeapLocation != null))
+                    {
+                        graph.AddEdge(stackNode.Id, stackVar.Variable, stackVar.HeapLocation.Value.Id.ToString());
+                    }
+                }
+
+                this.GraphViewer.Graph = graph;
+            }
+
+            protected override void OnPropertyChanged<T>(string propertyName, T previousValue)
+            {
+                if (propertyName == nameof(this.GraphViewer))
+                {
+                    this.Redraw();
+                }
+            }
         }
     }
 }
