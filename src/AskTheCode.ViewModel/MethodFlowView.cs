@@ -100,23 +100,36 @@ namespace AskTheCode.ViewModel
             var flowGraphId = executionModel.PathNodes[this.startIndex].Graph.Id;
             var displayGraph = toolView.GraphProvider.GetDisplayGraph(flowGraphId);
 
-            for (int i = this.startIndex; i <= this.endIndex; i++)
+            bool endLoop = false;
+            for (int i = this.startIndex; i <= this.endIndex && !endLoop; i++)
             {
                 var flowNode = executionModel.PathNodes[i];
+                MethodFlowView callee = null;
 
                 if (flowNode is CallFlowNode && i != this.endIndex)
                 {
-                    // Traverse nested method calls, possibly modifying i
-                    i = this.ProcessCalls(executionModel, i);
-                    Contract.Assert(flowNode == executionModel.PathNodes[i]);
+                    // Traverse nested method calls
+                    callee = this.ProcessCallee(executionModel, i);
+
+                    if (callee.endIndex < this.endIndex)
+                    {
+                        // Nested call whose result is displayed in the subsequent flow of this method
+                        i = callee.endIndex + 1;
+                        Contract.Assert(flowNode == executionModel.PathNodes[i]);
+                    }
+                    else
+                    {
+                        // Nested call somewhere in which the execution ends
+                        endLoop = true;
+                    }
                 }
 
                 // Produce statements from display nodes
-                this.ProcessStatements(text, displayGraph, executionModel, i);
+                this.ProcessStatements(text, displayGraph, executionModel, i, callee);
             }
         }
 
-        private int ProcessCalls(ExecutionModel executionModel, int callNodeIndex)
+        private MethodFlowView ProcessCallee(ExecutionModel executionModel, int callNodeIndex)
         {
             int nestedLevel = 0;
             int calleeStart = callNodeIndex + 1;
@@ -138,25 +151,24 @@ namespace AskTheCode.ViewModel
                     {
                         // Produce method called from the original call node
                         calleeEnd = j;
-                        this.AddCallee(calleeStart, calleeEnd);
+                        var callee = this.AddCallee(calleeStart, calleeEnd);
 
                         // Update i to correspond to the second part of the call node (stored in flowNode)
-                        return calleeEnd + 1;
+                        callNodeIndex = calleeEnd + 1;
+
+                        return callee;
                     }
                 }
             }
 
             Contract.Assert(nestedLevel != 0);
 
-            // TODO: Propagate this information to Initialize() to skip searching for next display nodes
             // The execution model ends in the called function, so just display the call in this method
             calleeEnd = this.endIndex;
-            this.AddCallee(calleeStart, calleeEnd);
-
-            return callNodeIndex;
+            return this.AddCallee(calleeStart, calleeEnd);
         }
 
-        private void AddCallee(int calleeStart, int calleeEnd)
+        private MethodFlowView AddCallee(int calleeStart, int calleeEnd)
         {
             var toolView = this.PathView.ToolView;
             var graph = this.PathView.ExecutionModel.PathNodes[calleeStart].Graph;
@@ -168,13 +180,16 @@ namespace AskTheCode.ViewModel
                 calleeStart,
                 calleeEnd);
             this.callees.Add(callee);
+
+            return callee;
         }
 
         private void ProcessStatements(
             SourceText text,
             DisplayGraph displayGraph,
             ExecutionModel executionModel,
-            int nodeIndex)
+            int nodeIndex,
+            MethodFlowView calledMethod = null)
         {
             var modelManager = this.PathView.ToolView.GraphProvider.ModelManager;
             var flowNode = executionModel.PathNodes[nodeIndex];
@@ -258,8 +273,12 @@ namespace AskTheCode.ViewModel
                     }
                 }
 
-                int statementIndex = this.statementFlows.Count;
-                var statementFlow = new StatementFlowView(this, statementIndex, displayRecord, statement, value, type);
+                // Display a call only on the last statement of a call node
+                // (In future, display node records concerning argument evaluation might be added)
+                var called = (calledMethod != null && displayRecord == displayRecords.Last()) ? calledMethod : null;
+
+                int index = this.statementFlows.Count;
+                var statementFlow = new StatementFlowView(this, index, displayRecord, statement, value, type, called);
                 this.statementFlows.Add(statementFlow);
             }
         }

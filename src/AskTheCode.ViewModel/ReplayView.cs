@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AskTheCode.ControlFlowGraphs;
 
 namespace AskTheCode.ViewModel
 {
@@ -45,6 +46,11 @@ namespace AskTheCode.ViewModel
         // TODO: Heap
         internal void Update(StatementFlowView nextStatement)
         {
+            if (nextStatement == this.nextStatement)
+            {
+                return;
+            }
+
             this.Variables.Clear();
 
             this.nextStatement = nextStatement;
@@ -79,7 +85,15 @@ namespace AskTheCode.ViewModel
 
         private void StepOut()
         {
-            // TODO
+            var caller = this.nextStatement?.MethodFlowView?.Caller;
+            if (caller == null)
+            {
+                return;
+            }
+
+            var curMethod = this.nextStatement.MethodFlowView;
+            var callStatement = caller.StatementFlows.First(s => s.CalledMethod == curMethod);
+            this.UpdateToolSelectedStatement(callStatement);
         }
 
         private void StepBack()
@@ -94,6 +108,10 @@ namespace AskTheCode.ViewModel
             if (trgStatementIndex >= 0)
             {
                 this.UpdateToolSelectedStatement(statements[trgStatementIndex]);
+            }
+            else
+            {
+                this.StepOut();
             }
         }
 
@@ -114,7 +132,17 @@ namespace AskTheCode.ViewModel
 
         private void StepInto()
         {
-            // TODO
+            var called = this.nextStatement?.CalledMethod;
+            if (called == null)
+            {
+                // Standard behaviour as in a common IDE
+                this.StepOver();
+                return;
+            }
+
+            var afterParamsStmt = called.StatementFlows
+                .FirstOrDefault(s => !(s.DisplayRecord.FlowNode is EnterFlowNode));
+            this.UpdateToolSelectedStatement(afterParamsStmt ?? called.StatementFlows.First());
         }
 
         private void UpdateToolSelectedStatement(StatementFlowView statement)
@@ -122,6 +150,13 @@ namespace AskTheCode.ViewModel
             // The last assignment will cause calling this.Update(statement)
             this.ToolView.SelectedPath = statement.MethodFlowView.PathView;
             this.ToolView.SelectedPath.SelectedMethodFlow = statement.MethodFlowView;
+
+            if (this.ToolView.SelectedPath.SelectedMethodFlow.SelectedStatementFlow == statement)
+            {
+                // Force update
+                this.ToolView.SelectedPath.SelectedMethodFlow.SelectedStatementFlow = null;
+            }
+
             this.ToolView.SelectedPath.SelectedMethodFlow.SelectedStatementFlow = statement;
         }
     }

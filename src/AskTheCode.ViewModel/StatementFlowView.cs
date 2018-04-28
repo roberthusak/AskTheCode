@@ -16,7 +16,8 @@ namespace AskTheCode.ViewModel
             DisplayNodeRecord displayRecord,
             string statement,
             string value,
-            string type)
+            string type,
+            MethodFlowView calledMethod = null)
         {
             this.MethodFlowView = methodFlowView;
             this.Index = index;
@@ -24,18 +25,21 @@ namespace AskTheCode.ViewModel
             this.Statement = statement;
             this.Value = value;
             this.Type = type;
+            this.CalledMethod = calledMethod;
         }
 
         public int Index { get; }
 
-        public string Statement { get; private set; }
+        public string Statement { get; }
 
-        public string Value { get; private set; }
+        public string Value { get; }
 
-        public string Type { get; private set; }
+        public string Type { get; }
 
-        internal MethodFlowView MethodFlowView { get; private set; }
+        internal MethodFlowView MethodFlowView { get; }
 
-        internal DisplayNodeRecord DisplayRecord { get; private set; }
+        internal DisplayNodeRecord DisplayRecord { get; }
+
+        internal MethodFlowView CalledMethod { get; }
     }
 }
