@@ -38,6 +38,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public Dictionary<ISymbol, ITypeModel> DefinedVariableModels { get; } = new Dictionary<ISymbol, ITypeModel>();
 
+        public ReferenceModel LocalInstanceModel { get; set; }
+
         public BuildNode AddNode(SyntaxNode syntax)
         {
             var nodeId = this.nodeIdProvider.GenerateNewId();

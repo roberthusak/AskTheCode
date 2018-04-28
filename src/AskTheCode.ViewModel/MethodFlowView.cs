@@ -338,7 +338,7 @@ namespace AskTheCode.ViewModel
                     this,
                     this.statementFlows.Count,
                     displayRecord,
-                    statement,
+                    !string.IsNullOrEmpty(statement) ? statement : displayRecord.VariableName,
                     value,
                     type,
                     heapLocation,

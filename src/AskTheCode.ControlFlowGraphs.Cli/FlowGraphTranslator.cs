@@ -14,6 +14,7 @@ using CodeContractsRevival.Runtime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace AskTheCode.ControlFlowGraphs.Cli
 {
@@ -157,7 +158,24 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     {
                         int valAssignOffset = 0;
                         int refAssignOffset = 0;
-                        foreach (var parameterSyntax in ((ParameterListSyntax)buildNode.Syntax).Parameters)
+
+                        ParameterListSyntax parameterList = ((ParameterListSyntax)buildNode.Syntax);
+                        var thisParam = this.BuildGraph.Variables.FirstOrDefault(v => v.Origin == VariableOrigin.This);
+                        if (thisParam != null)
+                        {
+                            // Instance methods have the instance reference as the first parameter
+                            var record = new DisplayNodeRecord(
+                                flowNodeInfo.FlowNode,
+                                new TextSpan(parameterList.OpenParenToken.Span.End, 0),
+                                refAssignOffset,
+                                this.BuildGraph.LocalInstanceModel.Type,
+                                thisParam.DisplayName);
+                            displayNode.AddRecord(record);
+
+                            refAssignOffset++;
+                        }
+
+                        foreach (var parameterSyntax in parameterList.Parameters)
                         {
                             string parameterName = parameterSyntax.Identifier.Text;
                             var parameterModel =
