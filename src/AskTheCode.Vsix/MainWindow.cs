@@ -47,15 +47,17 @@ namespace AskTheCode.Vsix
             Contract.Assert(workspace != null);
 
             var ideServices = new VisualStudioIdeServices(dte2, highlightService, workspace);
-            var viewModel = new ToolView(ideServices);
+            this.ViewModel = new ToolView(ideServices);
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on
             // the object returned by the Content property.
             this.Content = new ToolPanel()
             {
-                DataContext = viewModel
+                DataContext = this.ViewModel
             };
         }
+
+        public ToolView ViewModel { get; }
     }
 }

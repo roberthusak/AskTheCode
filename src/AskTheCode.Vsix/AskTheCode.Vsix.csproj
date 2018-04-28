@@ -150,6 +150,7 @@
     <Compile Include="Highlighting\HighlightTagger.cs" />
     <Compile Include="Highlighting\HighlightTaggerProvider.cs" />
     <Compile Include="Highlighting\IHighlightService.cs" />
+    <Compile Include="ReplayWindow.cs" />
     <Compile Include="MainWindow.cs" />
     <Compile Include="MainWindowCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -481,6 +482,7 @@
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

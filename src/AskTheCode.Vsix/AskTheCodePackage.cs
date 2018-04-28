@@ -34,7 +34,8 @@ namespace AskTheCode.Vsix
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideService(typeof(SHighlightService))]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideToolWindow(typeof(MainWindow), Style = VsDockStyle.Tabbed, Window = EnvDTE.Constants.vsWindowKindOutput)]
+    [ProvideToolWindow(typeof(MainWindow), MultiInstances = false, Style = VsDockStyle.Tabbed, Window = EnvDTE.Constants.vsWindowKindOutput)]
+    [ProvideToolWindow(typeof(ReplayWindow), MultiInstances = false, Style = VsDockStyle.Float, Window = EnvDTE.Constants.vsWindowKindMainWindow, Width = 800, Height = 450)]
     [Guid(AskTheCodePackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class AskTheCodePackage : Package

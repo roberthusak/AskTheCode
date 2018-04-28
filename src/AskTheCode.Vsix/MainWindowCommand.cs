@@ -79,14 +79,27 @@ namespace AskTheCode.Vsix
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.package.FindToolWindow(typeof(MainWindow), 0, true);
-            if ((window == null) || (window.Frame == null))
+            var mainWindow = (MainWindow)this.package.FindToolWindow(typeof(MainWindow), 0, true);
+
+            // Show the main window
+            var mainWindowFrame = mainWindow?.Frame as IVsWindowFrame;
+            if (mainWindow == null || mainWindowFrame == null)
             {
                 throw new NotSupportedException("Cannot create tool window");
             }
 
-            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
-            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(mainWindowFrame.Show());
+
+            // Repeat the process also for the replay window
+            var replayWindow = (ReplayWindow)this.package.FindToolWindow(typeof(ReplayWindow), 0, true);
+            var replayWindowFrame = replayWindow?.Frame as IVsWindowFrame;
+            if (replayWindow == null || replayWindowFrame == null)
+            {
+                throw new NotSupportedException("Cannot create tool replay window");
+            }
+
+            replayWindow.Content.DataContext = mainWindow.ViewModel.Replay;
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(replayWindowFrame.Show());
         }
     }
 }
