@@ -75,7 +75,9 @@ namespace StandaloneGui
 
             await this.OpenDocument(document);
 
-            this.DataContext = new ToolView(new SimpleIdeServices(this));
+            ToolView toolView = new ToolView(new SimpleIdeServices(this));
+            this.DataContext = toolView;
+            this.replayWindow.DataContext = toolView.Replay;
         }
 
         private class SimpleIdeServices : IIdeServices

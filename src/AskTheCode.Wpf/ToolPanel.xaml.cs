@@ -4,7 +4,6 @@ using System.Windows.Controls;
 
 namespace AskTheCode.Wpf
 {
-
     /// <summary>
     /// Interaction logic for ToolPanel.
     /// </summary>

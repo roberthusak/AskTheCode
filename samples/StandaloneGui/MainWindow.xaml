@@ -29,7 +29,7 @@
             </TextBox>
         </Border>
 
-        <Border x:Name="cfgWindow" Padding="5" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,0">
+        <Border x:Name="cfgWindow" Visibility="Collapsed" Padding="5" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,0">
             <TabControl ItemsSource="{Binding FlowGraphs}" SelectedItem="{Binding SelectedFlowGraph}">
                 <TabControl.ItemTemplate>
                     <DataTemplate DataType="vm:FlowGraphView">
@@ -43,6 +43,8 @@
                 </TabControl.ContentTemplate>
             </TabControl>
         </Border>
+
+        <controls:ReplayPanel x:Name="replayWindow" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,0" />
 
         <controls:ToolPanel x:Name="explorerWindow" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1" />
     </Grid>

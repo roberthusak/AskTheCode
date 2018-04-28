@@ -42,32 +42,6 @@ namespace AskTheCode.ViewModel
                     var root = new MethodFlowView(this, null, rootLocation, 0, pathNodes.Length - 1);
 
                     this.methodFlows.Add(root);
-
-                    //int currentSegmentStart = 0;
-                    //var currentGraph = pathNodes[0].Graph;
-                    //for (int i = 0; i < pathNodes.Length; i++)
-                    //{
-                    //    if (pathNodes[i].Graph != currentGraph)
-                    //    {
-                    //        var location = this.ToolView.GraphProvider.GetLocation(currentGraph.Id);
-                    //        var methodFlow = new MethodFlowView(
-                    //            this,
-                    //            location,
-                    //            currentSegmentStart,
-                    //            i - currentSegmentStart);
-                    //        this.methodFlows.Add(methodFlow);
-                    //        currentSegmentStart = i;
-                    //        currentGraph = pathNodes[i].Graph;
-                    //    }
-                    //}
-
-                    //var locationLast = this.ToolView.GraphProvider.GetLocation(currentGraph.Id);
-                    //var methodFlowLast = new MethodFlowView(
-                    //    this,
-                    //    locationLast,
-                    //    currentSegmentStart,
-                    //    pathNodes.Length - currentSegmentStart);
-                    //this.methodFlows.Add(methodFlowLast);
                 }
 
                 return this.methodFlows;

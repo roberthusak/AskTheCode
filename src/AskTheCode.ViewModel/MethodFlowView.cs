@@ -278,6 +278,8 @@ namespace AskTheCode.ViewModel
             var document = this.PathView.ToolView.CurrentSolution.GetDocument(methodLocation.SourceTree);
             this.PathView.ToolView.IdeServices.OpenDocument(document);
             this.PathView.ToolView.IdeServices.HighlightText(text, highlights);
+
+            this.PathView.ToolView.Replay.Update(this.SelectedStatementFlow);
         }
     }
 }

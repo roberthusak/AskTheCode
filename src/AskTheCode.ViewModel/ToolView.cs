@@ -35,6 +35,7 @@ namespace AskTheCode.ViewModel
             Contract.Requires<ArgumentNullException>(ideServices != null, nameof(ideServices));
 
             this.ideServices = ideServices;
+            this.Replay = new ReplayView(this);
             this.DisplayFlowGraphCommand = new Command(this.DisplayFlowGraph);
             this.ExploreReachabilityCommand = new Command(() => this.Explore(false));
             this.ExploreCorrectnessCommand = new Command(() => this.Explore(true));
@@ -57,6 +58,8 @@ namespace AskTheCode.ViewModel
             get { return this.isExploring; }
             private set { this.SetProperty(ref this.isExploring, value); }
         }
+
+        public ReplayView Replay { get; }
 
         public ObservableCollection<PathView> Paths { get; private set; } =
             new ObservableCollection<PathView>();
