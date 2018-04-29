@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
@@ -71,7 +72,7 @@ namespace AskTheCode.PathExploration
                 cancelToken = cancelTokenSource.Token;
             }
 
-            if (this.Options.TimeoutSeconds != null)
+            if (this.Options.TimeoutSeconds != null && !Debugger.IsAttached)
             {
                 cancelTokenSource.CancelAfter(this.Options.TimeoutSeconds.Value * 1000);
             }
