@@ -23,6 +23,8 @@ namespace AskTheCode.PathExploration.Heap
         /// variable as different allocations (that could have led to a conflict).</param>
         void AllocateNew(VersionedVariable result, bool mightBeRepeated);
 
+        void AssignReference(VersionedVariable result, VersionedVariable value);
+
         void AssertEquality(bool areEqual, VersionedVariable left, VersionedVariable right);
 
         Expression GetEqualityExpression(bool areEqual, VersionedVariable left, VersionedVariable right);

@@ -57,6 +57,18 @@ namespace AskTheCode.PathExploration.Heap
             this.stateStack.Push(newState);
         }
 
+        public void AssignReference(VersionedVariable result, VersionedVariable value)
+        {
+            if (!this.CanBeSatisfiable)
+            {
+                this.stateStack.Push(AlgorithmState.ConflictState);
+                return;
+            }
+
+            var newState = this.CurrentState.AssignReference(result, value, this.context);
+            this.stateStack.Push(newState);
+        }
+
         public void AssertEquality(bool areEqual, VersionedVariable left, VersionedVariable right)
         {
             if (!this.CanBeSatisfiable)
@@ -189,7 +201,7 @@ namespace AskTheCode.PathExploration.Heap
 
             private readonly ImmutableSortedDictionary<int, VariableState> variableStates;
             private readonly ImmutableDictionary<VersionedVariable, int> variableToStateIdMap;
-            private readonly ImmutableDictionary<int, ImmutableList<VersionedVariable>> stateIdToVariablesMap;
+            private readonly ImmutableDictionary<int, ImmutableList<VariableMappingInfo>> stateIdToVariablesMap;
             private readonly ImmutableDictionary<IFieldDefinition, ArrayHandle<IntHandle, Handle>> fieldToVariableMap;
             private readonly int nextVariableStateId;
             private readonly int nextReferenceValue;
@@ -197,7 +209,7 @@ namespace AskTheCode.PathExploration.Heap
             private AlgorithmState(
                 ImmutableSortedDictionary<int, VariableState> variableStates,
                 ImmutableDictionary<VersionedVariable, int> variableToStateIdMap,
-                ImmutableDictionary<int, ImmutableList<VersionedVariable>> stateIdToVariablesMap,
+                ImmutableDictionary<int, ImmutableList<VariableMappingInfo>> stateIdToVariablesMap,
                 ImmutableDictionary<IFieldDefinition, ArrayHandle<IntHandle, Handle>> fieldToVariableMap,
                 int nextVariableStateId,
                 int nextReferenceValue)
@@ -208,6 +220,12 @@ namespace AskTheCode.PathExploration.Heap
                 this.fieldToVariableMap = fieldToVariableMap;
                 this.nextVariableStateId = nextVariableStateId;
                 this.nextReferenceValue = nextReferenceValue;
+            }
+
+            private enum VariableMappingKind
+            {
+                Equality,
+                Assignment
             }
 
             public VariableState GetVariableState(VersionedVariable variable)
@@ -292,6 +310,10 @@ namespace AskTheCode.PathExploration.Heap
                 }
 
                 (var state, var newVarState) = this.MapToNewValueVariableState(result);
+                if (state == ConflictState)
+                {
+                    return ConflictState;
+                }
 
                 var origVarState = this.GetVariableOrNull(result);
                 if (origVarState != null)
@@ -302,6 +324,60 @@ namespace AskTheCode.PathExploration.Heap
                 }
 
                 return state;
+            }
+
+            public AlgorithmState AssignReference(
+                VersionedVariable result,
+                VersionedVariable value,
+                ISymbolicHeapContext context)
+            {
+                var resultState = this.GetVariableOrNull(result);
+                var valueState = this.GetVariableOrNull(value);
+
+                if (resultState == null && valueState == null)
+                {
+                    // From now on, we will handle them together, no need to assert their equality
+                    (var algState, var newVarState) = this.MapToNewInputVariableState(value, context);
+                    return algState.MapToVariableState(result, newVarState, VariableMappingKind.Assignment);
+                }
+
+                if (resultState == null || valueState == null)
+                {
+                    Contract.Assert(resultState != null || valueState != null);
+
+                    // Add the newly added variable to the existing one; again, no assertion needed
+                    return (resultState == null)
+                        ? this.MapToVariableState(result, valueState, VariableMappingKind.Assignment)
+                        : this
+                            .UpdateMappingKind(result, VariableMappingKind.Assignment)
+                            .MapToVariableState(value, resultState, VariableMappingKind.Equality);
+                }
+
+                Contract.Assert(resultState != null && valueState != null);
+
+                if (IsNullStateAndVarState(resultState, valueState, out var varState))
+                {
+                    //Contract.Assert(varState == resultState);
+
+                    if (!varState.CanBeNull)
+                    {
+                        // Variable said not to be null must be null, leading to a conflict
+                        return ConflictState;
+                    }
+                    else
+                    {
+                        // Variable was assigned null
+                        context.AddAssertion(varState.Representation == VariableState.Null.Representation);
+                        return this.MapToVariableState(result, VariableState.Null, VariableMappingKind.Assignment);
+                    }
+                }
+
+                // Assert the equality of the variables and unite them from now on
+                // to reduce the number of generated assumptions
+                context.AddAssertion(resultState.Representation == valueState.Representation);
+                return this
+                    .MapToBetterVariableState(result, resultState, value, valueState)
+                    .UpdateMappingKind(result, VariableMappingKind.Assignment);
             }
 
             public AlgorithmState AssertEquality(
@@ -532,9 +608,9 @@ namespace AskTheCode.PathExploration.Heap
                 });
                 var stateVarsMap = ImmutableDictionary.CreateRange(new[]
                 {
-                    new KeyValuePair<int, ImmutableList<VersionedVariable>>(
+                    new KeyValuePair<int, ImmutableList<VariableMappingInfo>>(
                         VariableState.NullId,
-                        ImmutableList.Create(VersionedVariable.Null))
+                        ImmutableList.Create(new VariableMappingInfo(VersionedVariable.Null, VariableMappingKind.Equality)))
                 });
 
                 return new AlgorithmState(
@@ -657,7 +733,10 @@ namespace AskTheCode.PathExploration.Heap
                     this.nextReferenceValue);
             }
 
-            private AlgorithmState MapToVariableState(VersionedVariable variable, VariableState state)
+            private AlgorithmState MapToVariableState(
+                VersionedVariable variable,
+                VariableState state,
+                VariableMappingKind kind = VariableMappingKind.Equality)
             {
                 Contract.Requires(this.variableStates[state.Id] == state);
                 Contract.Requires(this.stateIdToVariablesMap.ContainsKey(state.Id));
@@ -672,7 +751,7 @@ namespace AskTheCode.PathExploration.Heap
                         }
                         else
                         {
-                            return this.UpdateVariableState(state);
+                            return this.UpdateVariableState(state).UpdateMappingKind(variable, kind);
                         }
                     }
                     else
@@ -680,10 +759,19 @@ namespace AskTheCode.PathExploration.Heap
                         // Update the states of all the variables pointing to the old one and erase it
                         var currentVars = this.stateIdToVariablesMap[curStateId];
                         var newVars = this.stateIdToVariablesMap[state.Id].AddRange(currentVars);
-                        if (!currentVars.Contains(variable))
+                        if (!currentVars.Any(v => v.Variable == variable))
                         {
                             // TODO: Consider turning it into a set to make this more effective
-                            newVars = newVars.Add(variable);
+                            newVars = newVars.Add(new VariableMappingInfo(variable, kind));
+                        }
+
+                        if (state.IsExplicitlyAllocated && newVars.Count(v => v.Kind == VariableMappingKind.Equality) > 1)
+                        {
+                            // TODO: Think about the situation when the value is assigned in constructor
+
+                            // The remaining variables are bound to be equal but can't be assigned the same value
+                            // later as the instance won't be yet created
+                            return ConflictState;
                         }
 
                         var newStates = this.variableStates.Remove(curStateId);
@@ -691,7 +779,7 @@ namespace AskTheCode.PathExploration.Heap
                             .Remove(curStateId)
                             .SetItem(state.Id, newVars);
                         var newVarStateMap = this.variableToStateIdMap.SetItems(
-                            newVars.Select(v => new KeyValuePair<VersionedVariable, int>(v, state.Id)));
+                            newVars.Select(v => new KeyValuePair<VersionedVariable, int>(v.Variable, state.Id)));
 
                         return new AlgorithmState(
                             newStates,
@@ -707,8 +795,9 @@ namespace AskTheCode.PathExploration.Heap
                     var newVarStateMap = this.variableToStateIdMap.Add(variable, state.Id);
                     var currentVars = this.stateIdToVariablesMap.TryGetValue(state.Id, out var vars)
                         ? vars
-                        : ImmutableList<VersionedVariable>.Empty;
-                    var newStateVarsMap = this.stateIdToVariablesMap.SetItem(state.Id, currentVars.Add(variable));
+                        : ImmutableList<VariableMappingInfo>.Empty;
+                    var varInfo = new VariableMappingInfo(variable, kind);
+                    var newStateVarsMap = this.stateIdToVariablesMap.SetItem(state.Id, currentVars.Add(varInfo));
 
                     return new AlgorithmState(
                         this.variableStates,
@@ -784,7 +873,7 @@ namespace AskTheCode.PathExploration.Heap
                 var newVar = context.CreateVariable(Sort.Int, variable.ToString());
                 var varState = VariableState.CreateInput(this.nextVariableStateId, newVar, canBeNull);
                 var newVarStates = this.variableStates.Add(varState.Id, varState);
-                var newStateVarsMap = this.stateIdToVariablesMap.SetItem(varState.Id, ImmutableList<VersionedVariable>.Empty);
+                var newStateVarsMap = this.stateIdToVariablesMap.SetItem(varState.Id, ImmutableList<VariableMappingInfo>.Empty);
 
                 var algState = new AlgorithmState(
                     newVarStates,
@@ -803,7 +892,7 @@ namespace AskTheCode.PathExploration.Heap
             {
                 var varState = VariableState.CreateValue(this.nextVariableStateId, this.nextReferenceValue);
                 var newVarStates = this.variableStates.Add(varState.Id, varState);
-                var newStateVarsMap = this.stateIdToVariablesMap.SetItem(varState.Id, ImmutableList<VersionedVariable>.Empty);
+                var newStateVarsMap = this.stateIdToVariablesMap.SetItem(varState.Id, ImmutableList<VariableMappingInfo>.Empty);
 
                 var algState = new AlgorithmState(
                     newVarStates,
@@ -813,9 +902,34 @@ namespace AskTheCode.PathExploration.Heap
                     this.nextVariableStateId + 1,
                     this.nextReferenceValue + 1);
 
-                algState = algState.MapToVariableState(variable, varState);
+                algState = algState.MapToVariableState(variable, varState, VariableMappingKind.Assignment);
 
                 return (algState, varState);
+            }
+
+            private AlgorithmState UpdateMappingKind(VersionedVariable variable, VariableMappingKind kind)
+            {
+                int stateId = this.variableToStateIdMap[variable];
+                var mappedVars = this.stateIdToVariablesMap[stateId];
+                var mappedVar = mappedVars.Find(m => m.Variable == variable);
+
+                if (mappedVar.Kind == kind)
+                {
+                    return this;
+                }
+                else
+                {
+                    var newMappedVars = mappedVars.Replace(mappedVar, mappedVar.WithKind(kind));
+                    var newStateVarsMap = this.stateIdToVariablesMap.SetItem(stateId, newMappedVars);
+
+                    return new AlgorithmState(
+                        this.variableStates,
+                        this.variableToStateIdMap,
+                        newStateVarsMap,
+                        this.fieldToVariableMap,
+                        this.nextVariableStateId,
+                        this.nextReferenceValue);
+                }
             }
 
             private (AlgorithmState newState, VariableState varState) GetOrAddVariable(VersionedVariable variable, ISymbolicHeapContext context)
@@ -839,6 +953,23 @@ namespace AskTheCode.PathExploration.Heap
                 else
                 {
                     return null;
+                }
+            }
+
+            private struct VariableMappingInfo
+            {
+                public VersionedVariable Variable;
+                public VariableMappingKind Kind;
+
+                public VariableMappingInfo(VersionedVariable variable, VariableMappingKind kind)
+                {
+                    this.Variable = variable;
+                    this.Kind = kind;
+                }
+
+                public VariableMappingInfo WithKind(VariableMappingKind kind)
+                {
+                    return new VariableMappingInfo(this.Variable, kind);
                 }
             }
         }

@@ -108,7 +108,7 @@ namespace AskTheCode.PathExploration
                 var leftRef = new VersionedVariable(variable, lastVersion);
                 var rightRef = this.GetVersioned((FlowVariable)value);
 
-                this.Heap.AssertEquality(true, leftRef, rightRef);
+                this.Heap.AssignReference(leftRef, rightRef);
             }
             else if (value.Sort == Sort.Bool && value is ReferenceComparisonVariable refComp)
             {

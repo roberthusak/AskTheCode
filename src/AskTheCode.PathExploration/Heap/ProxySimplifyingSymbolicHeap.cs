@@ -60,6 +60,11 @@ namespace AskTheCode.PathExploration.Heap
             this.graphStack.Push(newGraph);
         }
 
+        public void AssignReference(VersionedVariable result, VersionedVariable value)
+        {
+            throw new NotImplementedException();
+        }
+
         public void AssertEquality(bool areEqual, VersionedVariable left, VersionedVariable right)
         {
             if (!this.CanBeSatisfiable)
