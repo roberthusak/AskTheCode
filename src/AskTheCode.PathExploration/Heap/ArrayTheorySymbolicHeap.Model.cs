@@ -78,7 +78,12 @@ namespace AskTheCode.PathExploration.Heap
 
                 if (this.currentHeap.TryGetValue(refId, out var locationInfo))
                 {
-                    if (!locationInfo.ContainsField(field))
+                    if (locationInfo.ContainsField(field))
+                    {
+                        // It was read successfully
+                        return;
+                    }
+                    else if (refId > VariableState.NullValue)
                     {
                         // Note: This can't happen in higher level languages, because they always
                         //       initialize the fields (e.g. to zero)
@@ -86,23 +91,22 @@ namespace AskTheCode.PathExploration.Heap
                             "Unable to model reading data of explicitly allocated but uninitialized objects");
                     }
                 }
-                else
+
+                // Fall back to input heap if not found in the current heap
+                if (!this.inputHeap.TryGetValue(refId, out locationInfo))
                 {
-                    if (!this.inputHeap.TryGetValue(refId, out locationInfo))
-                    {
-                        locationInfo = new LocationInfo() { LastModifiedVersion = 0 };
-                        this.inputHeap.Add(refId, locationInfo);
-                    }
+                    locationInfo = new LocationInfo() { LastModifiedVersion = 0 };
+                    this.inputHeap.Add(refId, locationInfo);
+                }
 
-                    if (!locationInfo.ContainsField(field))
-                    {
-                        // Read the value from the particular input heap array
-                        var fieldArray = this.state.GetFieldArray(field);
-                        var valueIntr = this.smtModel.GetInterpretation(fieldArray.Select(refId));
+                if (!locationInfo.ContainsField(field))
+                {
+                    // Read the value from the particular input heap array
+                    var fieldArray = this.state.GetFieldArray(field);
+                    var valueIntr = this.smtModel.GetInterpretation(fieldArray.Select(refId));
 
-                        // Store either the reference ID or the value interpretation to the field
-                        locationInfo.SetField(field, valueIntr);
-                    }
+                    // Store either the reference ID or the value interpretation to the field
+                    locationInfo.SetField(field, valueIntr);
                 }
             }
 
