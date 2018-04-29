@@ -63,6 +63,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             }
         }
 
+        public override void VisitThisExpression(ThisExpressionSyntax thisSyntax)
+        {
+            var type = this.Context.SemanticModel.GetTypeInfo(thisSyntax).Type;
+            var valueModel = this.Context.GetLocalInstanceModel(type);
+
+            Contract.Assert(this.Context.CurrentNode.ValueModel == null);
+            this.Context.CurrentNode.ValueModel = valueModel;
+        }
+
         public sealed override void VisitVariableDeclarator(VariableDeclaratorSyntax declaratorSyntax)
         {
             var variableModel = this.Context.TryGetModel(declaratorSyntax);
