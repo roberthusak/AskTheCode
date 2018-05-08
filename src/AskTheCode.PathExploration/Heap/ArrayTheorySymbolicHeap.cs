@@ -17,12 +17,12 @@ namespace AskTheCode.PathExploration.Heap
         private readonly ISymbolicHeapContext context;
         private readonly Stack<HeapState> stateStack = new Stack<HeapState>();
 
-        private HeapState currentState;
+        private HeapState.Builder currentState;
 
         public ArrayTheorySymbolicHeap(ISymbolicHeapContext context)
         {
             this.context = context;
-            this.currentState = HeapState.BasicState;
+            this.currentState = HeapState.BasicState.ToBuilder();
         }
 
         private ArrayTheorySymbolicHeap(
@@ -31,7 +31,7 @@ namespace AskTheCode.PathExploration.Heap
             HeapState currentState)
         {
             this.context = context;
-            this.currentState = currentState;
+            this.currentState = currentState.ToBuilder();
 
             foreach (var state in stateStack.Reverse())
             {
@@ -39,22 +39,22 @@ namespace AskTheCode.PathExploration.Heap
             }
         }
 
-        public bool CanBeSatisfiable => this.CurrentState != HeapState.ConflictState;
+        public bool CanBeSatisfiable => !this.CurrentState.IsConflicting;
 
-        private HeapState CurrentState => this.currentState;
+        private HeapState.Builder CurrentState => this.currentState;
 
         public ImmutableArray<BoolHandle> GetAssumptions() => this.CurrentState.GetAssumptions();
 
         public ISymbolicHeap Clone(ISymbolicHeapContext context)
         {
-            return new ArrayTheorySymbolicHeap(context, this.stateStack, this.currentState);
+            return new ArrayTheorySymbolicHeap(context, this.stateStack, this.currentState.ToState());
         }
 
         public void AllocateNew(VersionedVariable result)
         {
             if (this.CanBeSatisfiable)
             {
-                this.currentState = this.CurrentState.AllocateNew(result, this.context);
+                this.CurrentState.AllocateNew(result, this.context);
             }
         }
 
@@ -62,7 +62,7 @@ namespace AskTheCode.PathExploration.Heap
         {
             if (this.CanBeSatisfiable)
             {
-                this.currentState = this.CurrentState.AssignReference(result, value, this.context);
+                this.CurrentState.AssignReference(result, value, this.context);
             }
         }
 
@@ -70,9 +70,14 @@ namespace AskTheCode.PathExploration.Heap
         {
             if (this.CanBeSatisfiable)
             {
-                this.currentState = areEqual
-                        ? this.CurrentState.AssertEquality(left, right, this.context)
-                        : this.CurrentState.AssertInequality(left, right, this.context);
+                if (areEqual)
+                {
+                    this.CurrentState.AssertEquality(left, right, this.context);
+                }
+                else
+                {
+                    this.CurrentState.AssertInequality(left, right, this.context);
+                } 
             }
         }
 
@@ -84,8 +89,7 @@ namespace AskTheCode.PathExploration.Heap
                 return ExpressionFactory.False;
             }
 
-            (var newState, var expr) = this.CurrentState.GetEqualityExpression(areEqual, left, right, this.context);
-            this.currentState = newState;
+            var expr = this.CurrentState.GetEqualityExpression(areEqual, left, right, this.context);
 
             return expr;
         }
@@ -94,7 +98,7 @@ namespace AskTheCode.PathExploration.Heap
         {
             if (this.CanBeSatisfiable)
             {
-                this.currentState = this.CurrentState.ReadField(result, reference, field, this.context);
+                this.CurrentState.ReadField(result, reference, field, this.context);
             }
         }
 
@@ -102,26 +106,26 @@ namespace AskTheCode.PathExploration.Heap
         {
             if (this.CanBeSatisfiable)
             {
-                var newState = this.CurrentState.WriteField(reference, field, value, this.context);
+                this.CurrentState.WriteField(reference, field, value, this.context);
             }
         }
 
         public void PushState()
         {
-            this.stateStack.Push(this.currentState);
+            this.stateStack.Push(this.currentState.ToState());
         }
 
         public void PopState(int levels = 1)
         {
             for (int i = 0; i < levels; i++)
             {
-                this.currentState = this.stateStack.Pop();
+                this.currentState = this.stateStack.Pop().ToBuilder();
             }
         }
 
         public IHeapModelRecorder GetModelRecorder(IModel smtModel)
         {
-            return new ModelRecorder(smtModel, this.CurrentState);
+            return new ModelRecorder(smtModel, this.CurrentState.ToState());
         }
     }
 

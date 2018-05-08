@@ -158,7 +158,7 @@ namespace AskTheCode.PathExploration.Heap
 
             private Interpretation GetInterpretation(VersionedVariable reference)
             {
-                var varState = this.state.GetVariableState(reference);
+                var varState = this.state.TryGetVariableState(reference);
                 if (varState == null)
                 {
                     // References with no operations or constraints imposed upon them will be null
