@@ -108,6 +108,8 @@ namespace AskTheCode.PathExploration.Heap
                 Assignment
             }
 
+            public Builder ToBuilder() => new Builder(this);
+
             public VariableState GetVariableState(VersionedVariable variable)
             {
                 if (this.variableToStateIdMap.TryGetValue(variable, out int stateId))
@@ -840,6 +842,46 @@ namespace AskTheCode.PathExploration.Heap
                 public VariableMappingInfo WithKind(VariableMappingKind kind)
                 {
                     return new VariableMappingInfo(this.Variable, kind);
+                }
+            }
+
+            public class Builder
+            {
+                private readonly ImmutableSortedDictionary<int, VariableState>.Builder variableStates;
+                private readonly ImmutableDictionary<VersionedVariable, int>.Builder variableToStateIdMap;
+                private readonly ImmutableDictionary<int, ImmutableList<VariableMappingInfo>>.Builder stateIdToVariablesMap;
+                private readonly ImmutableDictionary<IFieldDefinition, ArrayHandle<IntHandle, Handle>>.Builder fieldToVariableMap;
+                private readonly int nextVariableStateId;
+                private readonly int nextReferenceValue;
+
+                private HeapState cachedState;
+
+                public Builder(HeapState state)
+                {
+                    this.variableStates = state.variableStates.ToBuilder();
+                    this.variableToStateIdMap = state.variableToStateIdMap.ToBuilder();
+                    this.stateIdToVariablesMap = state.stateIdToVariablesMap.ToBuilder();
+                    this.fieldToVariableMap = state.fieldToVariableMap.ToBuilder();
+                    this.nextVariableStateId = state.nextVariableStateId;
+                    this.nextReferenceValue = state.nextReferenceValue;
+
+                    this.cachedState = state;
+                }
+
+                public HeapState ToState()
+                {
+                    if (this.cachedState == null)
+                    {
+                        this.cachedState = new HeapState(
+                            this.variableStates.ToImmutable(),
+                            this.variableToStateIdMap.ToImmutable(),
+                            this.stateIdToVariablesMap.ToImmutable(),
+                            this.fieldToVariableMap.ToImmutable(),
+                            this.nextVariableStateId,
+                            this.nextReferenceValue);
+                    }
+
+                    return this.cachedState;
                 }
             }
         }
