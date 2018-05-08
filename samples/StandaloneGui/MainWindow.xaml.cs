@@ -63,7 +63,7 @@ namespace StandaloneGui
             if (args.Length >= 3)
             {
                 string documentName = args[2];
-                document = project?.Documents.FirstOrDefault(doc => doc.Name.EndsWith(documentName));
+                document = project?.Documents.FirstOrDefault(doc => doc.FilePath.EndsWith(documentName));
             }
 
             if (document == null)
