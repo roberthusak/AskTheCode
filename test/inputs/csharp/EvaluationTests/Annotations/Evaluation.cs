@@ -23,10 +23,32 @@ namespace EvaluationTests.Annotations
             Contract.Requires(condition);
         }
 
+        /// <summary>
+        /// Valid assertion skipped in tests.
+        /// </summary>
+        /// <remarks>
+        /// During the contract checking, the precondition is propagated to the call site as an assertion.
+        /// </remarks>
+        public static void SkippedValidAssert(bool condition)
+        {
+            Contract.Requires(condition);
+        }
+
         /// <remarks>
         /// During the contract checking, the precondition is propagated to the call site as an assertion.
         /// </remarks>
         public static void InvalidAssert(bool condition)
+        {
+            Contract.Requires(condition);
+        }
+
+        /// <summary>
+        /// Invalid assertion skipped in tests.
+        /// </summary>
+        /// <remarks>
+        /// During the contract checking, the precondition is propagated to the call site as an assertion.
+        /// </remarks>
+        public static void SkippedInvalidAssert(bool condition)
         {
             Contract.Requires(condition);
         }

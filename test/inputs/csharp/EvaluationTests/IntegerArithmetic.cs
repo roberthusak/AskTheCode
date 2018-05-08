@@ -79,7 +79,7 @@ namespace EvaluationTests
                 y = -x;
             }
 
-            Evaluation.InvalidAssert(y >= 0);
+            Evaluation.SkippedInvalidAssert(y >= 0);
         }
 
         [PexMethod]
@@ -110,7 +110,7 @@ namespace EvaluationTests
             int z = x * y;
             if (x == z && x > 2 && y != 1)
             {
-                Evaluation.InvalidUnreachable();
+                Evaluation.SkippedInvalidUnreachable();
             }
         }
 
@@ -120,7 +120,7 @@ namespace EvaluationTests
         {
             int sign = Math.Sign(x);
 
-            Evaluation.InvalidAssert(x >= 0);
+            Evaluation.SkippedInvalidAssert(x >= 0);
         }
 
         [Pure]

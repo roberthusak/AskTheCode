@@ -30,7 +30,7 @@ namespace EvaluationTests
                 i = i + 1;
             }
 
-            Evaluation.InvalidAssert(x < 32);   // AskTheCode, Pex
+            Evaluation.SkippedInvalidAssert(x < 32);   // AskTheCode, Pex
         }
 
         [PexMethod]
@@ -43,10 +43,10 @@ namespace EvaluationTests
                 j = j + 1;
                 i = i - 1;
 
-                Evaluation.ValidAssert(j > 0);  // CC
+                Evaluation.SkippedValidAssert(j > 0);  // CC
             }
 
-            Evaluation.InvalidAssert(j != 2048);   // Nothing
+            Evaluation.SkippedInvalidAssert(j != 2048);   // Nothing
         }
 
         [PexMethod]
@@ -79,7 +79,7 @@ namespace EvaluationTests
             int c = 0, p = 0;
             while (x > 0)
             {
-                Evaluation.ValidAssert(c >= 0);     // Nothing
+                Evaluation.SkippedValidAssert(c >= 0);     // Nothing
 
                 c = c + 1;
                 x = x - 1;
@@ -119,7 +119,7 @@ namespace EvaluationTests
                 i = i + 1;
             }
 
-            Evaluation.InvalidAssert(res != 2048);   // Pex
+            Evaluation.SkippedInvalidAssert(res != 2048);   // Pex
         }
 
         [PexMethod]
