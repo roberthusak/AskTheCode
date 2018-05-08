@@ -75,6 +75,7 @@
     <Compile Include="ExplorationState.cs" />
     <Compile Include="Explorer.cs" />
     <Compile Include="Heap\ArrayTheorySymbolicHeap.cs" />
+    <Compile Include="Heap\ArrayTheorySymbolicHeap.State.cs" />
     <Compile Include="Heap\IHeapModelRecorder.cs" />
     <Compile Include="Heap\ISymbolicHeap.cs" />
     <Compile Include="Heap\ISymbolicHeapContext.cs" />
