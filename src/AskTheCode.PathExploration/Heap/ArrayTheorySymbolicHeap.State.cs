@@ -81,7 +81,7 @@ namespace AskTheCode.PathExploration.Heap
 
             private readonly ImmutableSortedDictionary<int, VariableState> variableStates;
             private readonly ImmutableDictionary<VersionedVariable, int> variableToStateIdMap;
-            private readonly ImmutableDictionary<int, ImmutableList<VariableMappingInfo>> stateIdToVariablesMap;
+            private readonly ImmutableDictionary<int, ImmutableList<VersionedVariable>> stateIdToVariablesMap;
             private readonly ImmutableDictionary<IFieldDefinition, ArrayHandle<IntHandle, Handle>> fieldToVariableMap;
             private readonly int nextVariableStateId;
             private readonly int nextReferenceValue;
@@ -89,7 +89,7 @@ namespace AskTheCode.PathExploration.Heap
             private HeapState(
                 ImmutableSortedDictionary<int, VariableState> variableStates,
                 ImmutableDictionary<VersionedVariable, int> variableToStateIdMap,
-                ImmutableDictionary<int, ImmutableList<VariableMappingInfo>> stateIdToVariablesMap,
+                ImmutableDictionary<int, ImmutableList<VersionedVariable>> stateIdToVariablesMap,
                 ImmutableDictionary<IFieldDefinition, ArrayHandle<IntHandle, Handle>> fieldToVariableMap,
                 int nextVariableStateId,
                 int nextReferenceValue)
@@ -100,12 +100,6 @@ namespace AskTheCode.PathExploration.Heap
                 this.fieldToVariableMap = fieldToVariableMap;
                 this.nextVariableStateId = nextVariableStateId;
                 this.nextReferenceValue = nextReferenceValue;
-            }
-
-            private enum VariableMappingKind
-            {
-                Equality,
-                Assignment
             }
 
             public Builder ToBuilder() => new Builder(this);
@@ -139,9 +133,9 @@ namespace AskTheCode.PathExploration.Heap
                 });
                 var stateVarsMap = ImmutableDictionary.CreateRange(new[]
                 {
-                    new KeyValuePair<int, ImmutableList<VariableMappingInfo>>(
+                    new KeyValuePair<int, ImmutableList<VersionedVariable>>(
                         VariableState.NullId,
-                        ImmutableList.Create(new VariableMappingInfo(VersionedVariable.Null, VariableMappingKind.Equality)))
+                        ImmutableList.Create(VersionedVariable.Null))
                 });
 
                 return new HeapState(
@@ -153,28 +147,11 @@ namespace AskTheCode.PathExploration.Heap
                     1);
             }
 
-            private struct VariableMappingInfo
-            {
-                public VersionedVariable Variable;
-                public VariableMappingKind Kind;
-
-                public VariableMappingInfo(VersionedVariable variable, VariableMappingKind kind)
-                {
-                    this.Variable = variable;
-                    this.Kind = kind;
-                }
-
-                public VariableMappingInfo WithKind(VariableMappingKind kind)
-                {
-                    return new VariableMappingInfo(this.Variable, kind);
-                }
-            }
-
             public class Builder
             {
                 private readonly ImmutableSortedDictionary<int, VariableState>.Builder variableStates;
                 private readonly ImmutableDictionary<VersionedVariable, int>.Builder variableToStateIdMap;
-                private readonly ImmutableDictionary<int, ImmutableList<VariableMappingInfo>>.Builder stateIdToVariablesMap;
+                private readonly ImmutableDictionary<int, ImmutableList<VersionedVariable>>.Builder stateIdToVariablesMap;
                 private readonly ImmutableDictionary<IFieldDefinition, ArrayHandle<IntHandle, Handle>>.Builder fieldToVariableMap;
                 private int nextVariableStateId;
                 private int nextReferenceValue;
@@ -570,12 +547,12 @@ namespace AskTheCode.PathExploration.Heap
                             // Update the states of all the variables pointing to the old one and erase it
                             var currentVars = this.stateIdToVariablesMap[curStateId];
                             var newVars = this.stateIdToVariablesMap.GetValueOrDefault(state.Id)
-                                ?? ImmutableList<VariableMappingInfo>.Empty;
+                                ?? ImmutableList<VersionedVariable>.Empty;
                             newVars = newVars.AddRange(currentVars);
-                            if (!currentVars.Any(v => v.Variable == variable))
+                            if (!currentVars.Any(v => v == variable))
                             {
                                 // TODO: Consider turning it into a set to make this more effective
-                                newVars = newVars.Add(new VariableMappingInfo(variable, VariableMappingKind.Assignment));
+                                newVars = newVars.Add(variable);
                             }
 
                             this.variableStates.Remove(curStateId);
@@ -584,7 +561,7 @@ namespace AskTheCode.PathExploration.Heap
 
                             foreach (var newVar in newVars)
                             {
-                                this.variableToStateIdMap[newVar.Variable] = state.Id;
+                                this.variableToStateIdMap[newVar] = state.Id;
                             }
                         }
                     }
@@ -593,9 +570,8 @@ namespace AskTheCode.PathExploration.Heap
                         this.variableToStateIdMap[variable] = state.Id;
 
                         var curMappedVars = this.stateIdToVariablesMap.GetValueOrDefault(state.Id)
-                            ?? ImmutableList<VariableMappingInfo>.Empty;
-                        VariableMappingInfo varInfo = new VariableMappingInfo(variable, VariableMappingKind.Assignment);
-                        var newMappedVars = curMappedVars.Add(varInfo);
+                            ?? ImmutableList<VersionedVariable>.Empty;
+                        var newMappedVars = curMappedVars.Add(variable);
                         this.stateIdToVariablesMap[state.Id] = newMappedVars;
                     }
                 }
