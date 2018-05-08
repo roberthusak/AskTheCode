@@ -64,7 +64,23 @@ namespace EvaluationTests.Annotations
         /// <remarks>
         /// This precondition is satisfied only if the call site is not reachable.
         /// </remarks>
+        public static void SkippedValidUnreachable()
+        {
+            Contract.Requires(false);
+        }
+
+        /// <remarks>
+        /// This precondition is satisfied only if the call site is not reachable.
+        /// </remarks>
         public static void InvalidUnreachable()
+        {
+            Contract.Requires(false);
+        }
+
+        /// <remarks>
+        /// This precondition is satisfied only if the call site is not reachable.
+        /// </remarks>
+        public static void SkippedInvalidUnreachable()
         {
             Contract.Requires(false);
         }
