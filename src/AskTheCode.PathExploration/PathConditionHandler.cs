@@ -59,26 +59,10 @@ namespace AskTheCode.PathExploration
                 {
                     // This is needed in the case when the exploration itself started from a constructor (or from a
                     // method called by it). We need to let the heap know that this object is not a part of the input
-                    // heap. Notice that we tell the heap that we might have already marked this object as such.
+                    // heap.
                     var newVar = enterNode.Parameters[0];
                     var versionedVar = new VersionedVariable(newVar, this.GetVariableVersion(newVar));
-                    this.Heap.AllocateNew(versionedVar, mightBeRepeated: true);
-                }
-            }
-        }
-
-        protected override void OnAfterPathStepExtended(FlowEdge edge)
-        {
-            if (edge is OuterFlowEdge outerEdge)
-            {
-                if (outerEdge.Kind == OuterFlowEdgeKind.Return
-                    && ((CallFlowNode)outerEdge.To).IsObjectCreation)
-                {
-                    // When first encountering the constructor call, assert that the resulting reference must be
-                    // a newly allocated object that couldn't have be marked as such before.
-                    var newVar = outerEdge.From.Graph.Nodes.OfType<EnterFlowNode>().First().Parameters[0];
-                    var versionedVar = new VersionedVariable(newVar, this.GetVariableVersion(newVar));
-                    this.Heap.AllocateNew(versionedVar, mightBeRepeated: false);
+                    this.Heap.AllocateNew(versionedVar);
                 }
             }
         }

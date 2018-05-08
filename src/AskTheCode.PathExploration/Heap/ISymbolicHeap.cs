@@ -19,9 +19,7 @@ namespace AskTheCode.PathExploration.Heap
         ISymbolicHeap Clone(ISymbolicHeapContext context);
 
         /// <param name="result">The variable where the allocation is stored.</param>
-        /// <param name="mightBeRepeated">If set to <see cref="true"/>, don't consider consecutive calls on the same
-        /// variable as different allocations (that could have led to a conflict).</param>
-        void AllocateNew(VersionedVariable result, bool mightBeRepeated);
+        void AllocateNew(VersionedVariable result);
 
         void AssignReference(VersionedVariable result, VersionedVariable value);
 

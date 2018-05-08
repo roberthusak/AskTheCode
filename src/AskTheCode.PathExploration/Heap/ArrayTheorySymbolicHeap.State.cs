@@ -177,18 +177,8 @@ namespace AskTheCode.PathExploration.Heap
 
             public HeapState AllocateNew(
                 VersionedVariable result,
-                ISymbolicHeapContext context,
-                bool mightBeRepeated)
+                ISymbolicHeapContext context)
             {
-                if (mightBeRepeated)
-                {
-                    var resultState = this.GetVariableState(result);
-                    if (resultState.IsExplicitlyAllocated)
-                    {
-                        return this;
-                    }
-                }
-
                 (var state, var newVarState) = this.MapToNewValueVariableState(result);
                 if (state == ConflictState)
                 {

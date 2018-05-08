@@ -50,11 +50,11 @@ namespace AskTheCode.PathExploration.Heap
             return new ArrayTheorySymbolicHeap(context, this.stateStack, this.currentState);
         }
 
-        public void AllocateNew(VersionedVariable result, bool mightBeRepeated)
+        public void AllocateNew(VersionedVariable result)
         {
             if (this.CanBeSatisfiable)
             {
-                this.currentState = this.CurrentState.AllocateNew(result, this.context, mightBeRepeated);
+                this.currentState = this.CurrentState.AllocateNew(result, this.context);
             }
         }
 
