@@ -403,14 +403,14 @@ namespace ControlFlowGraphViewer
             {
                 string value = null;
 
-                if (variable.IsReference)
+                if (variable.IsReference && locIndex < heapLocations.Length)
                 {
                     var location = heapLocations[locIndex];
                     value = location.ToString();
 
                     locIndex++;
                 }
-                else
+                else if (!variable.IsReference && intrIndex < interpretations.Length)
                 {
                     var interpretation = interpretations[intrIndex];
                     value = interpretation?.Value.ToString();
