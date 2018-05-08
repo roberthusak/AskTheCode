@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:AskTheCode.ViewModel;assembly=AskTheCode.ViewModel"
         xmlns:controls="clr-namespace:AskTheCode.Wpf;assembly=AskTheCode.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800" WindowState="Maximized" Loaded="Window_Loaded">
+        Title="AskTheCode Standalone GUI" Height="600" Width="800" WindowState="Maximized" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" />
