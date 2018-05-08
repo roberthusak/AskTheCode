@@ -315,8 +315,17 @@ namespace AskTheCode.PathExploration.Heap
                     var leftState = this.GetOrCreateVariableState(left, context);
                     var rightState = this.GetOrCreateVariableState(right, context);
 
-                    // TODO: Optimize by trying to get constant expression
-                    context.AddAssertion(leftState.Representation == rightState.Representation);
+                    if (this.TryGetConstantComparisonResult(leftState, rightState) is bool areEqual)
+                    {
+                        if (!areEqual)
+                        {
+                            this.IsConflicting = true;
+                        }
+                    }
+                    else
+                    {
+                        context.AddAssertion(leftState.Representation == rightState.Representation); 
+                    }
                 }
 
                 public void AssertInequality(
@@ -329,7 +338,30 @@ namespace AskTheCode.PathExploration.Heap
                     var leftState = this.GetOrCreateVariableState(left, context);
                     var rightState = this.GetOrCreateVariableState(right, context);
 
-                    context.AddAssertion(leftState.Representation != rightState.Representation);
+                    if (this.TryGetConstantComparisonResult(leftState, rightState) is bool areEqual)
+                    {
+                        if (areEqual)
+                        {
+                            this.IsConflicting = true;
+                        }
+                    }
+                    else
+                    {
+                        if (IsNullStateAndVarState(leftState, rightState, out var varState))
+                        {
+                            // No need to assert it again if it has been already done before
+                            if (varState.CanBeNull)
+                            {
+                                this.variableStates[varState.Id] = varState.WithCanBeNull(false);
+
+                                context.AddAssertion(leftState.Representation != rightState.Representation);
+                            }
+                        }
+                        else
+                        {
+                            context.AddAssertion(leftState.Representation != rightState.Representation);
+                        }
+                    }
                 }
 
                 public BoolHandle GetEqualityExpression(
@@ -343,9 +375,40 @@ namespace AskTheCode.PathExploration.Heap
                     var leftState = this.GetOrCreateVariableState(left, context);
                     var rightState = this.GetOrCreateVariableState(right, context);
 
-                    return areEqual
-                        ? leftState.Representation == rightState.Representation
-                        : leftState.Representation != rightState.Representation;
+                    if (this.TryGetConstantComparisonResult(leftState, rightState) is bool constResult)
+                    {
+                        return constResult;
+                    }
+                    else
+                    {
+                        return areEqual
+                            ? leftState.Representation == rightState.Representation
+                            : leftState.Representation != rightState.Representation;
+                    }
+                }
+
+                private bool? TryGetConstantComparisonResult(VariableState leftState, VariableState rightState)
+                {
+                    Contract.Assert(leftState != null);
+                    Contract.Assert(rightState != null);
+
+                    if (leftState == rightState)
+                    {
+                        return true;
+                    }
+                    else if (leftState.Value.HasValue && leftState.Value == rightState.Value)
+                    {
+                        return true;
+                    }
+                    else if ((leftState.IsNull && !rightState.CanBeNull)
+                        || (rightState.IsNull && !leftState.CanBeNull))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
 
                 public void ReadField(
@@ -428,6 +491,31 @@ namespace AskTheCode.PathExploration.Heap
 
                     var storeAssert = (oldFieldVar == newFieldVar.Store(refState.Representation, (Handle)valExpr));
                     context.AddAssertion(storeAssert);
+                }
+
+                private static bool IsNullStateAndVarState(
+                    VariableState leftState,
+                    VariableState rightState,
+                    out VariableState varState)
+                {
+                    Contract.Requires(leftState != null);
+                    Contract.Requires(rightState != null);
+
+                    if (leftState == VariableState.Null && rightState != VariableState.Null)
+                    {
+                        varState = rightState;
+                        return true;
+                    }
+                    else if (rightState == VariableState.Null && leftState != VariableState.Null)
+                    {
+                        varState = leftState;
+                        return true;
+                    }
+                    else
+                    {
+                        varState = null;
+                        return false;
+                    }
                 }
 
                 private ArrayHandle<IntHandle, Handle> GetOrAddFieldVariable(
