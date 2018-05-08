@@ -28,13 +28,13 @@ namespace AskTheCode.PathExploration.Heap
         private class ModelRecorder : IHeapModelRecorder
         {
             private readonly IModel smtModel;
-            private readonly AlgorithmState state;
+            private readonly HeapState state;
 
             private Dictionary<int, LocationInfo> inputHeap = new Dictionary<int, LocationInfo>();
             private Dictionary<int, LocationInfo> currentHeap = new Dictionary<int, LocationInfo>();
             private List<FieldChange> changes = new List<FieldChange>();
 
-            public ModelRecorder(IModel smtModel, AlgorithmState state)
+            public ModelRecorder(IModel smtModel, HeapState state)
             {
                 this.smtModel = smtModel;
                 this.state = state;

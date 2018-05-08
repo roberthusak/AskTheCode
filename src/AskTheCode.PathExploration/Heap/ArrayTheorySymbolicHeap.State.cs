@@ -14,7 +14,7 @@ namespace AskTheCode.PathExploration.Heap
 {
     public partial class ArrayTheorySymbolicHeap
     {
-        public class VariableState
+        internal class VariableState
         {
             public const int NullId = 0;
             public const int NullValue = 0;
@@ -73,11 +73,11 @@ namespace AskTheCode.PathExploration.Heap
             }
         }
 
-        private class AlgorithmState
+        private class HeapState
         {
-            public static readonly AlgorithmState ConflictState = new AlgorithmState(null, null, null, null, -1, -1);
+            public static readonly HeapState ConflictState = new HeapState(null, null, null, null, -1, -1);
 
-            public static readonly AlgorithmState BasicState = ConstructBasicState();
+            public static readonly HeapState BasicState = ConstructBasicState();
 
             private readonly ImmutableSortedDictionary<int, VariableState> variableStates;
             private readonly ImmutableDictionary<VersionedVariable, int> variableToStateIdMap;
@@ -86,7 +86,7 @@ namespace AskTheCode.PathExploration.Heap
             private readonly int nextVariableStateId;
             private readonly int nextReferenceValue;
 
-            private AlgorithmState(
+            private HeapState(
                 ImmutableSortedDictionary<int, VariableState> variableStates,
                 ImmutableDictionary<VersionedVariable, int> variableToStateIdMap,
                 ImmutableDictionary<int, ImmutableList<VariableMappingInfo>> stateIdToVariablesMap,
@@ -175,7 +175,7 @@ namespace AskTheCode.PathExploration.Heap
                     .ToImmutableArray();
             }
 
-            public AlgorithmState AllocateNew(
+            public HeapState AllocateNew(
                 VersionedVariable result,
                 ISymbolicHeapContext context,
                 bool mightBeRepeated)
@@ -206,7 +206,7 @@ namespace AskTheCode.PathExploration.Heap
                 return state;
             }
 
-            public AlgorithmState AssignReference(
+            public HeapState AssignReference(
                 VersionedVariable result,
                 VersionedVariable value,
                 ISymbolicHeapContext context)
@@ -260,7 +260,7 @@ namespace AskTheCode.PathExploration.Heap
                     .UpdateMappingKind(result, VariableMappingKind.Assignment);
             }
 
-            public AlgorithmState AssertEquality(
+            public HeapState AssertEquality(
                 VersionedVariable left,
                 VersionedVariable right,
                 ISymbolicHeapContext context)
@@ -310,7 +310,7 @@ namespace AskTheCode.PathExploration.Heap
                 return this.MapToBetterVariableState(left, leftState, right, rightState);
             }
 
-            public AlgorithmState AssertInequality(
+            public HeapState AssertInequality(
                 VersionedVariable left,
                 VersionedVariable right,
                 ISymbolicHeapContext context)
@@ -339,7 +339,7 @@ namespace AskTheCode.PathExploration.Heap
                     }
                 }
 
-                AlgorithmState resultState = this;
+                HeapState resultState = this;
 
                 // Initialize left variable, if needed
                 if (leftState == null)
@@ -367,7 +367,7 @@ namespace AskTheCode.PathExploration.Heap
                 return resultState;
             }
 
-            public (AlgorithmState newState, BoolHandle result) GetEqualityExpression(
+            public (HeapState newState, BoolHandle result) GetEqualityExpression(
                 bool areEqual,
                 VersionedVariable left,
                 VersionedVariable right,
@@ -393,7 +393,7 @@ namespace AskTheCode.PathExploration.Heap
                 return (resultState, result);
             }
 
-            public AlgorithmState ReadField(
+            public HeapState ReadField(
                 VersionedVariable result,
                 VersionedVariable reference,
                 IFieldDefinition field,
@@ -432,7 +432,7 @@ namespace AskTheCode.PathExploration.Heap
                 return algState;
             }
 
-            public AlgorithmState WriteField(
+            public HeapState WriteField(
                 VersionedVariable reference,
                 IFieldDefinition field,
                 Expression value,
@@ -476,7 +476,7 @@ namespace AskTheCode.PathExploration.Heap
                 return algState;
             }
 
-            private static AlgorithmState ConstructBasicState()
+            private static HeapState ConstructBasicState()
             {
                 var states = ImmutableSortedDictionary.CreateRange(new[]
                 {
@@ -493,7 +493,7 @@ namespace AskTheCode.PathExploration.Heap
                         ImmutableList.Create(new VariableMappingInfo(VersionedVariable.Null, VariableMappingKind.Equality)))
                 });
 
-                return new AlgorithmState(
+                return new HeapState(
                     states,
                     varStateMap,
                     stateVarsMap,
@@ -530,7 +530,7 @@ namespace AskTheCode.PathExploration.Heap
                 }
             }
 
-            private (AlgorithmState algState, VariableState refState)
+            private (HeapState algState, VariableState refState)
                 SecureDereference(
                     VersionedVariable reference,
                     ISymbolicHeapContext context)
@@ -564,7 +564,7 @@ namespace AskTheCode.PathExploration.Heap
                 return (algState, refState);
             }
 
-            private (AlgorithmState algState, ArrayHandle<IntHandle, Handle> fieldVar)
+            private (HeapState algState, ArrayHandle<IntHandle, Handle> fieldVar)
                 GetOrAddFieldVariable(
                     IFieldDefinition field,
                     ISymbolicHeapContext context)
@@ -579,7 +579,7 @@ namespace AskTheCode.PathExploration.Heap
                 }
             }
 
-            private (AlgorithmState algState, ArrayHandle<IntHandle, Handle> fieldVar)
+            private (HeapState algState, ArrayHandle<IntHandle, Handle> fieldVar)
                 CreateNewFieldVariableVersion(
                     IFieldDefinition field,
                     ISymbolicHeapContext context)
@@ -590,7 +590,7 @@ namespace AskTheCode.PathExploration.Heap
                     field.ToString());
 
                 var newFieldVarMap = this.fieldToVariableMap.SetItem(field, newFieldVar);
-                var algState = new AlgorithmState(
+                var algState = new HeapState(
                     this.variableStates,
                     this.variableToStateIdMap,
                     this.stateIdToVariablesMap,
@@ -601,10 +601,10 @@ namespace AskTheCode.PathExploration.Heap
                 return (algState, newFieldVar);
             }
 
-            private AlgorithmState UpdateVariableState(VariableState variableState)
+            private HeapState UpdateVariableState(VariableState variableState)
             {
                 var newVars = this.variableStates.SetItem(variableState.Id, variableState);
-                return new AlgorithmState(
+                return new HeapState(
                     newVars,
                     this.variableToStateIdMap,
                     this.stateIdToVariablesMap,
@@ -613,7 +613,7 @@ namespace AskTheCode.PathExploration.Heap
                     this.nextReferenceValue);
             }
 
-            private AlgorithmState MapToVariableState(
+            private HeapState MapToVariableState(
                 VersionedVariable variable,
                 VariableState state,
                 VariableMappingKind kind = VariableMappingKind.Equality)
@@ -661,7 +661,7 @@ namespace AskTheCode.PathExploration.Heap
                         var newVarStateMap = this.variableToStateIdMap.SetItems(
                             newVars.Select(v => new KeyValuePair<VersionedVariable, int>(v.Variable, state.Id)));
 
-                        return new AlgorithmState(
+                        return new HeapState(
                             newStates,
                             newVarStateMap,
                             newStateVarsMap,
@@ -679,7 +679,7 @@ namespace AskTheCode.PathExploration.Heap
                     var varInfo = new VariableMappingInfo(variable, kind);
                     var newStateVarsMap = this.stateIdToVariablesMap.SetItem(state.Id, currentVars.Add(varInfo));
 
-                    return new AlgorithmState(
+                    return new HeapState(
                         this.variableStates,
                         newVarStateMap,
                         newStateVarsMap,
@@ -689,7 +689,7 @@ namespace AskTheCode.PathExploration.Heap
                 }
             }
 
-            private AlgorithmState MapToBetterVariableState(
+            private HeapState MapToBetterVariableState(
                 VersionedVariable left,
                 VariableState leftState,
                 VersionedVariable right,
@@ -744,7 +744,7 @@ namespace AskTheCode.PathExploration.Heap
                 }
             }
 
-            private (AlgorithmState algState, VariableState refState)
+            private (HeapState algState, VariableState refState)
                 MapToNewInputVariableState(
                     VersionedVariable variable,
                     ISymbolicHeapContext context,
@@ -755,7 +755,7 @@ namespace AskTheCode.PathExploration.Heap
                 var newVarStates = this.variableStates.Add(varState.Id, varState);
                 var newStateVarsMap = this.stateIdToVariablesMap.SetItem(varState.Id, ImmutableList<VariableMappingInfo>.Empty);
 
-                var algState = new AlgorithmState(
+                var algState = new HeapState(
                     newVarStates,
                     this.variableToStateIdMap,
                     newStateVarsMap,
@@ -768,13 +768,13 @@ namespace AskTheCode.PathExploration.Heap
                 return (algState, varState);
             }
 
-            private (AlgorithmState state, VariableState result) MapToNewValueVariableState(VersionedVariable variable)
+            private (HeapState state, VariableState result) MapToNewValueVariableState(VersionedVariable variable)
             {
                 var varState = VariableState.CreateValue(this.nextVariableStateId, this.nextReferenceValue);
                 var newVarStates = this.variableStates.Add(varState.Id, varState);
                 var newStateVarsMap = this.stateIdToVariablesMap.SetItem(varState.Id, ImmutableList<VariableMappingInfo>.Empty);
 
-                var algState = new AlgorithmState(
+                var algState = new HeapState(
                     newVarStates,
                     this.variableToStateIdMap,
                     newStateVarsMap,
@@ -787,7 +787,7 @@ namespace AskTheCode.PathExploration.Heap
                 return (algState, varState);
             }
 
-            private AlgorithmState UpdateMappingKind(VersionedVariable variable, VariableMappingKind kind)
+            private HeapState UpdateMappingKind(VersionedVariable variable, VariableMappingKind kind)
             {
                 int stateId = this.variableToStateIdMap[variable];
                 var mappedVars = this.stateIdToVariablesMap[stateId];
@@ -802,7 +802,7 @@ namespace AskTheCode.PathExploration.Heap
                     var newMappedVars = mappedVars.Replace(mappedVar, mappedVar.WithKind(kind));
                     var newStateVarsMap = this.stateIdToVariablesMap.SetItem(stateId, newMappedVars);
 
-                    return new AlgorithmState(
+                    return new HeapState(
                         this.variableStates,
                         this.variableToStateIdMap,
                         newStateVarsMap,
@@ -812,7 +812,7 @@ namespace AskTheCode.PathExploration.Heap
                 }
             }
 
-            private (AlgorithmState newState, VariableState varState) GetOrAddVariable(VersionedVariable variable, ISymbolicHeapContext context)
+            private (HeapState newState, VariableState varState) GetOrAddVariable(VersionedVariable variable, ISymbolicHeapContext context)
             {
                 if (this.variableToStateIdMap.TryGetValue(variable, out var varStateId))
                 {

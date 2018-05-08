@@ -15,20 +15,20 @@ namespace AskTheCode.PathExploration.Heap
     public partial class ArrayTheorySymbolicHeap : ISymbolicHeap
     {
         private readonly ISymbolicHeapContext context;
-        private readonly Stack<AlgorithmState> stateStack = new Stack<AlgorithmState>();
+        private readonly Stack<HeapState> stateStack = new Stack<HeapState>();
 
-        private AlgorithmState currentState;
+        private HeapState currentState;
 
         public ArrayTheorySymbolicHeap(ISymbolicHeapContext context)
         {
             this.context = context;
-            this.currentState = AlgorithmState.BasicState;
+            this.currentState = HeapState.BasicState;
         }
 
         private ArrayTheorySymbolicHeap(
             ISymbolicHeapContext context,
-            Stack<AlgorithmState> stateStack,
-            AlgorithmState currentState)
+            Stack<HeapState> stateStack,
+            HeapState currentState)
         {
             this.context = context;
             this.currentState = currentState;
@@ -39,9 +39,9 @@ namespace AskTheCode.PathExploration.Heap
             }
         }
 
-        public bool CanBeSatisfiable => this.CurrentState != AlgorithmState.ConflictState;
+        public bool CanBeSatisfiable => this.CurrentState != HeapState.ConflictState;
 
-        private AlgorithmState CurrentState => this.currentState;
+        private HeapState CurrentState => this.currentState;
 
         public ImmutableArray<BoolHandle> GetAssumptions() => this.CurrentState.GetAssumptions();
 
