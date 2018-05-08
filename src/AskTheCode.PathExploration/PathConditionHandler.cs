@@ -127,7 +127,7 @@ namespace AskTheCode.PathExploration
             Expression value)
         {
             if (variable.IsReference
-                || (value.Sort == Sort.Bool && value is ReferenceComparisonVariable))
+                || (value?.Sort == Sort.Bool && value is ReferenceComparisonVariable))
             {
                 this.Heap.Retract();
             }
