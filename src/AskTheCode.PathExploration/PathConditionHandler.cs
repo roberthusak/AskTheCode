@@ -31,6 +31,7 @@ namespace AskTheCode.PathExploration
             this.Heap = heap;
 
             this.smtSolver.Push();
+            this.Heap.PushState();
         }
 
         internal ISymbolicHeap Heap { get; }
@@ -41,12 +42,14 @@ namespace AskTheCode.PathExploration
             if (popCount > 0)
             {
                 this.smtSolver.Pop(popCount);
+                this.Heap.PopState(popCount);
             }
         }
 
         protected override void OnBeforePathStepExtended(FlowEdge edge)
         {
             this.smtSolver.Push();
+            this.Heap.PushState();
 
             if (edge is OuterFlowEdge outerEdge)
             {
@@ -80,19 +83,6 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        protected override void OnAfterPathStepRetracted(FlowEdge edge)
-        {
-            if (edge is OuterFlowEdge outerEdge
-                && (outerEdge.Kind == OuterFlowEdgeKind.MethodCall || outerEdge.Kind == OuterFlowEdgeKind.Return))
-            {
-                var callNode = outerEdge.From as CallFlowNode ?? (CallFlowNode)outerEdge.To;
-                if (callNode.IsObjectCreation)
-                {
-                    this.Heap.Retract();
-                }
-            }
-        }
-
         protected override void OnConditionAsserted(BoolHandle condition)
         {
             this.smtSolver.AddAssertion(this.NameProvider, condition);
@@ -121,32 +111,12 @@ namespace AskTheCode.PathExploration
             }
         }
 
-        protected override void OnVariableAssignmentRetracted(
-            FlowVariable variable,
-            int assignedVersion,
-            Expression value)
-        {
-            if (variable.IsReference
-                || (value?.Sort == Sort.Bool && value is ReferenceComparisonVariable))
-            {
-                this.Heap.Retract();
-            }
-        }
-
         protected override void OnReferenceEqualityAsserted(
             bool areEqual,
             VersionedVariable left,
             VersionedVariable right)
         {
             this.Heap.AssertEquality(areEqual, left, right);
-        }
-
-        protected override void OnReferenceEqualityRetracted(
-            bool areEqual,
-            VersionedVariable left,
-            VersionedVariable right)
-        {
-            this.Heap.Retract();
         }
 
         protected override void OnFieldReadAsserted(
@@ -157,28 +127,12 @@ namespace AskTheCode.PathExploration
             this.Heap.ReadField(result, reference, field);
         }
 
-        protected override void OnFieldReadRetracted(
-            VersionedVariable result,
-            VersionedVariable reference,
-            IFieldDefinition field)
-        {
-            this.Heap.Retract();
-        }
-
         protected override void OnFieldWriteAsserted(
             VersionedVariable reference,
             IFieldDefinition field,
             Expression value)
         {
             this.Heap.WriteField(reference, field, value);
-        }
-
-        protected override void OnFieldWriteRetracted(
-            VersionedVariable reference,
-            IFieldDefinition field,
-            Expression value)
-        {
-            this.Heap.Retract();
         }
 
         private void AssertEquals(FlowVariable variable, int version, Expression value)

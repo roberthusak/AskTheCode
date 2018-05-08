@@ -17,16 +17,21 @@ namespace AskTheCode.PathExploration.Heap
         private readonly ISymbolicHeapContext context;
         private readonly Stack<AlgorithmState> stateStack = new Stack<AlgorithmState>();
 
+        private AlgorithmState currentState;
+
         public ArrayTheorySymbolicHeap(ISymbolicHeapContext context)
         {
             this.context = context;
-
-            this.stateStack.Push(AlgorithmState.BasicState);
+            this.currentState = AlgorithmState.BasicState;
         }
 
-        private ArrayTheorySymbolicHeap(ISymbolicHeapContext context, Stack<AlgorithmState> stateStack)
+        private ArrayTheorySymbolicHeap(
+            ISymbolicHeapContext context,
+            Stack<AlgorithmState> stateStack,
+            AlgorithmState currentState)
         {
             this.context = context;
+            this.currentState = currentState;
 
             foreach (var state in stateStack.Reverse())
             {
@@ -36,51 +41,39 @@ namespace AskTheCode.PathExploration.Heap
 
         public bool CanBeSatisfiable => this.CurrentState != AlgorithmState.ConflictState;
 
-        private AlgorithmState CurrentState => this.stateStack.Peek();
+        private AlgorithmState CurrentState => this.currentState;
 
         public ImmutableArray<BoolHandle> GetAssumptions() => this.CurrentState.GetAssumptions();
 
         public ISymbolicHeap Clone(ISymbolicHeapContext context)
         {
-            return new ArrayTheorySymbolicHeap(context, this.stateStack);
+            return new ArrayTheorySymbolicHeap(context, this.stateStack, this.currentState);
         }
 
         public void AllocateNew(VersionedVariable result, bool mightBeRepeated)
         {
-            if (!this.CanBeSatisfiable)
+            if (this.CanBeSatisfiable)
             {
-                this.stateStack.Push(AlgorithmState.ConflictState);
-                return;
+                this.currentState = this.CurrentState.AllocateNew(result, this.context, mightBeRepeated);
             }
-
-            var newState = this.CurrentState.AllocateNew(result, this.context, mightBeRepeated);
-            this.stateStack.Push(newState);
         }
 
         public void AssignReference(VersionedVariable result, VersionedVariable value)
         {
-            if (!this.CanBeSatisfiable)
+            if (this.CanBeSatisfiable)
             {
-                this.stateStack.Push(AlgorithmState.ConflictState);
-                return;
+                this.currentState = this.CurrentState.AssignReference(result, value, this.context);
             }
-
-            var newState = this.CurrentState.AssignReference(result, value, this.context);
-            this.stateStack.Push(newState);
         }
 
         public void AssertEquality(bool areEqual, VersionedVariable left, VersionedVariable right)
         {
-            if (!this.CanBeSatisfiable)
+            if (this.CanBeSatisfiable)
             {
-                this.stateStack.Push(AlgorithmState.ConflictState);
-                return;
+                this.currentState = areEqual
+                        ? this.CurrentState.AssertEquality(left, right, this.context)
+                        : this.CurrentState.AssertInequality(left, right, this.context);
             }
-
-            var newState = areEqual
-                ? this.CurrentState.AssertEquality(left, right, this.context)
-                : this.CurrentState.AssertInequality(left, right, this.context);
-            this.stateStack.Push(newState);
         }
 
         public Expression GetEqualityExpression(bool areEqual, VersionedVariable left, VersionedVariable right)
@@ -92,40 +85,37 @@ namespace AskTheCode.PathExploration.Heap
             }
 
             (var newState, var expr) = this.CurrentState.GetEqualityExpression(areEqual, left, right, this.context);
-            this.stateStack.Push(newState);
+            this.currentState = newState;
 
             return expr;
         }
 
         public void ReadField(VersionedVariable result, VersionedVariable reference, IFieldDefinition field)
         {
-            if (!this.CanBeSatisfiable)
+            if (this.CanBeSatisfiable)
             {
-                this.stateStack.Push(AlgorithmState.ConflictState);
-                return;
+                this.currentState = this.CurrentState.ReadField(result, reference, field, this.context);
             }
-
-            var newState = this.CurrentState.ReadField(result, reference, field, this.context);
-            this.stateStack.Push(newState);
         }
 
         public void WriteField(VersionedVariable reference, IFieldDefinition field, Expression value)
         {
-            if (!this.CanBeSatisfiable)
+            if (this.CanBeSatisfiable)
             {
-                this.stateStack.Push(AlgorithmState.ConflictState);
-                return;
+                var newState = this.CurrentState.WriteField(reference, field, value, this.context);
             }
-
-            var newState = this.CurrentState.WriteField(reference, field, value, this.context);
-            this.stateStack.Push(newState);
         }
 
-        public void Retract(int operationCount = 1)
+        public void PushState()
         {
-            for (int i = 0; i < operationCount; i++)
+            this.stateStack.Push(this.currentState);
+        }
+
+        public void PopState(int levels = 1)
+        {
+            for (int i = 0; i < levels; i++)
             {
-                this.stateStack.Pop();
+                this.currentState = this.stateStack.Pop();
             }
         }
 

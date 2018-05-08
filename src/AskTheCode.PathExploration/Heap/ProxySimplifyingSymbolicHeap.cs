@@ -135,12 +135,14 @@ namespace AskTheCode.PathExploration.Heap
             this.graphStack.Push(newGraph);
         }
 
-        public void Retract(int operationCount = 1)
+        public void PushState()
         {
-            for (int i = 0; i < operationCount; i++)
-            {
-                this.graphStack.Pop();
-            }
+            throw new NotImplementedException();
+        }
+
+        public void PopState(int operationCount = 1)
+        {
+            throw new NotImplementedException();
         }
 
         public IHeapModelRecorder GetModelRecorder(IModel smtModel)

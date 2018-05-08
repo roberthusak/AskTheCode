@@ -33,7 +33,9 @@ namespace AskTheCode.PathExploration.Heap
 
         void WriteField(VersionedVariable reference, IFieldDefinition field, Expression value);
 
-        void Retract(int operationCount = 1);
+        void PushState();
+
+        void PopState(int levels = 1);
 
         IHeapModelRecorder GetModelRecorder(IModel smtModel);
     }
