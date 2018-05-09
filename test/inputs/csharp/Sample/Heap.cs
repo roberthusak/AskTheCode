@@ -7,17 +7,26 @@ using System.Threading.Tasks;
 
 namespace Sample
 {
+    /// <summary>
+    /// Simple heap structure to demonstrate heap operations: a node of a linked list.
+    /// </summary>
     public class Node
     {
         public int value;
         public Node next;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Node"/> class.
+        /// </summary>
         public Node(int value, Node next)
         {
             this.value = value;
             this.next = next;
         }
 
+        /// <summary>
+        /// Provides an indirect way to change <see cref="next"/> and demonstrates access to instance fields.
+        /// </summary>
         public void SetNext(Node nextNode)
         {
             next = nextNode;
@@ -25,20 +34,32 @@ namespace Sample
             DoNothing(next);
         }
 
+        /// <summary>
+        /// Method with no operations to demonstrate proper calls.
+        /// </summary>
         private void DoNothing(Node a)
         {
         }
     }
 
+    /// <summary>
+    /// Collection of straightforward scenarios.
+    /// </summary>
     public static class Heap
     {
+        /// <summary>
+        /// Assignment of references.
+        /// </summary>
         public static void SimpleReferencePassing(Node a, Node b, Node c)
         {
             a = b;
             c = null;
         }
 
-        public static void SimpleFieldAccess(Node a, Node b)
+        /// <summary>
+        /// Shows a complicated sequence of field accesses.
+        /// </summary>
+        public static void FieldAccess(Node a, Node b)
         {
             int a_val = a.value;
             b.value = 10;
@@ -51,13 +72,17 @@ namespace Sample
             a.next.next = b.next.next;
         }
 
+        /// <summary>
+        /// Shows a simple instance method call.
+        /// </summary>
         public static void SimpleMethodCall(Node a, Node b)
         {
             a.SetNext(b);
-            a.next.SetNext(b);
-            a.next.SetNext(b.next);
         }
 
+        /// <summary>
+        /// Shows a simple constructor call.
+        /// </summary>
         public static void SimpleConstructor()
         {
             var n = new Node(0, null);
@@ -80,6 +105,9 @@ namespace Sample
             }
         }
 
+        /// <summary>
+        /// Shows a combination of multiple operations.
+        /// </summary>
         public static void SimpleComparison(Node a, Node b)
         {
             if (a == b)
@@ -96,16 +124,17 @@ namespace Sample
             }
         }
 
-        public static void DelayedComparison(Node a, Node b, int i)
+        /// <summary>
+        /// Shows that reference comparison works well even if its not directly constraining the current path.
+        /// </summary>
+        public static void DelayedComparison(Node a, Node b)
         {
             bool wereEqual = (a == b);
             a = new Node(0, b);
-            i = 2 * i;
-            bool cond = wereEqual || i < 10;
 
-            if (!cond)
+            if (wereEqual)
             {
-                Debug.Assert(a == b);
+                Debug.Assert(a != b);
             }
         }
     }

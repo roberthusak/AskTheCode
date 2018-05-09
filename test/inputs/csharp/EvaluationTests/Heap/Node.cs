@@ -7,31 +7,43 @@ using EvaluationTests.Annotations;
 
 namespace EvaluationTests.Heap
 {
+    /// <summary>
+    /// Simple heap structure to demonstrate heap operations: a node of a linked list.
+    /// </summary>
     public class Node
     {
         public int value;
         public Node next;
 
-        public Node()
-        {
-        }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Node"/> class.
+        /// </summary>
         public Node(int value, Node next)
         {
             this.value = value;
             this.next = next;
         }
 
+        /// <summary>
+        /// Provides an indirect way to change <see cref="next"/>.
+        /// </summary>
         public void SetNext(Node nextNode)
         {
-            // Test that the field of the current instance is successfully matched
+            // Enables testing that the field of the current instance is successfully matched
             next = nextNode;
         }
 
+        /// <summary>
+        /// Method with no operations to demonstrate proper calls.
+        /// </summary>
         public void Nothing()
         {
         }
 
+        /// <summary>
+        /// Swaps this node with the following one if the <see cref="value"/> of the following one is lower than that
+        /// of the current one. Serves to demonstrate a more complicated example of heap manipulation.
+        /// </summary>
         public Node SwapNode()
         {
             Node result = this;
@@ -56,6 +68,9 @@ namespace EvaluationTests.Heap
             return result;
         }
 
+        /// <summary>
+        /// Checks that <see cref="Node.Node(int, Node)"/> and <see cref="SetNext(Node)"/> work correctly.
+        /// </summary>
         public static void Test(Node a)
         {
             var b = new Node(0, null);
