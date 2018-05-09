@@ -172,11 +172,11 @@ namespace AskTheCode.PathExploration
                     if (this.startingNode.Operation is Assignment assignment)
                     {
                         var assertionVar = assignment.Variable;
-                        if (assignment.Value is ReferenceComparisonVariable refComp)
+                        if (References.IsReferenceComparison(assignment.Value, out bool areEqual, out var left, out var right))
                         {
-                            var leftVar = this.GetVersioned(refComp.Left);
-                            var rightVar = this.GetVersioned(refComp.Right);
-                            this.OnReferenceEqualityAsserted(!refComp.AreEqual, leftVar, rightVar);
+                            var leftVar = this.GetVersioned(left);
+                            var rightVar = this.GetVersioned(right);
+                            this.OnReferenceEqualityAsserted(!areEqual, leftVar, rightVar);
                         }
                         else
                         {
@@ -305,11 +305,11 @@ namespace AskTheCode.PathExploration
                 Expression condExpr = innerEdge.Condition.Expression;
                 if (condExpr != ExpressionFactory.True)
                 {
-                    if (condExpr is ReferenceComparisonVariable refComp)
+                    if (References.IsReferenceComparison(condExpr, out bool areEqual, out var left, out var right))
                     {
-                        var varLeft = this.GetVersioned(refComp.Left);
-                        var varRight = this.GetVersioned(refComp.Right);
-                        this.OnReferenceEqualityAsserted(refComp.AreEqual, varLeft, varRight);
+                        var varLeft = this.GetVersioned(left);
+                        var varRight = this.GetVersioned(right);
+                        this.OnReferenceEqualityAsserted(areEqual, varLeft, varRight);
                     }
                     else
                     {
@@ -347,11 +347,11 @@ namespace AskTheCode.PathExploration
         {
             if (edge is InnerFlowEdge innerEdge)
             {
-                if (innerEdge.Condition.Expression is ReferenceComparisonVariable refComp)
+                if (References.IsReferenceComparison(innerEdge.Condition.Expression, out bool areEqual, out var left, out var right))
                 {
-                    var varLeft = this.GetVersioned(refComp.Left);
-                    var varRight = this.GetVersioned(refComp.Right);
-                    this.OnReferenceEqualityRetracted(refComp.AreEqual, varLeft, varRight);
+                    var varLeft = this.GetVersioned(left);
+                    var varRight = this.GetVersioned(right);
+                    this.OnReferenceEqualityRetracted(areEqual, varLeft, varRight);
                 }
 
                 var innerNode = edge.From as InnerFlowNode;

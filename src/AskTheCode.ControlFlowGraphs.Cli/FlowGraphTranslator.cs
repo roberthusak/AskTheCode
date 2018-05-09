@@ -550,21 +550,22 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 if (variable.Origin == VariableOrigin.Temporary
                     && buildFrom.ValueModel?.AssignmentRight?.Single() is Expression valExpr
-                    && this.TranslateExpression(valExpr) is ReferenceComparisonVariable refComp)
+                    && References.IsReferenceComparison(
+                        this.TranslateExpression(valExpr),
+                        out bool areEqual,
+                        out var left,
+                        out var right))
                 {
                     // Reference comparison stored to a temporary variable
                     // (as such, we suppose it is not used anywhere else)
                     if (buildEdge.ValueCondition == ExpressionFactory.False)
                     {
-                        condition = this.builder.AddReferenceComparisonVariable(
-                            !refComp.AreEqual,
-                            refComp.Left,
-                            refComp.Right);
+                        condition = this.builder.AddReferenceComparison(!areEqual, left, right);
                     }
                     else
                     {
                         Contract.Assert(buildEdge.ValueCondition == ExpressionFactory.True);
-                        condition = refComp;
+                        condition = this.builder.AddReferenceComparison(areEqual, left, right);
                     }
                 }
                 else
@@ -713,18 +714,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     Contract.Assert(right.Sort == References.Sort);
                     Contract.Assert(flowFunction.Children.All(ch => ch.Kind == ExpressionKind.Variable));
 
-                    return this.owner.builder.AddReferenceComparisonVariable(
+                    return this.owner.builder.AddReferenceComparison(
                         flowFunction.Kind == ExpressionKind.Equal,
                         (FlowVariable)left,
                         (FlowVariable)right);
                 }
                 else if (flowFunction.Kind == ExpressionKind.Not
-                    && flowFunction.GetChild(0) is ReferenceComparisonVariable refComp)
+                    && References.IsReferenceComparison(flowFunction.GetChild(0), out bool areEqual, out var left, out var right))
                 {
-                    return this.owner.builder.AddReferenceComparisonVariable(
-                        !refComp.AreEqual,
-                        refComp.Left,
-                        refComp.Right);
+                    return this.owner.builder.AddReferenceComparison(!areEqual, left, right);
                 }
                 else
                 {

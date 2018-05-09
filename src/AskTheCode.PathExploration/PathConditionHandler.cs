@@ -93,9 +93,11 @@ namespace AskTheCode.PathExploration
 
                 this.Heap.AssignReference(leftRef, rightRef);
             }
-            else if (value.Sort == Sort.Bool && value is ReferenceComparisonVariable refComp)
+            else if (References.IsReferenceComparison(value, out bool areEqual, out var left, out var right))
             {
-                value = this.GetReferenceComparisonExpression(refComp);
+                var varLeft = this.GetVersioned(left);
+                var varRight = this.GetVersioned(right);
+                value = this.Heap.GetEqualityExpression(areEqual, varLeft, varRight);
             }
 
             if (!variable.IsReference)
@@ -135,13 +137,6 @@ namespace AskTheCode.PathExploration
 
             var equal = (BoolHandle)ExpressionFactory.Equal(symbolWrapper, value);
             this.smtSolver.AddAssertion(this.NameProvider, equal);
-        }
-
-        private Expression GetReferenceComparisonExpression(ReferenceComparisonVariable refComp)
-        {
-            var varLeft = this.GetVersioned(refComp.Left);
-            var varRight = this.GetVersioned(refComp.Right);
-            return this.Heap.GetEqualityExpression(refComp.AreEqual, varLeft, varRight);
         }
     }
 }

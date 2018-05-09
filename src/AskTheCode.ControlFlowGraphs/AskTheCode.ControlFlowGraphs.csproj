@@ -135,7 +135,6 @@
     <Compile Include="Operations\FieldOperation.cs" />
     <Compile Include="Operations\FieldRead.cs" />
     <Compile Include="Operations\FieldWrite.cs" />
-    <Compile Include="Heap\ReferenceComparisonVariable.cs" />
     <Compile Include="Heap\References.cs" />
     <Compile Include="SpecialFlowVariable.cs" />
     <Compile Include="Heap\IClassDefinition.cs" />

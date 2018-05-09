@@ -186,7 +186,7 @@ namespace AskTheCode.ControlFlowGraphs
             return this.AddLocalVariableImpl(sort, null, displayNameCallback);
         }
 
-        public ReferenceComparisonVariable AddReferenceComparisonVariable(
+        public BoolHandle AddReferenceComparison(
             bool areEqual,
             FlowVariable left,
             FlowVariable right)
@@ -195,7 +195,9 @@ namespace AskTheCode.ControlFlowGraphs
             Contract.Requires<ArgumentNullException>(left != null, nameof(left));
             Contract.Requires<ArgumentNullException>(right != null, nameof(right));
 
-            return this.AddReferenceComparisonVariableImpl(areEqual, left, right);
+            return areEqual
+                ? (BoolHandle)ExpressionFactory.Equal(left, right)
+                : (BoolHandle)ExpressionFactory.Distinct(left, right);
         }
 
         internal void ReleaseGraph()
@@ -216,18 +218,6 @@ namespace AskTheCode.ControlFlowGraphs
             }
 
             var variable = new LocalFlowVariable(this.Graph, variableId, sort, displayName);
-            this.Graph.MutableLocalVariables.Add(variable);
-            Contract.Assert(variableId.Value == this.Graph.MutableLocalVariables.IndexOf(variable));
-
-            return variable;
-        }
-
-        private ReferenceComparisonVariable AddReferenceComparisonVariableImpl(bool areEqual, FlowVariable left, FlowVariable right)
-        {
-            var variableId = this.variableIdProvider.GenerateNewId();
-
-            // TODO: Cache the existing variables
-            var variable = new ReferenceComparisonVariable(this.Graph, variableId, areEqual, left, right);
             this.Graph.MutableLocalVariables.Add(variable);
             Contract.Assert(variableId.Value == this.Graph.MutableLocalVariables.IndexOf(variable));
 

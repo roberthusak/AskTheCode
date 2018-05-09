@@ -182,7 +182,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var assertNode = builder.AddInnerNode(new Operation[]
             {
-                new Assignment(assert1, builder.AddReferenceComparisonVariable(false, n, References.Null)),
+                new Assignment(assert1, builder.AddReferenceComparison(false, n, References.Null)),
                 new FieldRead(n_value, n, SampleLinkedListDefinitions.Value),
                 new Assignment(assert2, (IntHandle)n_value == 0)
             });
@@ -204,8 +204,8 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var enterNode = builder.AddEnterNode(n.ToSingular());
 
-            var n_eq_null = builder.AddReferenceComparisonVariable(true, n, References.Null);
-            var n_neq_null = builder.AddReferenceComparisonVariable(false, n, References.Null);
+            var n_eq_null = builder.AddReferenceComparison(true, n, References.Null);
+            var n_neq_null = builder.AddReferenceComparison(false, n, References.Null);
 
             var eqNewNode = builder.AddCallNode(
                 new TestRoutineLocation(typeof(SampleFlowGraphGenerator).GetMethod(nameof(NodeConstructorGraph)), true),
@@ -219,7 +219,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var eqAssertNode = builder.AddInnerNode(new Operation[]
             {
                 new FieldRead(n_next, n, SampleLinkedListDefinitions.Next),
-                new Assignment(eqAssertResult, builder.AddReferenceComparisonVariable(true, n_next, References.Null))
+                new Assignment(eqAssertResult, builder.AddReferenceComparison(true, n_next, References.Null))
             });
 
             var val = builder.AddLocalVariable(Sort.Int, "val");
@@ -228,7 +228,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
             var neqNode = builder.AddInnerNode(new Operation[]
             {
                 new FieldRead(val, n, SampleLinkedListDefinitions.Value),
-                new Assignment(neqAssertResult, builder.AddReferenceComparisonVariable(false, n, References.Null))
+                new Assignment(neqAssertResult, builder.AddReferenceComparison(false, n, References.Null))
             });
 
             var returnNode = builder.AddReturnNode();
@@ -251,12 +251,12 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var enterNode = builder.AddEnterNode(new[] { a, b });
 
-            var a_eq_b = builder.AddReferenceComparisonVariable(true, a, b);
-            var a_neq_b = builder.AddReferenceComparisonVariable(false, a, b);
+            var a_eq_b = builder.AddReferenceComparison(true, a, b);
+            var a_neq_b = builder.AddReferenceComparison(false, a, b);
 
             var a_next = builder.AddLocalVariable(References.Sort, "a_next");
             var b_next = builder.AddLocalVariable(References.Sort, "b_next");
-            var a_next_eq_b_next = builder.AddReferenceComparisonVariable(true, a_next, b_next);
+            var a_next_eq_b_next = builder.AddReferenceComparison(true, a_next, b_next);
             var eqAssert = builder.AddLocalVariable(Sort.Bool, "assert1");
 
             var eqNode = builder.AddInnerNode(new Operation[]
