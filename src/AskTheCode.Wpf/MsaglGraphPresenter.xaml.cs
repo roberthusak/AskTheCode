@@ -60,7 +60,7 @@ namespace AskTheCode.Wpf
         private static void GraphViewerConsumerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var self = d as MsaglGraphPresenter;
-            if (self != null)
+            if (self != null && self.isInitialized)
             {
                 self.Dispatcher.InvokeAsync(() =>
                 {
@@ -83,6 +83,11 @@ namespace AskTheCode.Wpf
             {
                 this.GraphViewer.BindToPanel(this.graphViewerPanel);
                 this.isInitialized = true;
+
+                if (this.GraphViewerConsumer != null)
+                {
+                    this.GraphViewerConsumer.GraphViewer = this.GraphViewer;
+                }
             }
         }
     }
