@@ -14,6 +14,9 @@ using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
+    /// <summary>
+    /// Creates and manages instances of <see cref="ReferenceModel"/>.
+    /// </summary>
     public class ReferenceModelFactory : ITypeModelFactory
     {
         private static readonly ImmutableArray<Sort> SortRequirements = ImmutableArray.Create(References.Sort);

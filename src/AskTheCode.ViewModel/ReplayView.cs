@@ -9,6 +9,9 @@ using Microsoft.Msagl.Drawing;
 
 namespace AskTheCode.ViewModel
 {
+    /// <summary>
+    /// Provides logic for a replay panel.
+    /// </summary>
     public class ReplayView : NotifyPropertyChangedBase
     {
         private HeapView heap;

@@ -10,6 +10,9 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
+    /// <summary>
+    /// Models a reference variable.
+    /// </summary>
     public class ReferenceVariableModel : ReferenceModel
     {
         internal ReferenceVariableModel(ReferenceModelFactory factory, Variable variable)

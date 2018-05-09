@@ -8,6 +8,9 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs.Heap
 {
+    /// <summary>
+    /// Provides methods for reference handling in a CFG.
+    /// </summary>
     public static class References
     {
         public static Sort Sort { get; } = Sort.CreateCustom("Reference");

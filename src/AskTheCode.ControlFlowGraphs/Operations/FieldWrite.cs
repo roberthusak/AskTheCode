@@ -9,6 +9,9 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs.Operations
 {
+    /// <summary>
+    /// Represents a field write operation.
+    /// </summary>
     public class FieldWrite : FieldOperation
     {
         public FieldWrite(FlowVariable reference, IFieldDefinition field, Expression value)

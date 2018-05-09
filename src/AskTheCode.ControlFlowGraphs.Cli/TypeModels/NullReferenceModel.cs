@@ -9,6 +9,9 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
+    /// <summary>
+    /// Models a null reference.
+    /// </summary>
     public class NullReferenceModel : ReferenceModel, IValueModel
     {
         internal NullReferenceModel(ReferenceModelFactory factory)

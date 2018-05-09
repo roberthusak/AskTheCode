@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.ControlFlowGraphs.Operations
 {
+    /// <summary>
+    /// Enables to process instances of <see cref="Operation"/> with a return value of type <see cref="TResult"/>.
+    /// </summary>
     public abstract class OperationVisitor<TResult>
     {
         public virtual TResult Visit(Operation operation)

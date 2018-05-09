@@ -7,6 +7,9 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs.Heap
 {
+    /// <summary>
+    /// Represents a field definition in a program.
+    /// </summary>
     public interface IFieldDefinition
     {
         Sort Sort { get; }

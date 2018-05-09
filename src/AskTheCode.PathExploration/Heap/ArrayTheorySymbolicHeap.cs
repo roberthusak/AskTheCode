@@ -12,6 +12,9 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration.Heap
 {
+    /// <summary>
+    /// Implements symbolic heap operation using the theory of arrays.
+    /// </summary>
     public partial class ArrayTheorySymbolicHeap : ISymbolicHeap
     {
         private readonly ISymbolicHeapContext context;

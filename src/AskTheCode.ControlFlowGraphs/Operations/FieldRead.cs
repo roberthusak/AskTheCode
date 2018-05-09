@@ -8,6 +8,9 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs.Operations
 {
+    /// <summary>
+    /// Represents a field read operation.
+    /// </summary>
     public class FieldRead : FieldOperation
     {
         public FieldRead(FlowVariable resultStore, FlowVariable reference, IFieldDefinition field)

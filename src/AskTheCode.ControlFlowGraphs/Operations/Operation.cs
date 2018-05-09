@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.ControlFlowGraphs.Operations
 {
+    /// <summary>
+    /// Represents an operation within an <see cref="InnerFlowNode"/>.
+    /// </summary>
     public abstract class Operation
     {
         public abstract void Accept(OperationVisitor visitor);

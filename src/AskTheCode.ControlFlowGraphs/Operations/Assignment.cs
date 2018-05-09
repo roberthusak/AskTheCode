@@ -6,6 +6,9 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs.Operations
 {
+    /// <summary>
+    /// Represents an assignment of an expression to a variable.
+    /// </summary>
     public class Assignment : Operation
     {
         public Assignment(FlowVariable variable, Expression value)

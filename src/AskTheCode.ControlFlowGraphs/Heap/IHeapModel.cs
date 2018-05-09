@@ -7,6 +7,9 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs.Heap
 {
+    /// <summary>
+    /// Represents a heap and its changes during a program execution.
+    /// </summary>
     public interface IHeapModel
     {
         int MaxVersion { get; }
@@ -18,6 +21,9 @@ namespace AskTheCode.ControlFlowGraphs.Heap
         IEnumerable<HeapModelValue> GetValues(HeapModelLocation location);
     }
 
+    /// <summary>
+    /// Represents a certain version of location within a <see cref="IHeapModel"/>.
+    /// </summary>
     public struct HeapModelLocation
     {
         public const int NullId = 0;
@@ -39,6 +45,9 @@ namespace AskTheCode.ControlFlowGraphs.Heap
         public override string ToString() => this.IsNull ? "NULL" : $"[{this.Id}] #{this.HeapVersion}";
     }
 
+    /// <summary>
+    /// Represents a reference within a <see cref="IHeapModel"/>.
+    /// </summary>
     public struct HeapModelReference
     {
         public HeapModelReference(IFieldDefinition field, int locationId)
@@ -52,6 +61,9 @@ namespace AskTheCode.ControlFlowGraphs.Heap
         public int LocationId { get; }
     }
 
+    /// <summary>
+    /// Represents a field value within a <see cref="IHeapModel"/>.
+    /// </summary>
     public struct HeapModelValue
     {
         public HeapModelValue(IFieldDefinition field, Interpretation value)

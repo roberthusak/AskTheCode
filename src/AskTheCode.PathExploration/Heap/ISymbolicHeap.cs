@@ -10,6 +10,9 @@ using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.PathExploration.Heap
 {
+    /// <summary>
+    /// Abstracts operation of symbolic heap.
+    /// </summary>
     public interface ISymbolicHeap
     {
         bool CanBeSatisfiable { get; }

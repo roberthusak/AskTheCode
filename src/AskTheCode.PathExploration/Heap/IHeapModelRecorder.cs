@@ -8,6 +8,9 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.PathExploration.Heap
 {
+    /// <summary>
+    /// Abstracts creation of a heap model.
+    /// </summary>
     public interface IHeapModelRecorder
     {
         HeapModelLocation GetLocation(VersionedVariable reference);

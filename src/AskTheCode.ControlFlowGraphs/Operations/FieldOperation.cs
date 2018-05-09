@@ -8,6 +8,9 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs.Operations
 {
+    /// <summary>
+    /// Represents a heap operation concerning a field.
+    /// </summary>
     public abstract class FieldOperation : Operation
     {
         protected FieldOperation(FlowVariable reference, IFieldDefinition field)

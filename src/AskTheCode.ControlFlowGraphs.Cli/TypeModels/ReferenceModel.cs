@@ -9,6 +9,9 @@ using Microsoft.CodeAnalysis;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
+    /// <summary>
+    /// Models a reference.
+    /// </summary>
     public abstract class ReferenceModel : ITypeModel
     {
         internal ReferenceModel(ReferenceModelFactory factory)

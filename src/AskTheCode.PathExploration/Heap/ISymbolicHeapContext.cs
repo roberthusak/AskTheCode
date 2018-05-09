@@ -9,6 +9,9 @@ using AskTheCode.SmtLibStandard.Handles;
 
 namespace AskTheCode.PathExploration.Heap
 {
+    /// <summary>
+    /// Abstracts the operation a symbolic heap may use.
+    /// </summary>
     public interface ISymbolicHeapContext
     {
         VersionedVariable GetVersioned(FlowVariable variable);

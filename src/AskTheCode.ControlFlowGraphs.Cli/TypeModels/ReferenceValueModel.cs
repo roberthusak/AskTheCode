@@ -8,6 +8,9 @@ using AskTheCode.SmtLibStandard;
 
 namespace AskTheCode.ControlFlowGraphs.Cli.TypeModels
 {
+    /// <summary>
+    /// Models a reference in a heap model.
+    /// </summary>
     public class ReferenceValueModel : ReferenceModel, IValueModel
     {
         private readonly HeapModelLocation location;
