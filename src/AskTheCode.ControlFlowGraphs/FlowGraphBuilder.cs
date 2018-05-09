@@ -92,11 +92,11 @@ namespace AskTheCode.ControlFlowGraphs
             IRoutineLocation location,
             IEnumerable<Expression> arguments = null,
             IEnumerable<FlowVariable> returnAssignments = null,
-            bool isObjectCreation = false)
+            CallKind kind = CallKind.Static)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(location != null, nameof(location));
-            Contract.Requires<ArgumentException>(!isObjectCreation || location.IsConstructor, nameof(isObjectCreation));
+            Contract.Requires<ArgumentException>(kind != CallKind.ObjectCreation || location.IsConstructor, nameof(kind));
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
             var node = new CallFlowNode(
@@ -105,7 +105,7 @@ namespace AskTheCode.ControlFlowGraphs
                 location,
                 arguments ?? Enumerable.Empty<Expression>(),
                 returnAssignments ?? Enumerable.Empty<FlowVariable>(),
-                isObjectCreation);
+                kind);
             this.Graph.MutableNodes.Add(node);
             Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 

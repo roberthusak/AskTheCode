@@ -331,9 +331,15 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                     // We don't allow calling base constructors, so the only way to call it is with the "new" operator
                     // TODO: Propagate the information about constructor call other way when the above is supported
+                    var callKind = (borderOp.Method.MethodKind == MethodKind.Constructor)
+                        ? CallKind.ObjectCreation
+                        : borderOp.Method.IsStatic
+                            ? CallKind.Static
+                            : CallKind.Instance;
+
                     bool isObjectCreation = (borderOp.Method.MethodKind == MethodKind.Constructor);
 
-                    return this.builder.AddCallNode(location, flowArguments, returnAssignments, isObjectCreation);
+                    return this.builder.AddCallNode(location, flowArguments, returnAssignments, callKind);
                 }
                 else
                 {

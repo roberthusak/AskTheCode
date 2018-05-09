@@ -54,15 +54,24 @@ namespace AskTheCode.PathExploration
             if (edge is OuterFlowEdge outerEdge)
             {
                 if (outerEdge.Kind == OuterFlowEdgeKind.MethodCall
-                    && outerEdge.To is EnterFlowNode enterNode
-                    && ((CallFlowNode)outerEdge.From).IsObjectCreation)
+                    && outerEdge.To is EnterFlowNode enterNode)
                 {
-                    // This is needed in the case when the exploration itself started from a constructor (or from a
-                    // method called by it). We need to let the heap know that this object is not a part of the input
-                    // heap.
-                    var newVar = enterNode.Parameters[0];
-                    var versionedVar = new VersionedVariable(newVar, this.GetVariableVersion(newVar));
-                    this.Heap.AllocateNew(versionedVar);
+                    var callNode = (CallFlowNode)outerEdge.From;
+                    if (callNode.IsObjectCreation)
+                    {
+                        // This is needed in the case when the exploration itself started from a constructor (or from a
+                        // method called by it). We need to let the heap know that this object is not a part of the input
+                        // heap.
+                        var newVar = enterNode.Parameters[0];
+                        var versionedVar = new VersionedVariable(newVar, this.GetVariableVersion(newVar));
+                        this.Heap.AllocateNew(versionedVar);
+                    }
+                    else if (callNode.IsInstanceCall)
+                    {
+                        var thisVar = enterNode.Parameters[0];
+                        var versionedThisVar = new VersionedVariable(thisVar, this.GetVariableVersion(thisVar));
+                        this.Heap.AssertEquality(false, versionedThisVar, VersionedVariable.Null);
+                    }
                 }
             }
         }

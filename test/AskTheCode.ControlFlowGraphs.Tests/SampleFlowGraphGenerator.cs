@@ -174,7 +174,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
                 new TestRoutineLocation(typeof(SampleFlowGraphGenerator).GetMethod(nameof(NodeConstructorGraph)), true),
                 new Expression[] { References.Null, ExpressionFactory.IntInterpretation(0), References.Null },
                 n.ToSingular(),
-                true);
+                CallKind.ObjectCreation);
 
             var n_value = builder.AddLocalVariable(Sort.Int, "n_value");
             var assert1 = builder.AddLocalVariable(Sort.Bool, "assert1");
@@ -211,7 +211,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
                 new TestRoutineLocation(typeof(SampleFlowGraphGenerator).GetMethod(nameof(NodeConstructorGraph)), true),
                 new Expression[] { References.Null, ExpressionFactory.IntInterpretation(0), n },
                 n.ToSingular(),
-                true);
+                CallKind.ObjectCreation);
 
             var n_next = builder.AddLocalVariable(References.Sort, "n_next");
             var eqAssertResult = builder.AddLocalVariable(Sort.Bool, "assert1");

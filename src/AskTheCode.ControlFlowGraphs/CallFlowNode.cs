@@ -9,6 +9,13 @@ using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.ControlFlowGraphs
 {
+    public enum CallKind
+    {
+        Static,
+        Instance,
+        ObjectCreation
+    }
+
     public class CallFlowNode : FlowNode
     {
         internal CallFlowNode(
@@ -17,20 +24,20 @@ namespace AskTheCode.ControlFlowGraphs
             IRoutineLocation location,
             IEnumerable<Expression> arguments,
             IEnumerable<FlowVariable> returnAssignments,
-            bool isObjectCreation)
+            CallKind kind)
             : base(graph, id)
         {
             Contract.Requires(location != null);
             Contract.Requires(arguments != null);
             Contract.Requires(returnAssignments != null);
             Contract.Requires(
-                !isObjectCreation || VerifyConstructorUsage(location, returnAssignments),
-                nameof(isObjectCreation));
+                kind != CallKind.ObjectCreation || VerifyConstructorUsage(location, returnAssignments),
+                nameof(kind));
 
             this.Location = location;
             this.Arguments = arguments.ToImmutableArray();
             this.ReturnAssignments = returnAssignments.ToImmutableArray();
-            this.IsObjectCreation = isObjectCreation;
+            this.Kind = kind;
         }
 
         public IRoutineLocation Location { get; }
@@ -39,7 +46,11 @@ namespace AskTheCode.ControlFlowGraphs
 
         public IReadOnlyList<FlowVariable> ReturnAssignments { get; }
 
-        public bool IsObjectCreation { get; }
+        public CallKind Kind { get; }
+
+        public bool IsObjectCreation => this.Kind == CallKind.ObjectCreation;
+
+        public bool IsInstanceCall => this.Kind == CallKind.Instance;
 
         private static bool VerifyConstructorUsage(
             IRoutineLocation location,
