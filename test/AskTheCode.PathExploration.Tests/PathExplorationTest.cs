@@ -34,7 +34,7 @@ namespace AskTheCode.PathExploration.Tests
 
             var displayNode = displayGraph.Nodes.First(n => n.Span.Contains(targetSyntax.Span));
             var displayRecord = displayNode.Records.Last();
-            var startInfo = new StartingNodeInfo(displayRecord.FlowNode, displayRecord.FirstVariableIndex, isAssertion);
+            var startInfo = new StartingNodeInfo(displayRecord.FlowNode, displayRecord.OperationIndex, isAssertion);
             var options = new ExplorationOptions()
             {
                 FinalNodeRecognizer = new PublicMethodEntryRecognizer()
