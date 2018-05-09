@@ -81,5 +81,14 @@ namespace EvaluationTests.Heap
                 Evaluation.ValidAssert(n != null);
             }
         }
+
+        public static void ReadReferenceConstraints(Node b)
+        {
+            Node a = new Node(0, null);
+            b.next = a;
+            Node c = b.next;
+
+            Evaluation.InvalidUnreachable();
+        }
     }
 }

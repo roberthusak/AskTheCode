@@ -18,13 +18,14 @@ namespace AskTheCode.PathExploration.Heap
         {
             public const int NullId = 0;
             public const int NullValue = 0;
-            public static readonly VariableState Null = new VariableState(NullId, NullValue, true, NullValue);
+            public static readonly VariableState Null = new VariableState(NullId, NullValue, true, false, NullValue);
 
-            private VariableState(int id, IntHandle representation, bool canBeNull, int? value)
+            private VariableState(int id, IntHandle representation, bool canBeNull, bool isInputDerived, int? value)
             {
                 this.Id = id;
                 this.Representation = representation;
                 this.CanBeNull = canBeNull;
+                this.IsInputDerived = isInputDerived;
                 this.Value = value;
             }
 
@@ -34,29 +35,45 @@ namespace AskTheCode.PathExploration.Heap
 
             public bool CanBeNull { get; }
 
+            public bool IsInputDerived { get; }
+
             public int? Value { get; }
 
             public bool IsNull => this.Id == NullId;
 
-            public bool IsInput => this.Value == null;
+            public bool IsInput => this.Value == null && !this.IsInputDerived;
 
-            public bool IsExplicitlyAllocated => !this.IsInput && !this.IsNull;
+            public bool IsExplicitlyAllocated => this.Value != null && !this.IsNull;
 
             public static VariableState CreateInput(int id, NamedVariable namedVariable, bool canBeNull)
             {
                 Contract.Requires(namedVariable.Sort == Sort.Int);
 
-                return new VariableState(id, (IntHandle)namedVariable, canBeNull, null);
+                return new VariableState(id, (IntHandle)namedVariable, canBeNull, false, null);
+            }
+
+            public static VariableState CreateInputDerived(int id, NamedVariable namedVariable, bool canBeNull)
+            {
+                Contract.Requires(namedVariable.Sort == Sort.Int);
+
+                return new VariableState(id, (IntHandle)namedVariable, canBeNull, true, null);
             }
 
             public static VariableState CreateValue(int id, int value)
             {
-                return new VariableState(id, value, false, value);
+                return new VariableState(id, value, false, false, value);
             }
 
             public VariableState WithCanBeNull(bool canBeNull)
             {
-                return new VariableState(this.Id, this.Representation, canBeNull, this.Value);
+                return new VariableState(this.Id, this.Representation, canBeNull, this.IsInputDerived, this.Value);
+            }
+
+            public VariableState WithIsInputDerived(bool isInputDerived)
+            {
+                Contract.Requires(this.Value == null || isInputDerived);
+
+                return new VariableState(this.Id, this.Representation, this.CanBeNull, isInputDerived, this.Value);
             }
 
             public override string ToString()
@@ -67,8 +84,9 @@ namespace AskTheCode.PathExploration.Heap
                 }
                 else
                 {
-                    string nullInfo = (this.IsInput && !this.CanBeNull) ? ", NOT NULL" : "";
-                    return $"[{this.Id}] {this.Representation}{nullInfo}";
+                    string nullInfo = (this.Value == null && !this.CanBeNull) ? ", NOT NULL" : "";
+                    string derivedInfo = this.IsInputDerived ? ", INPUT DERIVED" : "";
+                    return $"[{this.Id}] {this.Representation}{nullInfo}{derivedInfo}";
                 }
             }
         }
@@ -201,7 +219,7 @@ namespace AskTheCode.PathExploration.Heap
                         .ToArray();
 
                     return this.variableStates.Values
-                        .Where(s => s.IsInput)
+                        .Where(s => s.IsInput || s.IsInputDerived)
                         .Select((s) =>
                         {
                             // If there are no fields, only the object must be from the input heap
@@ -231,13 +249,20 @@ namespace AskTheCode.PathExploration.Heap
 
                             var readAnd = (BoolHandle)ExpressionFactory.And(readConjuncts.ToArray());
 
-                            if (s.CanBeNull)
+                            if (s.IsInputDerived)
                             {
-                                return s.Representation == VariableState.NullValue || readAnd;
+                                return (s.Representation < VariableState.NullValue).Implies(readAnd);
                             }
                             else
                             {
-                                return readAnd;
+                                if (s.CanBeNull)
+                                {
+                                    return s.Representation == VariableState.NullValue || readAnd;
+                                }
+                                else
+                                {
+                                    return readAnd;
+                                }
                             }
                         })
                         .ToImmutableArray();
@@ -425,6 +450,8 @@ namespace AskTheCode.PathExploration.Heap
                         return;
                     }
 
+                    Contract.Assert(refState.IsInput);
+
                     Expression resultVar;
                     if (result.Variable.IsReference)
                     {
@@ -434,7 +461,8 @@ namespace AskTheCode.PathExploration.Heap
 
                         resultVar = resultState.Representation;
 
-                        // TODO: Add also conditional constraints to secure input heap shape
+                        // Mark as derived from the input heap
+                        this.variableStates[resultState.Id] = resultState.WithIsInputDerived(true);
                     }
                     else
                     {
@@ -565,7 +593,7 @@ namespace AskTheCode.PathExploration.Heap
                     }
                     else if (state.CanBeNull)
                     {
-                        Contract.Assert(state.IsInput);
+                        Contract.Assert(state.IsInput || state.IsInputDerived);
 
                         this.variableStates[state.Id] = state.WithCanBeNull(false);
 

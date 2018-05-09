@@ -164,7 +164,7 @@ namespace AskTheCode.PathExploration.Heap
                     // References with no operations or constraints imposed upon them will be null
                     return (Interpretation)VariableState.Null.Representation;
                 }
-                else if (varState.IsInput)
+                else if (varState.IsInput || varState.IsInputDerived)
                 {
                     Contract.Assert(varState.Representation.Expression.Kind == ExpressionKind.Variable);
 
