@@ -29,6 +29,7 @@ namespace AskTheCode.ViewModel
         private CancellationTokenSource explorationCancelSource;
         private PathView selectedPath;
         private HashSet<ExecutionModel> foundModels = new HashSet<ExecutionModel>();
+        private int timeout = 30;
 
         public ToolView(IIdeServices ideServices)
         {
@@ -71,6 +72,12 @@ namespace AskTheCode.ViewModel
         {
             get { return this.selectedPath; }
             set { this.SetProperty(ref this.selectedPath, value); }
+        }
+
+        public int Timeout
+        {
+            get { return this.timeout; }
+            set { this.SetProperty(ref this.timeout, value); }
         }
 
         public Command DisplayFlowGraphCommand { get; private set; }
@@ -151,6 +158,10 @@ namespace AskTheCode.ViewModel
             var z3ContextFactory = new ContextFactory();
             var options = new ExplorationOptions();
             options.FinalNodeRecognizer = new PublicMethodEntryRecognizer();
+            if (this.Timeout > 0)
+            {
+                options.TimeoutSeconds = this.Timeout;
+            }
             var explorationContext = new ExplorationContext(this.GraphProvider, z3ContextFactory, startNode, options);
 
             try
