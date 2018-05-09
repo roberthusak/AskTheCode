@@ -146,7 +146,7 @@ namespace AskTheCode.ViewModel
 
             var startNode = new StartingNodeInfo(
                 flowNodeRecord.FlowNode,
-                flowNodeRecord.FirstVariableIndex,
+                flowNodeRecord.OperationIndex,
                 isAssertCheck);
             var z3ContextFactory = new ContextFactory();
             var options = new ExplorationOptions();
@@ -184,7 +184,7 @@ namespace AskTheCode.ViewModel
             this.Messages.Add(isAssertCheck ? "Verifying the assertion..." : "Exploring the reachability...");
             bool wasExhaustive = await explorationContext.ExploreAsync(this.explorationCancelSource);
 
-            // Amend any found results that may have not yet reach the dispatching handler
+            // Amend any found results that may have not yet reached the dispatching handler
             foreach (var executionModel in explorationContext.ExecutionModels)
             {
                 this.OnExecutionModelFound(executionModel);
@@ -251,7 +251,7 @@ namespace AskTheCode.ViewModel
             this.CurrentSolution = this.ideServices.Workspace.CurrentSolution;
             this.GraphProvider = new CSharpFlowGraphProvider(this.CurrentSolution);
 
-            // TODO: Recreate or invalidate all the associated views (CFGs, execution model etc.
+            // TODO: Recreate or invalidate all the associated views (CFGs, execution model etc.)
         }
 
         private async Task<CaretPositionInformation> GatherInformationForCurrentCaretPosition()

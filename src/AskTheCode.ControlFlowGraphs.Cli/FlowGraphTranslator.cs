@@ -210,11 +210,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     {
                         // Offset and type
                         int assignmentOffset = -1;
+                        int operationOffset = -1;
                         ITypeSymbol type = null;
                         string variableName = null;
                         if (buildNode.VariableModel != null)
                         {
                             assignmentOffset = flowNodeInfo.AssignmentOffset;
+                            operationOffset = flowNodeInfo.OperationOffset;
                             type = buildNode.VariableModel.Type;
                             if (buildNode.VariableModel.AssignmentLeft.FirstOrDefault() is BuildVariable buildVar
                                 && buildVar.Origin != VariableOrigin.Temporary)
@@ -225,10 +227,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                         else if (buildNode.Operation?.Kind == SpecialOperationKind.FieldWrite)
                         {
                             assignmentOffset = flowNodeInfo.AssignmentOffset;
+                            operationOffset = flowNodeInfo.OperationOffset;
                             type = ((HeapOperation)buildNode.Operation).Reference.Type;
                         }
 
-                        var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span, assignmentOffset, type, variableName);
+                        var record = new DisplayNodeRecord(flowNodeInfo.FlowNode, buildNode.Label.Span, assignmentOffset, type, variableName, operationOffset);
                         displayNode.AddRecord(record);
                     }
 
@@ -423,6 +426,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
         {
             int valAssignOffset = 0;
             int refAssignOffset = 0;
+            int opOffset = 0;
             foreach (var processedNode in this.GetBuildNodesSequenceRange(firstBuildNode, lastBuildNode))
             {
                 // Note that result of the field write will be the updated reference and a new heap version
@@ -432,7 +436,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                 this.buildToFlowNodesMap[processedNode] = new FlowNodeMappedInfo(
                     flowNode,
-                    isRefModel ? refAssignOffset : valAssignOffset);
+                    isRefModel ? refAssignOffset : valAssignOffset,
+                    opOffset);
 
                 if (isRefModel)
                 {
@@ -452,6 +457,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 {
                     valAssignOffset += processedNode.VariableModel?.AssignmentLeft.Count ?? 0;
                 }
+
+                opOffset++;
             }
         }
 

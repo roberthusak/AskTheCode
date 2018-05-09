@@ -10,17 +10,20 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 {
     internal struct FlowNodeMappedInfo
     {
-        public FlowNodeMappedInfo(FlowNode flowNode, int assignmentOffset = 0)
+        public FlowNodeMappedInfo(FlowNode flowNode, int assignmentOffset = 0, int operationOffset = 0)
         {
             Contract.Requires(flowNode != null);
 
             this.FlowNode = flowNode;
             this.AssignmentOffset = assignmentOffset;
+            this.OperationOffset = operationOffset;
         }
 
         public FlowNode FlowNode { get; private set; }
 
         public int AssignmentOffset { get; private set; }
+
+        public int OperationOffset { get; }
 
         public static implicit operator FlowNodeMappedInfo(FlowNode flowNode)
         {

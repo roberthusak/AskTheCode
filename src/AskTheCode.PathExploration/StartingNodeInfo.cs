@@ -14,7 +14,7 @@ namespace AskTheCode.PathExploration
             Contract.Requires(node != null);
 
             this.Node = node;
-            this.AssignmentIndex = assignmentIndex;
+            this.AssignmentIndex = (assignmentIndex >= 0) ? assignmentIndex : null;
             this.IsAssertionChecked = isAssertionChecked;
         }
 
