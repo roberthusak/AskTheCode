@@ -12,6 +12,10 @@ namespace EvaluationTests.Heap
         public int value;
         public Node next;
 
+        public Node()
+        {
+        }
+
         public Node(int value, Node next)
         {
             this.value = value;
@@ -22,6 +26,10 @@ namespace EvaluationTests.Heap
         {
             // Test that the field of the current instance is successfully matched
             next = nextNode;
+        }
+
+        public void Nothing()
+        {
         }
 
         public Node SwapNode()

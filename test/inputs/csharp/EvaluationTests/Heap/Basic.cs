@@ -17,13 +17,18 @@ namespace EvaluationTests.Heap
             Evaluation.ValidAssert(n.value == 0);
         }
 
+        public static void EmptyMethodCall(Node a)
+        {
+            a.Nothing();
+
+            Evaluation.ValidAssert(a != null);
+        }
+
         public static void SimpleMethodCall(Node a, Node b)
         {
             a.SetNext(b);
-            a.next.SetNext(b);
-            a.next.SetNext(b.next);
 
-            Evaluation.ValidAssert(a.next.next == b.next);
+            Evaluation.ValidAssert(a != null);
         }
 
         public static void SimpleFieldAccess(Node a, Node b)
