@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AskTheCode.PathExploration.Heuristics
 {
-    public class SimpleSmtHeuristic : ISmtHeuristic
+    public abstract class SimpleSmtHeuristic : ISmtHeuristic
     {
         public void Initialize(Explorer explorer)
         {
@@ -20,10 +20,7 @@ namespace AskTheCode.PathExploration.Heuristics
             }
         }
 
-        public bool DoSolve(ExplorationState state)
-        {
-            return state.Path.Node.IngoingEdges.Count > 1;
-        }
+        public abstract bool DoSolve(ExplorationState state);
 
         public SmtSolverHandler SelectMergedSolverHandler(ExplorationState current, ExplorationState existing)
         {

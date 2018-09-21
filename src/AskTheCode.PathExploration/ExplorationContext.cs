@@ -89,6 +89,7 @@ namespace AskTheCode.PathExploration
         private async Task<bool> ExploreAsyncImpl(CancellationToken cancelToken)
         {
             var explorer = this.CreateExplorer();
+            Explorer.SolverCallCount = 0;
             return await Task.Run(() => explorer.ExploreAsync(cancelToken));
         }
 

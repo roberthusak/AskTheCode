@@ -81,10 +81,13 @@
     <Compile Include="Heap\IHeapModelRecorder.cs" />
     <Compile Include="Heap\ISymbolicHeap.cs" />
     <Compile Include="Heap\ISymbolicHeapContext.cs" />
+    <Compile Include="Heuristics\EntryPointSmtHeuristic.cs" />
+    <Compile Include="Heuristics\FixedIntervalSmtHeuristic.cs" />
     <Compile Include="Heuristics\GreedyExplorationHeuristic.cs" />
     <Compile Include="Heuristics\IExplorationHeuristic.cs" />
     <Compile Include="Heuristics\IHeuristicFactory.cs" />
     <Compile Include="Heuristics\ISmtHeuristic.cs" />
+    <Compile Include="Heuristics\MultipleIngoingSmtHeuristic.cs" />
     <Compile Include="Heuristics\NeverMergeHeuristic.cs" />
     <Compile Include="Heuristics\SimpleHeuristicFactory.cs" />
     <Compile Include="Heuristics\SimpleSmtHeuristic.cs" />

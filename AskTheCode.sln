@@ -64,6 +64,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeContractsRevival.Runtim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.PathExploration.Tests", "test\AskTheCode.PathExploration.Tests\AskTheCode.PathExploration.Tests.csproj", "{2B5C14FF-9727-43C9-B953-CA50A2F6D344}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceEvaluation", "test\PerformanceEvaluation\PerformanceEvaluation.csproj", "{2FC7942B-CD88-489E-A80D-A3AB40FBC654}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +144,10 @@ Global
 		{2B5C14FF-9727-43C9-B953-CA50A2F6D344}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B5C14FF-9727-43C9-B953-CA50A2F6D344}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B5C14FF-9727-43C9-B953-CA50A2F6D344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FC7942B-CD88-489E-A80D-A3AB40FBC654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FC7942B-CD88-489E-A80D-A3AB40FBC654}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FC7942B-CD88-489E-A80D-A3AB40FBC654}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FC7942B-CD88-489E-A80D-A3AB40FBC654}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -167,6 +173,7 @@ Global
 		{E3FE4BBE-846F-45CE-9420-5EB0A5D8FB75} = {2CB9758F-B2A5-4686-A0EB-7666E4145A7A}
 		{05F6EBC4-04A9-482D-A442-70B251A7FF87} = {A3E11078-F440-4737-8FCC-A1E9247154F5}
 		{2B5C14FF-9727-43C9-B953-CA50A2F6D344} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
+		{2FC7942B-CD88-489E-A80D-A3AB40FBC654} = {920D7616-3325-46F1-9171-0C17FEAEA66E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C06CFE83-3B8F-4354-A534-4211FF66B568}

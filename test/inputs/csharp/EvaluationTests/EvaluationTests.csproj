@@ -202,6 +202,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Annotations\Evaluation.cs" />
+    <Compile Include="Annotations\PerformanceEvaluationAttribute.cs" />
     <Compile Include="AssemblySettings.cs" />
     <Compile Include="BankAccount.cs" />
     <Compile Include="Heap\Basic.cs" />

@@ -128,7 +128,7 @@ namespace EvaluationTests
         [ContractVerification(true)]
         public static int ClassifyMutant1(int a, int b, int c)
         {
-            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+            //ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
 
             int result;
 
@@ -200,7 +200,7 @@ namespace EvaluationTests
         [ContractVerification(true)]
         public static int ClassifyMutant2(int a, int b, int c)
         {
-            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+            //ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
 
             int result;
 
@@ -272,7 +272,7 @@ namespace EvaluationTests
         [ContractVerification(true)]
         public static int ClassifyMutant3(int a, int b, int c)
         {
-            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+            //ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
 
             int result;
 
@@ -344,7 +344,7 @@ namespace EvaluationTests
         [ContractVerification(true)]
         public static int ClassifyMutant4(int a, int b, int c)
         {
-            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+            //ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
 
             int result;
 
@@ -416,7 +416,7 @@ namespace EvaluationTests
         [ContractVerification(true)]
         public static int ClassifyMutant5(int a, int b, int c)
         {
-            ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
+            //ClassifyConditionalEnsures(a, b, c, Contract.Result<int>());
 
             int result;
 

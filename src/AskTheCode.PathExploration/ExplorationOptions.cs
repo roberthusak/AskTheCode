@@ -21,7 +21,7 @@ namespace AskTheCode.PathExploration
             new SimpleHeuristicFactory<NeverMergeHeuristic>();
 
         public IHeuristicFactory<ISmtHeuristic> SmtHeuristicFactory { get; set; } =
-            new SimpleHeuristicFactory<SimpleSmtHeuristic>();
+            new SimpleHeuristicFactory<MultipleIngoingSmtHeuristic>();
 
         public int? TimeoutSeconds { get; set; } = 30;
     }

@@ -59,6 +59,8 @@ namespace AskTheCode.PathExploration
             this.AddState(rootState);
         }
 
+        public static int SolverCallCount { get; internal set; }
+
         // TODO: Make readonly for the heuristics
         public HashSet<ExplorationState> States { get; private set; } = new HashSet<ExplorationState>();
 
@@ -186,6 +188,7 @@ namespace AskTheCode.PathExploration
                     foreach (var branchedState in toSolve)
                     {
                         var resultKind = branchedState.SolverHandler.Solve(branchedState.Path);
+                        SolverCallCount++;
 
                         if (resultKind != ExplorationResultKind.Reachable || this.IsFinalState(branchedState))
                         {

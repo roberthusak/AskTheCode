@@ -29,12 +29,13 @@ namespace EvaluationTests
             return result;
         }
 
+        [PerformanceEvaluation("Trityp1")]
         [PexMethod]
         ////[PexAssertReachEventually]
         [ContractVerification(true)]
         public void CheckMutant1(int a, int b, int c)
         {
-            PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
+            //PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
 
             int result = TriangleClassification.ClassifyMutant1(a, b, c);
             bool isValid = TriangleClassification.CheckResult(a, b, c, result);
@@ -48,12 +49,13 @@ namespace EvaluationTests
             ////}
         }
 
+        [PerformanceEvaluation("Trityp2")]
         [PexMethod]
         ////[PexAssertReachEventually]
         [ContractVerification(true)]
         public void CheckMutant2(int a, int b, int c)
         {
-            PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
+            //PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
 
             int result = TriangleClassification.ClassifyMutant2(a, b, c);
             bool isValid = TriangleClassification.CheckResult(a, b, c, result);
@@ -67,12 +69,13 @@ namespace EvaluationTests
             ////}
         }
 
+        [PerformanceEvaluation("Trityp3")]
         [PexMethod]
         ////[PexAssertReachEventually]
         [ContractVerification(true)]
         public void CheckMutant3(int a, int b, int c)
         {
-            PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
+            //PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
 
             int result = TriangleClassification.ClassifyMutant3(a, b, c);
             bool isValid = TriangleClassification.CheckResult(a, b, c, result);
@@ -86,12 +89,13 @@ namespace EvaluationTests
             ////}
         }
 
+        [PerformanceEvaluation("Trityp4")]
         [PexMethod]
         ////[PexAssertReachEventually]
         [ContractVerification(true)]
         public void CheckMutant4(int a, int b, int c)
         {
-            PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
+            //PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
 
             int result = TriangleClassification.ClassifyMutant4(a, b, c);
             bool isValid = TriangleClassification.CheckResult(a, b, c, result);
@@ -105,12 +109,13 @@ namespace EvaluationTests
             ////}
         }
 
+        [PerformanceEvaluation("Trityp5")]
         [PexMethod]
         ////[PexAssertReachEventually]
         [ContractVerification(true)]
         public void CheckMutant5(int a, int b, int c)
         {
-            PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
+            //PexAssume.IsTrue(MaxValuesAssumptions(a, b, c));
 
             int result = TriangleClassification.ClassifyMutant5(a, b, c);
             bool isValid = TriangleClassification.CheckResult(a, b, c, result);
