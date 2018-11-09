@@ -286,7 +286,10 @@ namespace AskTheCode.PathExploration
                 var hlpRef = this.currentNodeHeapLocations;
                 this.currentNodeHeapLocations = this.nextNodeHeapLocations;
                 this.nextNodeHeapLocations = hlpRef;
+            }
 
+            protected override void OnAfterPathStepRetracted(FlowEdge edge)
+            {
                 // Identify the creation of new objects on the heap
                 if (edge is OuterFlowEdge outerEdge
                     && outerEdge.Kind == OuterFlowEdgeKind.MethodCall
@@ -301,10 +304,7 @@ namespace AskTheCode.PathExploration
                     var versionedVar = new VersionedVariable(thisVar, this.GetVariableVersion(thisVar));
                     this.heapModelRecorder.AllocateNew(versionedVar);
                 }
-            }
 
-            protected override void OnAfterPathStepRetracted(FlowEdge edge)
-            {
                 this.AddNodeValues();
             }
 

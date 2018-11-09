@@ -442,12 +442,28 @@ namespace AskTheCode.PathExploration
             int startParamIndex = callNode.IsObjectCreation ? 1 : 0;
             for (int i = startParamIndex; i < paramVersions.Length; i++)
             {
-                this.OnVariableAssigned(enterNode.Parameters[i], paramVersions[i], callNode.Arguments[i]);
+                var parameter = enterNode.Parameters[i];
+                this.OnVariableAssigned(parameter, paramVersions[i], callNode.Arguments[i]);
+                this.variableVersions[parameter].PushNewVersion();
+            }
+
+            // Increment the version of the first parameter (this) in the case of constructor
+            if (callNode.IsObjectCreation)
+            {
+                var thisParameter = enterNode.Parameters[0];
+                this.variableVersions[thisParameter].PushNewVersion();
             }
         }
 
         private void RetractCall(OuterFlowEdge outerEdge)
         {
+            // Pop the versions of the parameters
+            var enterNode = (EnterFlowNode)outerEdge.To;
+            foreach (var param in enterNode.Parameters)
+            {
+                this.variableVersions[param].PopVersion();
+            }
+
             if (this.callExtensionKindStack.Pop() == CallExtensionKind.CallStackBound)
             {
                 // If we know we might return to this stack frame during the further retraction,
@@ -462,7 +478,6 @@ namespace AskTheCode.PathExploration
                 this.callStack.Push(frame);
             }
 
-            var enterNode = (EnterFlowNode)outerEdge.To;
             foreach (var param in enterNode.Parameters)
             {
                 // TODO: Consider passing also the values instead of null
