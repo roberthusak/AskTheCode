@@ -13,6 +13,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
 {
     public class CSharpSolutionMethodTestDataAttribute : Attribute, ITestDataSource
     {
+        private static HashSet<string> ignoredClasses = new HashSet<string>()
+        {
+            "PerformanceEvaluationAttribute"
+        };
+
         private readonly string projectLocation;
 
         private MSBuildWorkspace workspace;
@@ -68,7 +73,8 @@ namespace AskTheCode.ControlFlowGraphs.Cli.Tests
                     typeQueue.Enqueue(nestedType);
                 }
 
-                if (this.ClassNameFilter == null || type.Name == this.ClassNameFilter)
+                if (!ignoredClasses.Contains(type.Name)
+                    && (this.ClassNameFilter == null || type.Name == this.ClassNameFilter))
                 {
                     foreach (var method in type.GetMembers().OfType<IMethodSymbol>())
                     {

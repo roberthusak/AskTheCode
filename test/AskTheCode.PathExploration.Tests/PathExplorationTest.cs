@@ -37,7 +37,8 @@ namespace AskTheCode.PathExploration.Tests
             var startInfo = new StartingNodeInfo(displayRecord.FlowNode, displayRecord.OperationIndex, isAssertion);
             var options = new ExplorationOptions()
             {
-                FinalNodeRecognizer = new PublicMethodEntryRecognizer()
+                FinalNodeRecognizer = new PublicMethodEntryRecognizer(),
+                TimeoutSeconds = 60
             };
             var exploration = new ExplorationContext(graphProvider, new ContextFactory(), startInfo, options);
 
