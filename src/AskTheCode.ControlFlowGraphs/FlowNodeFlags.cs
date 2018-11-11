@@ -9,6 +9,8 @@ namespace AskTheCode.ControlFlowGraphs
     [Flags]
     public enum FlowNodeFlags
     {
-        None = 0x00
+        None = 0x00,
+        LoopCondition = 0x01,
+        LoopBody = 0x02
     }
 }

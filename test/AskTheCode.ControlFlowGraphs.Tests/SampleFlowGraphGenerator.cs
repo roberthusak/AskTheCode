@@ -104,7 +104,7 @@ namespace AskTheCode.ControlFlowGraphs.Tests
 
             var while1Var = builder.AddLocalVariable(Sort.Bool, "while!1");
             var while1 = (BoolHandle)while1Var;
-            var while1Node = builder.AddInnerNode(new Assignment(while1Var, a < b));
+            var while1Node = builder.AddInnerNode(new[] { new Assignment(while1Var, a < b) }, FlowNodeFlags.LoopCondition);
 
             var assert1Var = builder.AddLocalVariable(Sort.Bool, "assert!1");
             var assert1 = (BoolHandle)assert1Var;
@@ -113,7 +113,8 @@ namespace AskTheCode.ControlFlowGraphs.Tests
                 {
                     new Assignment(aVar, a + a),
                     new Assignment(assert1Var, a != 0)
-                });
+                },
+                FlowNodeFlags.LoopBody);
 
             var elseBodyNode = builder.AddInnerNode(new Assignment(aVar, a + b));
 

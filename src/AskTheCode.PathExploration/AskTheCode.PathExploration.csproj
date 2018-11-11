@@ -87,6 +87,7 @@
     <Compile Include="Heuristics\IExplorationHeuristic.cs" />
     <Compile Include="Heuristics\IHeuristicFactory.cs" />
     <Compile Include="Heuristics\ISmtHeuristic.cs" />
+    <Compile Include="Heuristics\LoopLimitHeuristic.cs" />
     <Compile Include="Heuristics\MultipleIngoingSmtHeuristic.cs" />
     <Compile Include="Heuristics\NeverMergeHeuristic.cs" />
     <Compile Include="Heuristics\SimpleHeuristicFactory.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Path.cs" />
     <Compile Include="PathConditionHandler.cs" />
     <Compile Include="PathCounterExample.cs" />
+    <Compile Include="PathExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SmtContextHandler.cs" />
     <Compile Include="SmtSolverHandler.cs" />

@@ -15,7 +15,7 @@ namespace AskTheCode.PathExploration
         public ISymbolicHeapFactory SymbolicHeapFactory { get; set; } = new ArrayTheorySymbolicHeapFactory();
 
         public IHeuristicFactory<IExplorationHeuristic> ExplorationHeuristicFactory { get; set; } =
-            new SimpleHeuristicFactory<GreedyExplorationHeuristic>();
+            new LoopLimitHeuristicFactory(10);
 
         public IHeuristicFactory<IMergingHeuristic> MergingHeuristicFactory { get; set; } =
             new SimpleHeuristicFactory<NeverMergeHeuristic>();

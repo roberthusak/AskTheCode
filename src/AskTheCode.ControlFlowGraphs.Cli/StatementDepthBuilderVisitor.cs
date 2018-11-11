@@ -138,7 +138,9 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
             this.Context.CurrentNode.OutgoingEdges.Clear();
             var condition = this.Context.ReenqueueCurrentNode(whileSyntax.Condition, createDisplayNode: true);
+            condition.Flags |= FlowNodeFlags.LoopCondition;
             var statement = this.Context.EnqueueNode(whileSyntax.Statement);
+            statement.Flags |= FlowNodeFlags.LoopBody;
             condition.AddEdge(statement, ExpressionFactory.True);
             statement.AddEdge(condition);
 
