@@ -61,6 +61,8 @@ namespace AskTheCode.PathExploration
 
         public static int SolverCallCount { get; internal set; }
 
+        public bool IsUnderapproximated { get; private set; }
+
         // TODO: Make readonly for the heuristics
         public HashSet<ExplorationState> States { get; private set; } = new HashSet<ExplorationState>();
 
@@ -166,7 +168,7 @@ namespace AskTheCode.PathExploration
                     }
                     else
                     {
-                        // TODO: Inform about the uncertainty of the verification at this location
+                        this.IsUnderapproximated = true;
                     }
 
                     i++;

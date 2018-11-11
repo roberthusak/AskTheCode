@@ -240,6 +240,11 @@ namespace AskTheCode.ViewModel
                 }
             }
 
+            if (explorationContext.Explorer.IsUnderapproximated)
+            {
+                this.Messages.Add("Underapproximation was used.");
+            }
+
             this.IsExploring = false;
         }
 

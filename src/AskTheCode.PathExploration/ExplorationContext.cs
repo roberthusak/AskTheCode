@@ -39,6 +39,9 @@ namespace AskTheCode.PathExploration
         {
         }
 
+        // TODO: Implement multiple explorers
+        public Explorer Explorer { get; private set; }
+
         public IReadOnlyList<ExecutionModel> ExecutionModels => this.executionModels;
 
         public IObservable<ExecutionModel> ExecutionModelsObservable => this.executionModelsSubject;
@@ -88,9 +91,9 @@ namespace AskTheCode.PathExploration
         /// </remarks>
         private async Task<bool> ExploreAsyncImpl(CancellationToken cancelToken)
         {
-            var explorer = this.CreateExplorer();
+            this.Explorer = this.CreateExplorer();
             Explorer.SolverCallCount = 0;
-            return await Task.Run(() => explorer.ExploreAsync(cancelToken));
+            return await Task.Run(() => this.Explorer.ExploreAsync(cancelToken));
         }
 
         private Explorer CreateExplorer()
