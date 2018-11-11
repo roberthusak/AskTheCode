@@ -66,155 +66,7 @@ namespace EvaluationTests.Heap
         {
             ListNode node = this.head.next;
 
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
-            {
-                if (node.value == value)
-                {
-                    return true;
-                }
-                else
-                {
-                    node = node.next;
-                }
-            }
-
-            if (node == this.head)
-            {
-                return false;
-            }
-            else
+            while (node != this.head)
             {
                 if (node.value == value)
                 {
@@ -246,15 +98,20 @@ namespace EvaluationTests.Heap
             return list;
         }
 
-        public static void TestContains()
+        public static void TestContains1()
         {
             var list = CreateSample();
 
-            bool a1 = list.Contains(42);
-            Evaluation.ValidAssert(a1);
+            bool a = list.Contains(42);
+            Evaluation.ValidAssert(a);
+        }
 
-            bool a2 = !list.Contains(0);
-            Evaluation.ValidAssert(a2);
+        public static void TestContains2()
+        {
+            var list = CreateSample();
+
+            bool a = !list.Contains(0);
+            Evaluation.ValidAssert(a);
         }
 
         public static void TestRemoveLast()
