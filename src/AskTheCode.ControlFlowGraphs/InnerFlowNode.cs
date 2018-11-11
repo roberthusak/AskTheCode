@@ -9,8 +9,8 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public class InnerFlowNode : FlowNode
     {
-        internal InnerFlowNode(FlowGraph graph, FlowNodeId id, IEnumerable<Operation> operations)
-            : base(graph, id)
+        internal InnerFlowNode(FlowGraph graph, FlowNodeId id, FlowNodeFlags flags, IEnumerable<Operation> operations)
+            : base(graph, id, flags)
         {
             Contract.Requires(operations != null);
 

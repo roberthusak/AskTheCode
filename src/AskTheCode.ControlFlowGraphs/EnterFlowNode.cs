@@ -8,8 +8,8 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public class EnterFlowNode : FlowNode
     {
-        internal EnterFlowNode(FlowGraph graph, FlowNodeId id, IEnumerable<FlowVariable> parameters)
-            : base(graph, id)
+        internal EnterFlowNode(FlowGraph graph, FlowNodeId id, FlowNodeFlags flags, IEnumerable<FlowVariable> parameters)
+            : base(graph, id, flags)
         {
             Contract.Requires(parameters != null);
 

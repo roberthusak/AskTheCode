@@ -152,6 +152,12 @@ namespace ControlFlowGraphViewer
                 text.Append(" ]");
             }
 
+            if (buildNode.Flags != FlowNodeFlags.None)
+            {
+                text.AppendLine();
+                text.Append(buildNode.Flags);
+            }
+
             label.Text = text.ToString();
 
             aglNode.Label = label;

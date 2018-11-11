@@ -138,6 +138,11 @@ namespace ControlFlowGraphViewer
                 label.Text = $"throw {exceptionNode.ConstructorLocation}({argsString})";
             }
 
+            if (flowNode.Flags != FlowNodeFlags.None)
+            {
+                label.Text = label.Text + "\n" + flowNode.Flags;
+            }
+
             aglNode.Label = label;
         }
 

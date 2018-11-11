@@ -133,6 +133,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FlowNodeFlags.cs" />
     <Compile Include="Heap\IHeapModel.cs" />
     <Compile Include="Operations\FieldOperation.cs" />
     <Compile Include="Operations\FieldRead.cs" />

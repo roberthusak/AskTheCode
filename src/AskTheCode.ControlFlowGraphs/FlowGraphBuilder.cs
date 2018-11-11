@@ -58,12 +58,12 @@ namespace AskTheCode.ControlFlowGraphs
             return result;
         }
 
-        public EnterFlowNode AddEnterNode(IEnumerable<FlowVariable> parameters = null)
+        public EnterFlowNode AddEnterNode(IEnumerable<FlowVariable> parameters = null, FlowNodeFlags flags = FlowNodeFlags.None)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new EnterFlowNode(this.Graph, nodeId, parameters ?? Enumerable.Empty<FlowVariable>());
+            var node = new EnterFlowNode(this.Graph, nodeId, flags, parameters ?? Enumerable.Empty<FlowVariable>());
             this.Graph.MutableNodes.Add(node);
             Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
@@ -71,12 +71,12 @@ namespace AskTheCode.ControlFlowGraphs
         }
 
         // TODO: Add even more overloads (for example, consider directly using immutable array) and optimize their calls
-        public InnerFlowNode AddInnerNode(IEnumerable<Operation> operations = null)
+        public InnerFlowNode AddInnerNode(IEnumerable<Operation> operations = null, FlowNodeFlags flags = FlowNodeFlags.None)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new InnerFlowNode(this.Graph, nodeId, operations ?? Enumerable.Empty<Operation>());
+            var node = new InnerFlowNode(this.Graph, nodeId, flags, operations ?? Enumerable.Empty<Operation>());
             this.Graph.MutableNodes.Add(node);
             Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
@@ -85,14 +85,15 @@ namespace AskTheCode.ControlFlowGraphs
 
         public InnerFlowNode AddInnerNode(params Operation[] operations)
         {
-            return this.AddInnerNode(operations.AsEnumerable());
+            return this.AddInnerNode(operations.AsEnumerable(), FlowNodeFlags.None);
         }
 
         public CallFlowNode AddCallNode(
             IRoutineLocation location,
             IEnumerable<Expression> arguments = null,
             IEnumerable<FlowVariable> returnAssignments = null,
-            CallKind kind = CallKind.Static)
+            CallKind kind = CallKind.Static,
+            FlowNodeFlags flags = FlowNodeFlags.None)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(location != null, nameof(location));
@@ -102,6 +103,7 @@ namespace AskTheCode.ControlFlowGraphs
             var node = new CallFlowNode(
                 this.Graph,
                 nodeId,
+                flags,
                 location,
                 arguments ?? Enumerable.Empty<Expression>(),
                 returnAssignments ?? Enumerable.Empty<FlowVariable>(),
@@ -112,12 +114,12 @@ namespace AskTheCode.ControlFlowGraphs
             return node;
         }
 
-        public ReturnFlowNode AddReturnNode(IEnumerable<Expression> returnValues = null)
+        public ReturnFlowNode AddReturnNode(IEnumerable<Expression> returnValues = null, FlowNodeFlags flags = FlowNodeFlags.None)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
 
             var nodeId = this.nodeIdProvider.GenerateNewId();
-            var node = new ReturnFlowNode(this.Graph, nodeId, returnValues ?? Enumerable.Empty<Expression>());
+            var node = new ReturnFlowNode(this.Graph, nodeId, flags, returnValues ?? Enumerable.Empty<Expression>());
             this.Graph.MutableNodes.Add(node);
             Contract.Assert(nodeId.Value == this.Graph.MutableNodes.IndexOf(node));
 
@@ -126,7 +128,8 @@ namespace AskTheCode.ControlFlowGraphs
 
         public ThrowExceptionFlowNode AddThrowExceptionNode(
             IRoutineLocation constructorLocation,
-            IEnumerable<Expression> arguments = null)
+            IEnumerable<Expression> arguments = null,
+            FlowNodeFlags flags = FlowNodeFlags.None)
         {
             Contract.Requires<InvalidOperationException>(this.Graph != null);
             Contract.Requires<ArgumentNullException>(constructorLocation != null, nameof(constructorLocation));
@@ -135,6 +138,7 @@ namespace AskTheCode.ControlFlowGraphs
             var node = new ThrowExceptionFlowNode(
                 this.Graph,
                 nodeId,
+                flags,
                 constructorLocation,
                 arguments ?? Enumerable.Empty<Expression>());
             this.Graph.MutableNodes.Add(node);

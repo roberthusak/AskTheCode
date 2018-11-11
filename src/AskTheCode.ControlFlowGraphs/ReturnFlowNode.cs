@@ -9,8 +9,8 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public class ReturnFlowNode : FlowNode
     {
-        internal ReturnFlowNode(FlowGraph graph, FlowNodeId id, IEnumerable<Expression> returnValues)
-            : base(graph, id)
+        internal ReturnFlowNode(FlowGraph graph, FlowNodeId id, FlowNodeFlags flags, IEnumerable<Expression> returnValues)
+            : base(graph, id, flags)
         {
             Contract.Requires(returnValues != null);
 

@@ -92,7 +92,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                 else
                 {
                     this.ProcessInnerNodesSequence(buildNode, out firstBuildNode, out lastBuildNode, out var operations);
-                    flowNode = this.builder.AddInnerNode(operations);
+                    flowNode = this.builder.AddInnerNode(operations, lastBuildNode.Flags);      // TODO: Handle flag merging when there are flag types that need it
                     this.MapAssignmentsToFlowNode(firstBuildNode, lastBuildNode, flowNode);
                 }
 
@@ -342,13 +342,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
                     bool isObjectCreation = (borderOp.Method.MethodKind == MethodKind.Constructor);
 
-                    return this.builder.AddCallNode(location, flowArguments, returnAssignments, callKind);
+                    return this.builder.AddCallNode(location, flowArguments, returnAssignments, callKind, buildNode.Flags);
                 }
                 else
                 {
                     Contract.Assert(borderOp.Kind == SpecialOperationKind.ExceptionThrow);
 
-                    return this.builder.AddThrowExceptionNode(location, flowArguments);
+                    return this.builder.AddThrowExceptionNode(location, flowArguments, buildNode.Flags);
                 }
             }
             else
@@ -367,7 +367,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
                     returnValues = ImmutableArray.Create((Expression)this.TranslateVariable(buildThis));
                 }
 
-                return this.builder.AddReturnNode(returnValues);
+                return this.builder.AddReturnNode(returnValues, buildNode.Flags);
             }
         }
 

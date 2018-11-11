@@ -21,11 +21,12 @@ namespace AskTheCode.ControlFlowGraphs
         internal CallFlowNode(
             FlowGraph graph,
             FlowNodeId id,
+            FlowNodeFlags flags,
             IRoutineLocation location,
             IEnumerable<Expression> arguments,
             IEnumerable<FlowVariable> returnAssignments,
             CallKind kind)
-            : base(graph, id)
+            : base(graph, id, flags)
         {
             Contract.Requires(location != null);
             Contract.Requires(arguments != null);

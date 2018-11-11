@@ -9,13 +9,14 @@ namespace AskTheCode.ControlFlowGraphs
 {
     public abstract class FlowNode : IIdReferenced<FlowNodeId>, IFreezable<FlowNode>
     {
-        internal FlowNode(FlowGraph graph, FlowNodeId id)
+        internal FlowNode(FlowGraph graph, FlowNodeId id, FlowNodeFlags flags)
         {
             Contract.Requires(graph != null);
             Contract.Requires(id.IsValid);
 
             this.Graph = graph;
             this.Id = id;
+            this.Flags = flags;
             this.IngoingEdges = this.MutableIngoingEdges;
             this.OutgoingEdges = this.MutableOutgoingEdges;
         }
@@ -33,9 +34,11 @@ namespace AskTheCode.ControlFlowGraphs
             get { return (this.MutableIngoingEdges == null); }
         }
 
-        public FlowNodeId Id { get; private set; }
+        public FlowNodeId Id { get; }
 
-        public FlowGraph Graph { get; private set; }
+        public FlowGraph Graph { get; }
+
+        public FlowNodeFlags Flags { get; }
 
         public IReadOnlyList<InnerFlowEdge> IngoingEdges { get; private set; }
 

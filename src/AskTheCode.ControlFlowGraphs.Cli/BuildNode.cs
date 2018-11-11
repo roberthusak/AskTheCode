@@ -13,6 +13,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 {
     internal class BuildNode : IIdReferenced<BuildNodeId>
     {
+        private FlowNodeFlags flags;
         private List<BuildEdge> outgoingEdges = new List<BuildEdge>();
         private SyntaxNode syntax;
         private SyntaxNodeOrToken? labelOverride;
@@ -27,7 +28,13 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             this.Syntax = syntax;
         }
 
-        public BuildNodeId Id { get; private set; }
+        public BuildNodeId Id { get; }
+
+        public FlowNodeFlags Flags
+        {
+            get => this.flags;
+            set => this.flags = value;
+        }
 
         public List<BuildEdge> OutgoingEdges
         {
@@ -76,6 +83,11 @@ namespace AskTheCode.ControlFlowGraphs.Cli
             set { DataHelper.SetOnceAssert(ref this.displayNode, value); }
         }
 
+        public void SwapFlags(BuildNode other)
+        {
+            DataHelper.Swap(ref this.flags, ref other.flags);
+        }
+
         public void SwapOutgoingEdges(BuildNode other)
         {
             DataHelper.Swap(ref this.outgoingEdges, ref other.outgoingEdges);
@@ -113,6 +125,7 @@ namespace AskTheCode.ControlFlowGraphs.Cli
 
         public void SwapContents(BuildNode other)
         {
+            this.SwapFlags(other);
             this.SwapOutgoingEdges(other);
             this.SwapSyntax(other);
             this.SwapLabelOverride(other);
