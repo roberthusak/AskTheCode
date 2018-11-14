@@ -22,5 +22,17 @@ namespace AskTheCode.PathExploration
             }
             while (p != null);
         }
+
+        public static IEnumerable<FlowEdge> Edges(this Path path)
+        {
+            Contract.Requires(path != null);
+
+            var p = path;
+            while (!p.LeadingEdges.IsEmpty)
+            {
+                yield return p.LeadingEdges[0];
+                p = p.Preceeding.IsEmpty ? null : p.Preceeding[0];
+            }
+        }
     }
 }

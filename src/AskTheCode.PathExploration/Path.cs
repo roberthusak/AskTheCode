@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using AskTheCode.ControlFlowGraphs;
+using CodeContractsRevival.Runtime;
 
 namespace AskTheCode.PathExploration
 {
@@ -10,6 +11,8 @@ namespace AskTheCode.PathExploration
     {
         public Path(ImmutableArray<Path> preceeding, int depth, FlowNode node, ImmutableArray<FlowEdge> leadingEdges)
         {
+            Contract.Assert(!leadingEdges.IsDefault);
+
             this.Preceeding = preceeding;
             this.Depth = depth;
             this.Node = node;
