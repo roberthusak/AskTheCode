@@ -90,7 +90,7 @@ namespace EvaluationTests
                 if (p == 50 && c == 2)
                 {
                     PexAssert.ReachEventually(0);
-                    Evaluation.InvalidUnreachable();    // AskTheCode, Pex
+                    Evaluation.SkippedInvalidUnreachable();    // AskTheCode, Pex
                 }
 
                 p = p + 1;
