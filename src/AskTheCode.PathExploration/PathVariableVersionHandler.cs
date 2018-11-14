@@ -409,12 +409,14 @@ namespace AskTheCode.PathExploration
             var callNode = (CallFlowNode)outerEdge.From;
             var enterNode = (EnterFlowNode)outerEdge.To;
             var callerGraph = callNode.Graph;
+            bool isRecursiveCall = callerGraph == enterNode.Graph;
 
             // Obtain the current versions of the parameters
             var paramVersions = enterNode.Parameters
                 .Select((variable) => this.variableVersions[variable].CurrentVersion)
                 .ToArray();
 
+            // Set variable versions of the caller (if recursive, of the callee as well)
             if (this.callStack.Count > 0)
             {
                 this.callExtensionKindStack.Push(CallExtensionKind.CallStackBound);
@@ -444,11 +446,15 @@ namespace AskTheCode.PathExploration
             {
                 var parameter = enterNode.Parameters[i];
                 this.OnVariableAssigned(parameter, paramVersions[i], callNode.Arguments[i]);
-                this.variableVersions[parameter].PushNewVersion();
+
+                if (!isRecursiveCall)
+                {
+                    this.variableVersions[parameter].PushNewVersion();
+                }
             }
 
             // Increment the version of the first parameter (this) in the case of constructor
-            if (callNode.IsObjectCreation)
+            if (!isRecursiveCall && callNode.IsObjectCreation)
             {
                 var thisParameter = enterNode.Parameters[0];
                 this.variableVersions[thisParameter].PushNewVersion();
@@ -457,11 +463,15 @@ namespace AskTheCode.PathExploration
 
         private void RetractCall(OuterFlowEdge outerEdge)
         {
-            // Pop the versions of the parameters
+            // Pop the versions of the parameters (not needed in the case of recursion)
             var enterNode = (EnterFlowNode)outerEdge.To;
-            foreach (var param in enterNode.Parameters)
+            bool isRecursiveCall = outerEdge.From.Graph == outerEdge.To.Graph;
+            if (!isRecursiveCall)
             {
-                this.variableVersions[param].PopVersion();
+                foreach (var param in enterNode.Parameters)
+                {
+                    this.variableVersions[param].PopVersion();
+                }
             }
 
             if (this.callExtensionKindStack.Pop() == CallExtensionKind.CallStackBound)

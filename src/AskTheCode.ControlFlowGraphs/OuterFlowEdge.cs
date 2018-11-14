@@ -19,7 +19,6 @@ namespace AskTheCode.ControlFlowGraphs
             : base(from, to)
         {
             Contract.Requires(id.IsValid);
-            Contract.Requires(from.Graph != to.Graph);
             Contract.Requires(kind != OuterFlowEdgeKind.MethodCall || (from is CallFlowNode && to is EnterFlowNode));
             Contract.Requires(kind != OuterFlowEdgeKind.Return || (from is ReturnFlowNode && to is CallFlowNode));
 
