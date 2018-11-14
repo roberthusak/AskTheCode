@@ -9,7 +9,7 @@ namespace EvaluationTests.Heap
 {
     public class DoublyLinkedList
     {
-        private class ListNode
+        public class ListNode
         {
             public int value;
             public ListNode previous;
@@ -81,6 +81,22 @@ namespace EvaluationTests.Heap
             return false;
         }
 
+        public bool ContainsRecursive(int value, ListNode node)
+        {
+            if (node == this.head)
+            {
+                return false;
+            }
+            else if (node.value == value)
+            {
+                return true;
+            }
+            else
+            {
+                return this.ContainsRecursive(value, node.next);
+            }
+        }
+
         public static DoublyLinkedList CreateSample()
         {
             DoublyLinkedList list = new DoublyLinkedList(null);
@@ -104,6 +120,10 @@ namespace EvaluationTests.Heap
 
             bool a = list.Contains(42);
             Evaluation.ValidAssert(a);
+            if (a)
+            {
+                Evaluation.InvalidUnreachable();
+            }
         }
 
         public static void TestContains2()
@@ -112,6 +132,22 @@ namespace EvaluationTests.Heap
 
             bool a = !list.Contains(0);
             Evaluation.ValidAssert(a);
+            if (a)
+            {
+                Evaluation.InvalidUnreachable();
+            }
+        }
+
+        public static void TestContains3()
+        {
+            var list = CreateSample();
+
+            bool a = list.ContainsRecursive(42, list.head.next);
+            Evaluation.ValidAssert(a);
+            if (a)
+            {
+                Evaluation.InvalidUnreachable();
+            }
         }
 
         public static void TestRemoveLast()
@@ -121,6 +157,10 @@ namespace EvaluationTests.Heap
 
             bool a = !list.Contains(42);
             Evaluation.ValidAssert(a);
+            if (a)
+            {
+                Evaluation.InvalidUnreachable();
+            }
         }
     }
 }

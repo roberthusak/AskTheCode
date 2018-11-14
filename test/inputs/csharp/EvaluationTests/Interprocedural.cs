@@ -32,5 +32,31 @@ namespace EvaluationTests
 
             Evaluation.InvalidUnreachable();
         }
+
+        private static bool GreaterOrEqualRecursive(int a, int b)
+        {
+            if (a == b)
+            {
+                return true;
+            }
+            else if (a == 0)
+            {
+                return false;
+            }
+            else
+            {
+                return GreaterOrEqualRecursive(a - 1, b);
+            }
+        }
+
+        public static void RecursiveTest()
+        {
+            bool c = GreaterOrEqualRecursive(3, 1);
+            Evaluation.ValidAssert(c);
+            if (c)
+            {
+                Evaluation.InvalidUnreachable();
+            }
+        }
     }
 }
