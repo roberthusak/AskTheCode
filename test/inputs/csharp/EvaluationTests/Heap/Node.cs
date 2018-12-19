@@ -78,5 +78,28 @@ namespace EvaluationTests.Heap
 
             Evaluation.ValidAssert(b.next == a);
         }
+
+        public Node GetByIndex(int i)
+        {
+            Node r = this;
+            while (i > 0)
+            {
+                r = r.next;
+                i = i - 1;
+            }
+
+            return r;
+        }
+
+        public static void EmbarrasinglyBackward(Node n1, Node n2, Node n3, int a, int b, int c)
+        {
+            Node na = n1.GetByIndex(a);
+            Node nb = n2.GetByIndex(b);
+            Node nc = n3.GetByIndex(c);
+            if (a == 8 && b == 10 && c == 4)
+            {
+                Evaluation.InvalidUnreachable();
+            }
+        }
     }
 }
