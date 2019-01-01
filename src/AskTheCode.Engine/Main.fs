@@ -1,14 +1,17 @@
 module AskTheCode.Program
 
-open AskTheCode
-open AskTheCode.Cfg
-
 open System.Linq
+open System.Collections.Generic
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.CSharp.Syntax
 open Microsoft.CodeAnalysis.FlowAnalysis
-open System.Collections.Generic
+
+open AskTheCode
+open AskTheCode.Smt
+open AskTheCode.Cfg
+open AskTheCode.SymbolicExecution
+open AskTheCode.Cli
 
 [<EntryPoint>]
 let main args =
@@ -33,18 +36,18 @@ static class C
     let compilation = CSharpCompilation.Create("test", [ syntaxTree ], [ reference ])
     let syntaxNode = syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
     let roslynCfg = ControlFlowGraph.Create(syntaxNode, compilation.GetSemanticModel(syntaxTree, true))
-    let cfg = Cfg.CSharp.convertCfg roslynCfg
+    let cfg = Cfg.convertCfg roslynCfg
     
     let x = { Sort = Int; Name = "x" }
     let y = { Sort = Int; Name = "y" }
     let refCfg = {
         Nodes = [
             Enter (NodeId 0);
-            Inner (NodeId 1, { Operations = [ Assign { Target = x; Value = Neg (Var x) } ] });
-            Return (NodeId 2, { Value = IntConst 1 });
-            Inner (NodeId 3, { Operations = [] });
-            Return (NodeId 4, { Value = Neg (IntConst 1) });
-            Return (NodeId 5, { Value = IntConst 0 })
+            Basic (NodeId 1, [ Assign { Target = x; Value = Neg (Var x) } ]);
+            Return (NodeId 2, Some <| IntConst 1 );
+            Basic (NodeId 3, []);
+            Return (NodeId 4, Some <| Neg (IntConst 1));
+            Return (NodeId 5, Some <| IntConst 0)
         ];
         Edges = [
             { From = NodeId 0; To = NodeId 1; Condition = BoolConst true };
@@ -56,8 +59,7 @@ static class C
     }
     assert (cfg = refCfg)
 
-    let ctx = new Microsoft.Z3.Context()
-
+    let ctx = Z3.mkContext()
     let res = Exploration.run (Z3.solve ctx) cfg (Graph.node cfg (NodeId 5))
     System.Console.WriteLine(res.ToString())
     0

@@ -22,3 +22,8 @@ let lazyUpdateUnion3 cons fn orig (item1, item2, item3) =
     match refEq item1 res1 && refEq item2 res2 && refEq item3 res3 with
      | true -> orig
      | false -> cons (res1, res2, res3)
+
+let accumulate fn inputs =
+    let step results input =
+        results @ fn input
+    Seq.fold step [] inputs

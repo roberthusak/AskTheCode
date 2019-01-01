@@ -8,14 +8,14 @@
 
   <ItemGroup>
     <Compile Include="Utils.fs" />
-    <Compile Include="Expr.fs" />
-    <Compile Include="Term.fs" />
+    <Compile Include="Smt\Term.fs" />
+    <Compile Include="Smt\Evaluation.fs" />
     <Compile Include="Cfg.fs" />
-    <Compile Include="Path.fs" />
-    <Compile Include="Smt.fs" />
-    <Compile Include="Exploration.fs" />
+    <Compile Include="SymbolicExecution\Path.fs" />
+    <Compile Include="SymbolicExecution\Exploration.fs" />
     <Compile Include="Smt.Z3.fs" />
-    <Compile Include="Cfg.CSharp.fs" />
+    <Compile Include="Cli\RoslynUtils.fs" />
+    <Compile Include="Cli\Cfg.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 

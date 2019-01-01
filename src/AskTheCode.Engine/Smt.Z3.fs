@@ -1,7 +1,11 @@
 module AskTheCode.Z3
 
 open Microsoft
-open Microsoft.Z3
+
+open AskTheCode.Smt
+
+let mkContext () =
+    new Z3.Context()
 
 let sortToZ3 (ctx:Z3.Context) sort :Z3.Sort =
     match sort with

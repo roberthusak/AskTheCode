@@ -1,4 +1,4 @@
-namespace AskTheCode
+namespace AskTheCode.SymbolicExecution
 
 open AskTheCode.Cfg
 

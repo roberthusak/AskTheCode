@@ -1,31 +1,14 @@
-﻿module AskTheCode.Cfg.CSharp
+﻿module AskTheCode.Cli.Cfg
 
 open Microsoft.CodeAnalysis
-open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.FlowAnalysis
-
-open AskTheCode
-open AskTheCode.Cfg
 open Microsoft.CodeAnalysis.Operations
 
-type RoslynOperation =
-    | Binary of IBinaryOperation
-    | ExpressionStatement of IExpressionStatementOperation
-    | Literal of ILiteralOperation
-    | ParameterReference of IParameterReferenceOperation
-    | SimpleAssignment of ISimpleAssignmentOperation
-    | Unary of IUnaryOperation
-    | Unsupported
-
-let matchOperation (op:IOperation) =
-    match op.Kind with
-    | OperationKind.BinaryOperator -> Binary (op :?> _)
-    | OperationKind.ExpressionStatement -> ExpressionStatement (op :?> _)
-    | OperationKind.Literal -> Literal (op :?> _)
-    | OperationKind.ParameterReference -> ParameterReference (op :?> _)
-    | OperationKind.SimpleAssignment -> SimpleAssignment (op :?> _)
-    | OperationKind.UnaryOperator -> Unary (op :?> _)
-    | _ -> Unsupported
+open AskTheCode
+open AskTheCode.Smt
+open AskTheCode.Cfg
+open AskTheCode.Cli
+open AskTheCode.Cli.RoslynUtils
 
 let convertType (typeSymbol:ITypeSymbol) =
     match typeSymbol.SpecialType with
@@ -75,16 +58,19 @@ let convertCfg (cfg:ControlFlowGraph) =
         let id = NodeId block.Ordinal
         match block.Kind with
         | BasicBlockKind.Block ->
-            // TODO: Try to get rid of the lambda
-            let operations = Seq.fold (fun res op -> List.append res (convertOperation op)) [] block.Operations
+            let operations = Utils.accumulate convertOperation block.Operations
             match block.FallThroughSuccessor.Semantics with
             | ControlFlowBranchSemantics.Regular ->
-                [ Inner (id, { Operations = operations }) ]
+                [ Basic (id, operations) ]
             | ControlFlowBranchSemantics.Return ->
                 // TODO: Split to two nodes if there are any operations
                 if not block.Operations.IsEmpty then failwith "Not implemented" else ()
-                let value = convertExpression block.BranchValue
-                [ Return (id, { Value = value }) ]
+                let value =
+                    if block.BranchValue <> null then
+                        Some <| convertExpression block.BranchValue
+                    else
+                        None
+                [ Return (id, value) ]
             | _ -> failwith "Not implemented"
         | BasicBlockKind.Entry ->
             [ Enter id ]
@@ -108,9 +94,7 @@ let convertCfg (cfg:ControlFlowGraph) =
         | _ ->
             failwith "Invalid enum value"
     let nodes =
-        // TODO: Try to get rid of the lambda
-        Seq.fold (fun res block -> List.append res (convertBlock block)) [] cfg.Blocks
+        Utils.accumulate convertBlock cfg.Blocks
     let edges =
-        // TODO: Try to get rid of the lambda
-        Seq.fold (fun res block -> List.append res (convertEdges block)) [] cfg.Blocks
+        Utils.accumulate convertEdges cfg.Blocks
     { Nodes = nodes; Edges = edges }

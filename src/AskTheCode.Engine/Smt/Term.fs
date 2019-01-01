@@ -1,4 +1,6 @@
-namespace AskTheCode
+namespace AskTheCode.Smt
+
+open AskTheCode
 
 type Sort =
     | Bool
@@ -19,45 +21,47 @@ type Term =
     | Or of Term * Term
     | Not of Term
 
-[<RequireQualifiedAccess>]
-type BinaryOp = Add | Lt | Gt | Eq | And | Or
-
-[<RequireQualifiedAccess>]
-type UnaryOp = Neg | Not
-
-type BinaryOp with  
-    member this.Symbol =
-        match this with
-        | Add -> "+"
-        | Lt -> "<"
-        | Gt -> ">"
-        | Eq -> "=="
-        | And -> " && "
-        | Or -> " || "
-    member this.Sort =
-        match this with
-        | Add -> Int
-        | Lt | Gt | Eq | And | Or -> Bool
-    member this.Precedence = 
-        match this with
-        | Add -> 3
-        | Lt | Gt | Eq -> 2
-        | And | Or -> 1
-
-type UnaryOp with  
-    member this.Symbol =
-        match this with
-        | Neg -> "-"
-        | Not -> "!"
-    member this.Sort =
-        match this with
-        | Neg -> Int
-        | Not -> Bool
-
 module Term =
 
-    let (|Binary|Unary|Variable|Constant|) expr =
-        match expr with
+    // Helper types for term pattern matching
+
+    [<RequireQualifiedAccess>]
+    type BinaryOp = Add | Lt | Gt | Eq | And | Or
+
+    [<RequireQualifiedAccess>]
+    type UnaryOp = Neg | Not
+
+    type BinaryOp with  
+        member this.Symbol =
+            match this with
+            | Add -> "+"
+            | Lt -> "<"
+            | Gt -> ">"
+            | Eq -> "=="
+            | And -> " && "
+            | Or -> " || "
+        member this.Sort =
+            match this with
+            | Add -> Int
+            | Lt | Gt | Eq | And | Or -> Bool
+        member this.Precedence = 
+            match this with
+            | Add -> 3
+            | Lt | Gt | Eq -> 2
+            | And | Or -> 1
+
+    type UnaryOp with  
+        member this.Symbol =
+            match this with
+            | Neg -> "-"
+            | Not -> "!"
+        member this.Sort =
+            match this with
+            | Neg -> Int
+            | Not -> Bool
+
+    let (|Variable|Constant|Unary|Binary|) term =
+        match term with
         | Var v -> Variable v
         | IntConst a -> Constant (Int, a :> System.Object)
         | BoolConst a -> Constant (Bool, a :> System.Object)
@@ -70,8 +74,17 @@ module Term =
         | Or (a, b) -> Binary (BinaryOp.Or, a, b)
         | Not a -> Unary (UnaryOp.Not, a)
     
-    let isLeaf expr =
-        match expr with
+    // Helper functions for working with terms
+
+    let sort term =
+        match term with
+        | Variable { Sort = sort; } -> sort
+        | Constant (sort, _) -> sort
+        | Unary (op, _) -> op.Sort
+        | Binary (op, _, _) -> op.Sort
+
+    let isLeaf term =
+        match term with
         | Var _ | IntConst _ | BoolConst _ -> true
         | _ -> false
 

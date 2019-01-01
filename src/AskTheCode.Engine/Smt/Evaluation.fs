@@ -1,4 +1,4 @@
-namespace AskTheCode
+namespace AskTheCode.Smt
 
 type Evaluation =
     | IntVal of int
