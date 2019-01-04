@@ -27,3 +27,14 @@ let accumulate fn inputs =
     let step results input =
         results @ fn input
     Seq.fold step [] inputs
+    
+let accumulate2 fn inputs =
+    let step (results1, results2) input =
+        let (next1, next2) = fn input
+        (results1 @ next1, results2 @ next2)
+    Seq.fold step ([], []) inputs
+
+let nullableToList value =
+    match value with
+    | null -> []
+    | _ -> [ value ]

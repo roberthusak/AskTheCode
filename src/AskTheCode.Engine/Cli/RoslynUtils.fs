@@ -14,7 +14,9 @@ type RoslynOperation =
 
 module RoslynUtils =
 
-    // Casts the Roslyn IOperation to the appropriate specific interface according to its Kind
+    /// <summary>
+    /// Casts the Roslyn IOperation to the appropriate specific interface according to its Kind
+    /// </summary>
     let matchOperation (op:IOperation) =
         match op.Kind with
         | OperationKind.BinaryOperator -> Binary (op :?> _)
