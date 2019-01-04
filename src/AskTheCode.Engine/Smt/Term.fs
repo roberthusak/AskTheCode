@@ -15,8 +15,11 @@ type Term =
     | Add of Term * Term
     | Neg of Term
     | Lt of Term * Term
+    | Leq of Term * Term
     | Gt of Term * Term
+    | Geq of Term * Term
     | Eq of Term * Term
+    | Neq of Term * Term
     | And of Term * Term
     | Or of Term * Term
     | Not of Term
@@ -26,7 +29,7 @@ module Term =
     // Helper types for term pattern matching
 
     [<RequireQualifiedAccess>]
-    type BinaryOp = Add | Lt | Gt | Eq | And | Or
+    type BinaryOp = Add | Lt | Leq | Gt | Geq | Eq | Neq | And | Or
 
     [<RequireQualifiedAccess>]
     type UnaryOp = Neg | Not
@@ -36,18 +39,21 @@ module Term =
             match this with
             | Add -> "+"
             | Lt -> "<"
+            | Leq -> "<="
             | Gt -> ">"
+            | Geq -> ">="
             | Eq -> "=="
+            | Neq -> "!="
             | And -> " && "
             | Or -> " || "
         member this.Sort =
             match this with
             | Add -> Int
-            | Lt | Gt | Eq | And | Or -> Bool
+            | Lt | Leq | Gt | Geq | Eq | Neq | And | Or -> Bool
         member this.Precedence = 
             match this with
             | Add -> 3
-            | Lt | Gt | Eq -> 2
+            | Lt | Leq | Gt | Geq | Eq | Neq -> 2
             | And | Or -> 1
 
     type UnaryOp with  
@@ -68,8 +74,11 @@ module Term =
         | Add (a, b) -> Binary (BinaryOp.Add, a, b)
         | Neg a -> Unary (UnaryOp.Neg, a)
         | Lt (a, b) -> Binary (BinaryOp.Lt, a, b)
+        | Leq (a, b) -> Binary (BinaryOp.Leq, a, b)
         | Gt (a, b) -> Binary (BinaryOp.Gt, a, b)
+        | Geq (a, b) -> Binary (BinaryOp.Geq, a, b)
         | Eq (a, b) -> Binary (BinaryOp.Eq, a, b)
+        | Neq (a, b) -> Binary (BinaryOp.Neq, a, b)
         | And (a, b) -> Binary (BinaryOp.And, a, b)
         | Or (a, b) -> Binary (BinaryOp.Or, a, b)
         | Not a -> Unary (UnaryOp.Not, a)
@@ -94,8 +103,11 @@ module Term =
         | Add (a, b) -> Utils.lazyUpdateUnion2 Add fn term (a, b)
         | Neg a -> Utils.lazyUpdateUnion Neg fn term a
         | Lt (a, b) -> Utils.lazyUpdateUnion2 Lt fn term (a, b)
+        | Leq (a, b) -> Utils.lazyUpdateUnion2 Leq fn term (a, b)
         | Gt (a, b) -> Utils.lazyUpdateUnion2 Gt fn term (a, b)
+        | Geq (a, b) -> Utils.lazyUpdateUnion2 Geq fn term (a, b)
         | Eq (a, b) -> Utils.lazyUpdateUnion2 Eq fn term (a, b)
+        | Neq (a, b) -> Utils.lazyUpdateUnion2 Neq fn term (a, b)
         | And (a, b) -> Utils.lazyUpdateUnion2 And fn term (a, b)
         | Or (a, b) -> Utils.lazyUpdateUnion2 Or fn term (a, b)
         | Not a -> Utils.lazyUpdateUnion Not fn term a

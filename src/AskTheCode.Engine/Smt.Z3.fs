@@ -23,8 +23,11 @@ let rec termToZ3 (ctx:Z3.Context) term :Z3.Expr =
     | Add (a, b) -> ctx.MkAdd(innerArith a, innerArith b) :> _
     | Neg a -> ctx.MkUnaryMinus(innerArith a) :> _
     | Lt (a, b) -> ctx.MkLt(innerArith a, innerArith b) :> _
+    | Leq (a, b) -> ctx.MkLe(innerArith a, innerArith b) :> _
     | Gt (a, b) -> ctx.MkGt(innerArith a, innerArith b) :> _
+    | Geq (a, b) -> ctx.MkGe(innerArith a, innerArith b) :> _
     | Eq (a, b) -> ctx.MkEq(inner a, inner b) :> _
+    | Neq (a, b) -> ctx.MkDistinct(inner a, inner b) :> _
     | And (a, b) -> ctx.MkAnd(innerBool a, innerBool b) :> _
     | Or (a, b) -> ctx.MkOr(innerBool a, innerBool b) :> _
     | Not a -> ctx.MkNot(innerBool a) :> _

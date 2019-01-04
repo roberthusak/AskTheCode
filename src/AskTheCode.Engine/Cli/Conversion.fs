@@ -20,8 +20,11 @@ type Postfix =
     | Add
     | Neg
     | Lt
+    | Leq
     | Gt
+    | Geq
     | Eq
+    | Neq
     | And
     | Or
     | Not
@@ -41,8 +44,11 @@ let rec roslynToPostfix (op:IOperation) =
             match bin.OperatorKind with
             | BinaryOperatorKind.Add -> yield Postfix.Add
             | BinaryOperatorKind.LessThan -> yield Postfix.Lt
+            | BinaryOperatorKind.LessThanOrEqual -> yield Postfix.Leq
             | BinaryOperatorKind.GreaterThan -> yield Postfix.Gt
+            | BinaryOperatorKind.GreaterThanOrEqual -> yield Postfix.Geq
             | BinaryOperatorKind.Equals -> yield Postfix.Eq
+            | BinaryOperatorKind.NotEquals -> yield Postfix.Neq
             | BinaryOperatorKind.And -> yield Postfix.And
             | BinaryOperatorKind.Or -> yield Postfix.Or
             | _ -> failwith "Not implemented"
@@ -118,10 +124,16 @@ let postfixToOperations postOps =
             convertUnary Neg (stack, revOps)
         | Postfix.Lt ->
             convertBinary Lt (stack, revOps)
+        | Postfix.Leq ->
+            convertBinary Leq (stack, revOps)
         | Postfix.Gt ->
             convertBinary Gt (stack, revOps)
+        | Postfix.Geq ->
+            convertBinary Geq (stack, revOps)
         | Postfix.Eq ->
             convertBinary Eq (stack, revOps)
+        | Postfix.Neq ->
+            convertBinary Neq (stack, revOps)
         | Postfix.And ->
             convertBinary And (stack, revOps)
         | Postfix.Or ->
