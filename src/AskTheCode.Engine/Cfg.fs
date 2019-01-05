@@ -1,10 +1,13 @@
 namespace AskTheCode.Cfg
 
 open AskTheCode.Smt
+open AskTheCode.Heap
 
 type Assignment = { Target: Variable; Value: Term }
 
-type Operation = Assign of Assignment
+type Operation =
+    | Assign of Assignment
+    | HeapOp of HeapOperation
 
 type NodeId = NodeId of int
 

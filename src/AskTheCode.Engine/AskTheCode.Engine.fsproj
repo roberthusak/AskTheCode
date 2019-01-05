@@ -10,6 +10,7 @@
     <Compile Include="Utils.fs" />
     <Compile Include="Smt\Term.fs" />
     <Compile Include="Smt\Evaluation.fs" />
+    <Compile Include="Heap.fs" />
     <Compile Include="Cfg.fs" />
     <Compile Include="SymbolicExecution\Path.fs" />
     <Compile Include="SymbolicExecution\Exploration.fs" />
