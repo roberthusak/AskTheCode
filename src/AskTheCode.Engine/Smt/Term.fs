@@ -5,6 +5,7 @@ open AskTheCode
 type Sort =
     | Bool
     | Int
+    | Array of Index: Sort * Value: Sort
 
 type Variable = { Sort: Sort; Name: string }
 
@@ -23,6 +24,8 @@ type Term =
     | And of Term * Term
     | Or of Term * Term
     | Not of Term
+    | Select of Term * Term
+    | Store of Term * Term * Term
 
 module Term =
 
@@ -66,7 +69,7 @@ module Term =
             | Neg -> Int
             | Not -> Bool
 
-    let (|Variable|Constant|Unary|Binary|) term =
+    let (|Variable|Constant|Unary|Binary|Function|) term =
         match term with
         | Var v -> Variable v
         | IntConst a -> Constant (Int, a :> System.Object)
@@ -82,15 +85,31 @@ module Term =
         | And (a, b) -> Binary (BinaryOp.And, a, b)
         | Or (a, b) -> Binary (BinaryOp.Or, a, b)
         | Not a -> Unary (UnaryOp.Not, a)
+        | Select (a, i) -> Function ("select", [ a; i])
+        | Store (a, i, v) -> Function ("store", [ a; i; v ])
     
     // Helper functions for working with terms
 
-    let sort term =
+    let rec sort term =
         match term with
-        | Variable { Sort = sort; } -> sort
-        | Constant (sort, _) -> sort
-        | Unary (op, _) -> op.Sort
-        | Binary (op, _, _) -> op.Sort
+        | Variable { Sort = sort; } ->
+            sort
+        | Constant (sort, _) ->
+            sort
+        | Unary (op, _) ->
+            op.Sort
+        | Binary (op, _, _) ->
+            op.Sort
+        | Function (name, _) ->
+            match term with
+            | Select (a, _) ->
+                match sort a with
+                | Array (Value = value) -> value
+                | _ -> failwith "Non-array sort in read function"
+            | Store (a, _, _) ->
+                sort a
+            | _ ->
+                failwithf "Unknown function '%s'" name
 
     let isLeaf term =
         match term with
@@ -111,6 +130,8 @@ module Term =
         | And (a, b) -> Utils.lazyUpdateUnion2 And fn term (a, b)
         | Or (a, b) -> Utils.lazyUpdateUnion2 Or fn term (a, b)
         | Not a -> Utils.lazyUpdateUnion Not fn term a
+        | Select (a, i) -> Utils.lazyUpdateUnion2 Select fn term (a, i)
+        | Store (a, i, v) -> Utils.lazyUpdateUnion3 Store fn term (a, i, v)
 
     let rec print expr =
         let parensPrint innerExpr = sprintf "(%s)" <| print innerExpr
@@ -123,5 +144,10 @@ module Term =
             sprintf "%s %s %s" (printInner left) op.Symbol (printInner right)
         | Unary (op, operand) ->
             sprintf "%s%s" op.Symbol <| if isLeaf operand then print operand else parensPrint operand
+        | Function (name, args) ->
+            args
+            |> List.map print
+            |> String.concat ", "
+            |> sprintf "%s(%s)" name
         | Variable v -> v.Name
         | Constant (_, value) -> value.ToString()
