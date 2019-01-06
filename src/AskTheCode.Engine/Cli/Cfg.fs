@@ -49,8 +49,8 @@ let convertCfg (cfg:ControlFlowGraph) =
                 let conditionalId = NodeId block.ConditionalSuccessor.Destination.Ordinal
                 let fallThroughId = NodeId block.FallThroughSuccessor.Destination.Ordinal
                 let (conditionalCond, fallThroughCond) =
-                    if block.ConditionKind = ControlFlowConditionKind.WhenTrue then (condTerm, Neg condTerm)
-                    else (Neg condTerm, condTerm)
+                    if block.ConditionKind = ControlFlowConditionKind.WhenTrue then (condTerm, Not condTerm)
+                    else (Not condTerm, condTerm)
                 [ { From = fromId; To = fallThroughId; Condition = fallThroughCond };
                   { From = fromId; To = conditionalId; Condition = conditionalCond } ]
 

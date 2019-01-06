@@ -2,6 +2,10 @@ module AskTheCode.Utils
 
 let refEq = LanguagePrimitives.PhysicalEquality
 
+let curry2 fn arg1 arg2 = fn (arg1, arg2)
+
+let curry3 fn arg1 arg2 arg3 = fn (arg1, arg2, arg3)
+
 let lazyUpdateUnion cons fn orig item =
     let res = fn item
     match refEq item res with
