@@ -47,7 +47,7 @@ public class Node
     let syntaxNode = syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
     let roslynCfg = ControlFlowGraph.Create(syntaxNode, compilation.GetSemanticModel(syntaxTree, true))
     let cfg = Cfg.convertCfg roslynCfg
-    printfn "%A" cfg
+    printfn "%s" <| Graph.print cfg
 
     let ctx = Z3.mkContext()
     let solver term =
@@ -58,5 +58,5 @@ public class Node
         result
 
     let res = Exploration.run ArrayHeap.functions solver cfg (Graph.node cfg (NodeId 4))
-    printfn "%A" res
+    List.iter (Path.print >> printfn "%s") res
     0

@@ -12,3 +12,12 @@ module Path =
         match path with
         | Target node -> node
         | Step (node, _, _) -> node
+
+    let rec print path =
+        match path with
+        | Target node ->
+            let (NodeId id) = node.Id
+            sprintf "[%d]" id
+        | Step (node, _, path) ->
+            let (NodeId id) = node.Id
+            sprintf "[%d] ==> %s" id <| print path
