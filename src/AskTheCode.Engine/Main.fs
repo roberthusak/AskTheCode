@@ -12,6 +12,7 @@ open AskTheCode.Smt
 open AskTheCode.Cfg
 open AskTheCode.SymbolicExecution
 open AskTheCode.Cli
+open AskTheCode.Gui
 
 [<EntryPoint>]
 let main args =
@@ -48,6 +49,8 @@ public class Node
     let roslynCfg = ControlFlowGraph.Create(syntaxNode, compilation.GetSemanticModel(syntaxTree, true))
     let cfg = Cfg.convertCfg roslynCfg
     printfn "%s" <| Graph.print cfg
+
+    cfg |> Msagl.convertCfg |> Msagl.displayGraph
 
     let ctx = Z3.mkContext()
     let solver term =

@@ -19,11 +19,17 @@
     <Compile Include="Cli\RoslynUtils.fs" />
     <Compile Include="Cli\Conversion.fs" />
     <Compile Include="Cli\Cfg.fs" />
+    <Compile Include="Gui\Msagl.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.10.0" />
+    <PackageReference Include="Microsoft.Msagl.GraphViewerGDI" Version="1.1.3" />
     <PackageReference Include="Microsoft.Z3.x86" Version="4.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 </Project>

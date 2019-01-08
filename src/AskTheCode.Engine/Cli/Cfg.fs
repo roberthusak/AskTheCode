@@ -21,6 +21,7 @@ let convertCfg (cfg:ControlFlowGraph) =
                     |> Seq.concat
                     |> postfixToOperations
                 let nodes =
+                    // TODO: Properly handle all corner cases (the semantic is Regular if there's no return value etc.)
                     match block.FallThroughSuccessor.Semantics with
                     | ControlFlowBranchSemantics.Regular ->
                         [ Basic (id, operations) ]
