@@ -186,6 +186,7 @@ module Graph =
         results
 
     let unwindLoops loops graph count =
+        assert (count > 0)
 
         let getStructure graph results (head, group) =
             let floodToHead state id =
@@ -222,9 +223,12 @@ module Graph =
         let adjacentEdges ids edges =
             List.filter (fun (e:InnerEdge) -> Set.contains e.From ids || Set.contains e.To ids) edges
 
-        let unwindLoop graph (headId, structure) =
+        let rec unwindLoop graph structures =
+            let ((headId, structure), structures) = selectStructure structures
+
             // Duplicate head and attach the end of the first (and only) iteration to it
-            let forwardHead = Node.withId <| node graph headId <| NodeId (List.length graph.Nodes)
+            let origNodeCount = List.length graph.Nodes
+            let forwardHead = Node.withId <| node graph headId <| NodeId origNodeCount
             let (backwardEdges, unaffectedEdges) = partitionEdges structure (Set.ofList [ headId ]) graph.Edges
             let headMap = (Map.ofList [(headId, forwardHead.Id)])
             let forwardEdges = List.map (mapEdge Map.empty headMap) backwardEdges
@@ -232,34 +236,54 @@ module Graph =
                 filterEdges (Set.ofList [ headId ]) (Set.difference (Set.ofList graph.Nodes |> Set.map Node.Id) structure) graph.Edges       // TODO: Consider turning Nodes into Set or ImmutableArray
                 |> List.map (mapEdge headMap Map.empty)
 
+            let nodes = forwardHead :: graph.Nodes
+            let edges = forwardEdges @ forwardHeadLeaveEdges @ unaffectedEdges
+
+            // Find edges to be duplicated in the loop
             let loopInnerAndLeaveEdges =
                 adjacentEdges structure graph.Edges
                 |> List.filter (fun (e:InnerEdge) -> e.To <> headId || Set.contains e.From structure)
 
-            let nodes = forwardHead :: graph.Nodes
-            let edges = forwardEdges @ forwardHeadLeaveEdges @ unaffectedEdges
+            // Add count-1 copies of the loop to the graph
+            let rec unwindStep (forwardHeadId, count, nodes, edges) =
+                match count with
+                | 0 ->
+                    (nodes, edges, count)
+                | _ ->
+                    let allNodeCount = List.length nodes
+                    let loopNodeCount = Set.count structure
+                    let newIds = [allNodeCount .. allNodeCount + loopNodeCount - 1] |> List.map NodeId
+                    let bodyMap =
+                        Seq.fold2 (fun m k v -> Map.add k v m) Map.empty structure newIds
+                    let newForwardHeadId = Map.find headId bodyMap
+                    let duplNodes =
+                        Set.map (fun id -> Node.withId (node graph id) (Map.find id bodyMap)) structure
+                        |> List.ofSeq
+                    let duplicateEdge (e:InnerEdge) =
+                        if e.From = headId && not (Set.contains e.To structure)
+                            then { e with From = newForwardHeadId }
+                            else mapEdge (Map.add headId forwardHeadId bodyMap) bodyMap e
+                    let duplEdges = List.map duplicateEdge loopInnerAndLeaveEdges
+                    unwindStep (newForwardHeadId, count - 1, duplNodes @ nodes, duplEdges @ edges)
+            let (nodes, edges, _) = unwindStep (forwardHead.Id, count - 1, nodes, edges)
+            let graph = { Nodes = nodes; Edges = edges}
 
-            // TODO: Do following count-1 times
-            let allNodeCount = List.length nodes
-            let loopNodeCount = (Set.count structure)
-            let newIds = [allNodeCount .. allNodeCount + loopNodeCount - 1] |> List.map NodeId
-            let bodyMap =
-                Seq.fold2 (fun m k v -> Map.add k v m) Map.empty structure newIds
-            let newForwardHeadId = Map.find headId bodyMap
+            match structures with
+            | [] ->
+                graph
+            | _ ->
+                // Update all the loops that contained this loop by adding the newly created node IDs and unwind the remaining loops
+                let resultNodeCount = List.length nodes
+                let createdNodes = [origNodeCount .. resultNodeCount - 1] |> List.map NodeId |> Set.ofList
+                let updateStructure (hId, structure) =
+                    match Set.contains headId structure with
+                    | true ->
+                        (hId, Set.union structure createdNodes)
+                    | false ->
+                        (hId, structure)
+                let structures = List.map updateStructure structures
+                unwindLoop graph structures
 
-            let duplNodes =
-                Set.map (fun id -> Node.withId (node graph id) (Map.find id bodyMap)) structure
-                |> List.ofSeq
-            let duplicateEdge (e:InnerEdge) =
-                if e.From = headId && not (Set.contains e.To structure)
-                    then { e with From = newForwardHeadId }
-                    else mapEdge (Map.add headId forwardHead.Id bodyMap) bodyMap e
-            let duplEdges = List.map duplicateEdge loopInnerAndLeaveEdges
-
-            { Nodes = duplNodes @ nodes; Edges = duplEdges @ edges}
-
-        let headGroups = List.groupBy List.head loops
-        let structures = List.fold (getStructure graph) List.empty headGroups
-
-        let (s, rest) = selectStructure structures
-        unwindLoop graph s
+        List.groupBy List.head loops
+        |> List.fold (getStructure graph) List.empty
+        |> unwindLoop graph
