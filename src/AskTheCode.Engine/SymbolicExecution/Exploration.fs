@@ -49,15 +49,22 @@ module Exploration =
                 let trgName = assign.Target.Name
                 let trgVersion = getVersion state.Versions trgName
                 let target = Var { assign.Target with Name = formatVersioned trgName trgVersion }
-                let versions' = Map.add trgName (trgVersion + 1) state.Versions
-                let value = addVersions versions' assign.Value
-                let cond' = And (state.Condition, Eq (target, value))
-                { state with Condition = cond'; Versions = versions' }
+                let versions = Map.add trgName (trgVersion + 1) state.Versions
+                let value = addVersions versions assign.Value
+                let cond = And (state.Condition, Eq (target, value))
+                { state with Condition = cond; Versions = versions }
             | (HeapOp heapOp) ->
-                let heapOp = addHeapOpVersions state.Versions heapOp
-                let (heap, heapCond) = heapFn.PerformOp heapOp state.Heap
+                let versions =
+                    match HeapOperation.targetVariable heapOp with
+                    | Some { Name = varName } ->
+                        let curVersion = getVersion state.Versions varName
+                        Map.add varName (curVersion + 1) state.Versions
+                    | None ->
+                        state.Versions
+                let versionedHeapOp = addHeapOpVersions state.Versions heapOp
+                let (heap, heapCond) = heapFn.PerformOp versionedHeapOp state.Heap
                 let cond = Option.fold (Utils.curry2 And) state.Condition heapCond
-                { state with Heap = heap; Condition = cond }
+                { state with Heap = heap; Condition = cond; Versions = versions }
 
         match edge with
         | Inner innerEdge ->
