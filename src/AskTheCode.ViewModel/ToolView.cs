@@ -36,6 +36,7 @@ namespace AskTheCode.ViewModel
             Contract.Requires<ArgumentNullException>(ideServices != null, nameof(ideServices));
 
             this.ideServices = ideServices;
+            this.CallGraph = new CallGraphView(this);
             this.Replay = new ReplayView(this);
             this.DisplayFlowGraphCommand = new Command(this.DisplayFlowGraph);
             this.ExploreReachabilityCommand = new Command(() => this.Explore(false));
@@ -59,6 +60,8 @@ namespace AskTheCode.ViewModel
             get { return this.isExploring; }
             private set { this.SetProperty(ref this.isExploring, value); }
         }
+
+        public CallGraphView CallGraph { get; }
 
         public ReplayView Replay { get; }
 
@@ -94,6 +97,8 @@ namespace AskTheCode.ViewModel
         internal Solution CurrentSolution { get; private set; }
 
         internal CSharpFlowGraphProvider GraphProvider { get; private set; }
+
+        internal ExplorationContext ExplorationContext { get; private set; }
 
         public async void DisplayFlowGraph()
         {
@@ -162,11 +167,12 @@ namespace AskTheCode.ViewModel
             {
                 options.TimeoutSeconds = this.Timeout;
             }
-            var explorationContext = new ExplorationContext(this.GraphProvider, z3ContextFactory, startNode, options);
+
+            this.ExplorationContext = new ExplorationContext(this.GraphProvider, z3ContextFactory, startNode, options);
 
             try
             {
-                await this.ExploreImpl(isAssertCheck, explorationContext);
+                await this.ExploreImpl(isAssertCheck);
             }
             catch (Exception e)
             {
@@ -179,24 +185,25 @@ namespace AskTheCode.ViewModel
                 }
 
                 this.IsExploring = false;
+                this.CallGraph.Redraw();
             }
         }
 
-        private async Task ExploreImpl(bool isAssertCheck, ExplorationContext explorationContext)
+        private async Task ExploreImpl(bool isAssertCheck)
         {
             this.explorationCancelSource = new CancellationTokenSource();
 
             // TODO: Solve the situation when there is no dispatcher associated with the current thread
-            explorationContext.ExecutionModelsObservable
+            this.ExplorationContext.ExecutionModelsObservable
                 .ObserveOn(DispatcherScheduler.Current)
                 .Subscribe(this.OnExecutionModelFound, this.explorationCancelSource.Token);
 
             this.IsExploring = true;
             this.Messages.Add(isAssertCheck ? "Verifying the assertion..." : "Exploring the reachability...");
-            bool wasExhaustive = await explorationContext.ExploreAsync(this.explorationCancelSource);
+            bool wasExhaustive = await this.ExplorationContext.ExploreAsync(this.explorationCancelSource);
 
             // Amend any found results that may have not yet reached the dispatching handler
-            foreach (var executionModel in explorationContext.ExecutionModels)
+            foreach (var executionModel in this.ExplorationContext.ExecutionModels)
             {
                 this.OnExecutionModelFound(executionModel);
             }
@@ -240,12 +247,13 @@ namespace AskTheCode.ViewModel
                 }
             }
 
-            if (explorationContext.Explorer.IsUnderapproximated)
+            if (this.ExplorationContext.Explorer.IsUnderapproximated)
             {
                 this.Messages.Add("Underapproximation was used.");
             }
 
             this.IsExploring = false;
+            this.CallGraph.Redraw();
         }
 
         private void OnExecutionModelFound(ExecutionModel executionModel)

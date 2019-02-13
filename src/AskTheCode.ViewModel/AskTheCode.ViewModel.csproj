@@ -258,6 +258,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CallGraphView.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="FlowGraphView.cs" />
     <Compile Include="IGraphViewerConsumer.cs" />

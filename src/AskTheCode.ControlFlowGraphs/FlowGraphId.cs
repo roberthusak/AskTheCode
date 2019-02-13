@@ -44,6 +44,8 @@ namespace AskTheCode.ControlFlowGraphs
             return this.Value == other.Value;
         }
 
+        public override string ToString() => this.Value.ToString();
+
         public class Provider : IIdProvider<FlowGraphId>
         {
             private OrdinalIdValueGenerator valueGenerator = new OrdinalIdValueGenerator();

@@ -57,6 +57,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="CallGraphPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ReplayPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -69,6 +73,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="CallGraphPanel.xaml.cs">
+      <DependentUpon>CallGraphPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ReplayPanel.xaml.cs">
       <DependentUpon>ReplayPanel.xaml</DependentUpon>
     </Compile>

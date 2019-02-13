@@ -10,7 +10,8 @@
         Title="AskTheCode Standalone GUI" Height="600" Width="800" WindowState="Maximized" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -18,7 +19,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         
-        <Border x:Name="codeWindow" Padding="5,5,0,5" BorderBrush="Black" BorderThickness="1,1,1,0">
+        <Border x:Name="codeWindow" Grid.RowSpan="2" Padding="5,5,0,5" BorderBrush="Black" BorderThickness="1,1,1,0">
             <TextBox x:Name="code" IsReadOnly="True" IsReadOnlyCaretVisible="True" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto"
                      BorderThickness="0" FontFamily="Consolas" FontSize="14">
                 <TextBox.ContextMenu>
@@ -44,8 +45,10 @@
             </TabControl>
         </Border>
 
-        <controls:ReplayPanel x:Name="replayWindow" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,0" />
+        <controls:CallGraphPanel x:Name="callGraphWindow" Grid.Column="1" BorderBrush="Black" BorderThickness="0,1,1,1" />
 
-        <controls:ToolPanel x:Name="explorerWindow" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1" />
+        <controls:ReplayPanel x:Name="replayWindow" Grid.Row="1" Grid.Column="1" BorderBrush="Black" BorderThickness="0,0,1,0" />
+
+        <controls:ToolPanel x:Name="explorerWindow" Grid.Row="2" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1" />
     </Grid>
 </Window>

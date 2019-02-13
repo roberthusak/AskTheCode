@@ -39,6 +39,8 @@ namespace AskTheCode.PathExploration
         {
         }
 
+        public StartingNodeInfo StartingNode { get; private set; }
+
         // TODO: Implement multiple explorers
         public Explorer Explorer { get; private set; }
 
@@ -53,8 +55,6 @@ namespace AskTheCode.PathExploration
         internal IHeuristicFactory<IExplorationHeuristic> ExplorationHeuristicFactory { get; private set; }
 
         internal IHeuristicFactory<IMergingHeuristic> MergingHeuristicFactory { get; private set; }
-
-        internal StartingNodeInfo StartingNode { get; private set; }
 
         internal ExplorationOptions Options { get; private set; }
 
