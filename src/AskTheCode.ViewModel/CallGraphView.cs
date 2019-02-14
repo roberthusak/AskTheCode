@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AskTheCode.ControlFlowGraphs;
 using AskTheCode.ControlFlowGraphs.Cli;
+using AskTheCode.PathExploration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.Msagl.Drawing;
@@ -13,6 +14,12 @@ namespace AskTheCode.ViewModel
 {
     public class CallGraphView : NotifyPropertyChangedBase, IGraphViewerConsumer
     {
+        private static readonly Color FoundCounterexampleColor = new Color(255, 148, 148);
+
+        private static readonly Color UnreachableColor = new Color(155, 255, 99);
+
+        private static readonly Color UnknownColor = Color.White;
+
         private readonly ToolView toolView;
 
         private IViewer graphViewer;
@@ -51,29 +58,14 @@ namespace AskTheCode.ViewModel
             startNode.Attr.FillColor = Color.Black;
             visitedIds.Add(startCfg.Id.Value);
 
-            foreach (var path in context.ExecutionModels)
+            foreach (var exec in context.ExecutionModels)
             {
-                foreach (var callNode in path.PathNodes.OfType<CallFlowNode>())
-                {
-                    var cfgId = callNode.Graph.Id;
-                    if (visitedIds.Add(cfgId.Value))
-                    {
-                        var location = graphProvider.GetLocation(cfgId);
+                await AddMethodNodesFromFlow(graph, visitedIds, graphProvider, exec.PathNodes, FoundCounterexampleColor);
+            }
 
-                        var node = graph.AddNode(cfgId.Value.ToString());
-                        node.LabelText = location.ToString();
-                        node.Label.FontStyle = FontStyle.Underline;
-                    }
-
-                    if (callNode.Location.CanBeExplored
-                        && await graphProvider.GetFlowGraphAsync(callNode.Location) is FlowGraph trg
-                        && visitedIds.Add(trg.Id.Value))
-                    {
-                        var node = graph.AddNode(trg.Id.ToString());
-                        node.LabelText = callNode.Location.ToString();
-                        node.Label.FontStyle = FontStyle.Underline;
-                    }
-                }
+            foreach (var state in context.Explorer.States)
+            {
+                await AddMethodNodesFromFlow(graph, visitedIds, graphProvider, state.Path.Nodes(), UnknownColor);
             }
 
             foreach (int cfgId in visitedIds)
@@ -89,6 +81,16 @@ namespace AskTheCode.ViewModel
                         {
                             graph.AddEdge(callerCfg.Id.ToString(), cfgId.ToString());
                         }
+                        else if (cfgId == startCfg.Id.Value)
+                        {
+                            // Safe caller of the target
+                            var node = graph.AddNode(callerCfg.Id.ToString());
+                            node.LabelText = new MethodLocation(callerMethod).ToString();
+                            node.Attr.FillColor = UnreachableColor;
+
+                            var edge = graph.AddEdge(callerCfg.Id.ToString(), cfgId.ToString());
+                            edge.Attr.AddStyle(Style.Dashed);
+                        }
                     }
                 }
             }
@@ -101,6 +103,37 @@ namespace AskTheCode.ViewModel
             if (propertyName == nameof(this.GraphViewer))
             {
                 this.Redraw();
+            }
+        }
+
+        private static async Task AddMethodNodesFromFlow(
+            Graph graph,
+            HashSet<int> visitedIds,
+            CSharpFlowGraphProvider graphProvider,
+            IEnumerable<FlowNode> nodes,
+            Color nodeColor)
+        {
+            // TODO: Make more robust (unfinished calls from the target etc.)
+            foreach (var callNode in nodes.OfType<CallFlowNode>())
+            {
+                var cfgId = callNode.Graph.Id;
+                if (visitedIds.Add(cfgId.Value))
+                {
+                    var location = graphProvider.GetLocation(cfgId);
+
+                    var node = graph.AddNode(cfgId.Value.ToString());
+                    node.LabelText = location.ToString();
+                    node.Attr.FillColor = nodeColor;
+                }
+
+                if (callNode.Location.CanBeExplored
+                    && await graphProvider.GetFlowGraphAsync(callNode.Location) is FlowGraph trg
+                    && visitedIds.Add(trg.Id.Value))
+                {
+                    var node = graph.AddNode(trg.Id.ToString());
+                    node.LabelText = callNode.Location.ToString();
+                    node.Attr.FillColor = nodeColor;
+                }
             }
         }
     }
