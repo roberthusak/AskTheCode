@@ -43,7 +43,7 @@ namespace AskTheCode.ViewModel
             }
 
             var graph = new Graph();
-            graph.Attr.LayerDirection = LayerDirection.LR;
+            graph.Attr.LayerDirection = LayerDirection.TB;
 
             var visitedIds = new HashSet<int>();
             var context = this.toolView.ExplorationContext;

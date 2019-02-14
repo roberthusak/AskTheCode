@@ -18,13 +18,11 @@ namespace AskTheCode.ViewModel
         {
             this.ToolView = toolView;
             this.ExecutionModel = executionModel;
+
+            this.Name = this.ComputeName();
         }
 
-        // TODO: Change to something actually useful
-        public string Name
-        {
-            get { return $"A path (length: {this.ExecutionModel.PathNodes.Length})"; }
-        }
+        public string Name { get; }
 
         // TODO: Consider changing into a immutable collection (still lazy loaded)
         public ObservableCollection<MethodFlowView> MethodFlows
@@ -89,6 +87,26 @@ namespace AskTheCode.ViewModel
                 caller.IsExpanded = true;
                 caller = caller.Caller;
             }
+        }
+
+        private string ComputeName()
+        {
+            // TODO: Consider displaying only the methods in the call stack of the target
+            var result = new List<string>();
+            int lastCfgId = -1;
+            foreach (var node in this.ExecutionModel.PathNodes)
+            {
+                ControlFlowGraphs.FlowGraphId cfgId = node.Graph.Id;
+                if (cfgId.Value != lastCfgId)
+                {
+                    var location = this.ToolView.GraphProvider.GetLocation(cfgId);
+                    result.Add(location.ToString());
+
+                    lastCfgId = cfgId.Value;
+                }
+            }
+
+            return string.Join(" \u2192 ", result);
         }
     }
 }
