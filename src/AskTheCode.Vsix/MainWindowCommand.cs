@@ -100,6 +100,17 @@ namespace AskTheCode.Vsix
 
             replayWindow.Content.DataContext = mainWindow.ViewModel.Replay;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(replayWindowFrame.Show());
+
+            // Repeat the process also for the call graph window
+            var callGraphWindow = (CallGraphWindow)this.package.FindToolWindow(typeof(CallGraphWindow), 0, true);
+            var callGraphWindowFrame = callGraphWindow?.Frame as IVsWindowFrame;
+            if (callGraphWindow == null || callGraphWindowFrame == null)
+            {
+                throw new NotSupportedException("Cannot create call graph window");
+            }
+
+            callGraphWindow.Content.DataContext = mainWindow.ViewModel;
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(callGraphWindowFrame.Show());
         }
     }
 }

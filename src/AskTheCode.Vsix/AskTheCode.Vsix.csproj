@@ -150,6 +150,7 @@
     <Compile Include="Highlighting\HighlightTagger.cs" />
     <Compile Include="Highlighting\HighlightTaggerProvider.cs" />
     <Compile Include="Highlighting\IHighlightService.cs" />
+    <Compile Include="CallGraphWindow.cs" />
     <Compile Include="ReplayWindow.cs" />
     <Compile Include="MainWindow.cs" />
     <Compile Include="MainWindowCommand.cs" />
