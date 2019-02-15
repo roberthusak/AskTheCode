@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="AskTheCode.Wpf.TracePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AskTheCode.Wpf"
+             xmlns:vm="clr-namespace:AskTheCode.ViewModel;assembly=AskTheCode.ViewModel"
+             Background="{DynamicResource VsBrush.Window}"
+             Foreground="{DynamicResource VsBrush.WindowText}"
+             mc:Ignorable="d" 
+             d:DesignHeight="242" d:DesignWidth="786"
+             Padding="5">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+
+        <Label Content="Execution traces:" Padding="0,5,5,5" />
+        <ListBox Grid.Row="1" Grid.RowSpan="4"
+                         ItemsSource="{Binding Paths}" SelectedItem="{Binding SelectedPath}" DisplayMemberPath="Name" />
+
+        <GridSplitter Grid.Column="1" Grid.RowSpan="5" Width="5" HorizontalAlignment="Stretch" Background="Transparent" />
+
+        <Label Grid.Column="2" Content="Call tree:" Padding="0,5,5,5" />
+        <TreeView Grid.Row="1" Grid.RowSpan="4" Grid.Column="2"
+                         ItemsSource="{Binding SelectedPath.MethodFlows}">
+            <TreeView.Resources>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                </Style>
+            </TreeView.Resources>
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type vm:MethodFlowView}" ItemsSource="{Binding Callees}">
+                    <TextBlock Text="{Binding Name}" />
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+
+        <GridSplitter Grid.Column="3" Grid.RowSpan="5" Width="5" HorizontalAlignment="Stretch" Background="Transparent" />
+
+        <Label Grid.Column="4" Grid.ColumnSpan="2" Content="Method statements:" Padding="0,5,5,5" />
+        <DataGrid Grid.Row="1" Grid.RowSpan="4" Grid.Column="4" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" SelectionMode="Single"
+                          ItemsSource="{Binding SelectedPath.SelectedMethodFlow.StatementFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow.SelectedStatementFlow}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Statement" Binding="{Binding Statement}" Width="2*" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

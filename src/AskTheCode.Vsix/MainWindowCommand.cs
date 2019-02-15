@@ -42,7 +42,7 @@ namespace AskTheCode.Vsix
             if (commandService != null)
             {
                 var menuCommandID = new CommandID(CommandSet, CommandId);
-                var menuItem = new MenuCommand(this.ShowToolWindow, menuCommandID);
+                var menuItem = new MenuCommand(this.ShowToolWindows, menuCommandID);
                 commandService.AddCommand(menuItem);
             }
         }
@@ -74,43 +74,37 @@ namespace AskTheCode.Vsix
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ShowToolWindow(object sender, EventArgs e)
+        private void ShowToolWindows(object sender, EventArgs e)
+        {
+            var mainWindow = this.ShowToolWindow<MainWindow>();
+
+            var replayWindow = this.ShowToolWindow<ReplayWindow>();
+            replayWindow.Content.DataContext = mainWindow.ViewModel.Replay;
+
+            var callGraphWindow = this.ShowToolWindow<CallGraphWindow>();
+            callGraphWindow.Content.DataContext = mainWindow.ViewModel;
+
+            var traceWindow = this.ShowToolWindow<TraceWindow>();
+            traceWindow.Content.DataContext = mainWindow.ViewModel;
+        }
+
+        private TWindow ShowToolWindow<TWindow>()
+            where TWindow : ToolWindowPane
         {
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
-            // The last flag is set to true so that if the tool window does not exists it will be created.
-            var mainWindow = (MainWindow)this.package.FindToolWindow(typeof(MainWindow), 0, true);
-
-            // Show the main window
-            var mainWindowFrame = mainWindow?.Frame as IVsWindowFrame;
-            if (mainWindow == null || mainWindowFrame == null)
+            // The last flag is set to true so that if the tool window does not exists it will be created
+            var window = (TWindow)this.package.FindToolWindow(typeof(TWindow), 0, true);
+            var frame = window?.Frame as IVsWindowFrame;
+            if (window == null || frame == null)
             {
-                throw new NotSupportedException("Cannot create tool window");
+                throw new NotSupportedException($"Cannot create {typeof(TWindow).Name}");
             }
 
-            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(mainWindowFrame.Show());
+            // Show the window
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(frame.Show());
 
-            // Repeat the process also for the replay window
-            var replayWindow = (ReplayWindow)this.package.FindToolWindow(typeof(ReplayWindow), 0, true);
-            var replayWindowFrame = replayWindow?.Frame as IVsWindowFrame;
-            if (replayWindow == null || replayWindowFrame == null)
-            {
-                throw new NotSupportedException("Cannot create tool replay window");
-            }
-
-            replayWindow.Content.DataContext = mainWindow.ViewModel.Replay;
-            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(replayWindowFrame.Show());
-
-            // Repeat the process also for the call graph window
-            var callGraphWindow = (CallGraphWindow)this.package.FindToolWindow(typeof(CallGraphWindow), 0, true);
-            var callGraphWindowFrame = callGraphWindow?.Frame as IVsWindowFrame;
-            if (callGraphWindow == null || callGraphWindowFrame == null)
-            {
-                throw new NotSupportedException("Cannot create call graph window");
-            }
-
-            callGraphWindow.Content.DataContext = mainWindow.ViewModel;
-            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(callGraphWindowFrame.Show());
+            return window;
         }
     }
 }

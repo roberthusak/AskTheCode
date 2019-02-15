@@ -37,6 +37,7 @@ namespace AskTheCode.Vsix
     [ProvideToolWindow(typeof(MainWindow), MultiInstances = false, Style = VsDockStyle.Tabbed, Window = EnvDTE.Constants.vsWindowKindOutput)]
     [ProvideToolWindow(typeof(ReplayWindow), MultiInstances = false, Style = VsDockStyle.MDI)]
     [ProvideToolWindow(typeof(CallGraphWindow), MultiInstances = false, Style = VsDockStyle.MDI)]
+    [ProvideToolWindow(typeof(TraceWindow), MultiInstances = false, Style = VsDockStyle.MDI)]
     [Guid(AskTheCodePackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class AskTheCodePackage : Package

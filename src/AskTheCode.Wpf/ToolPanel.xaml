@@ -4,12 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:AskTheCode.Wpf"
-             xmlns:vm="clr-namespace:AskTheCode.ViewModel;assembly=AskTheCode.ViewModel"
              Background="{DynamicResource VsBrush.Window}"
              Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
-             d:DesignHeight="242" d:DesignWidth="786"
-             Name="MyToolWindow" Padding="5,0,5,5">
+             d:DesignHeight="242" d:DesignWidth="400"
+             Name="MyToolWindow" Padding="5">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -21,21 +20,14 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <Button Grid.Row="0" Content="Check reachability" Command="{Binding ExploreReachabilityCommand}" Margin="0,5,5,5" />
-        <Button Grid.Row="0" Grid.Column="1" Content="Check assertion" Command="{Binding ExploreCorrectnessCommand}" Margin="5,5,10,5" />
+        <Button Grid.Row="0" Grid.Column="1" Content="Check assertion" Command="{Binding ExploreCorrectnessCommand}" Margin="5,5,0,5" />
         <ProgressBar Grid.Row="1" Grid.Column="0" Margin="0,0,5,5" IsIndeterminate="{Binding IsExploring}" />
-        <Button Grid.Row="1" Grid.Column="1" Content="Cancel" Command="{Binding CancelCommand}" Margin="5,0,10,5" IsEnabled="{Binding IsExploring}" />
+        <Button Grid.Row="1" Grid.Column="1" Content="Cancel" Command="{Binding CancelCommand}" Margin="5,0,0,5" IsEnabled="{Binding IsExploring}" />
 
-        <ListBox Grid.Row="2" Grid.ColumnSpan="2" Margin="0,5,10,0" ItemsSource="{Binding Messages}">
+        <ListBox Grid.Row="2" Grid.ColumnSpan="2" Margin="0,5,0,0" ItemsSource="{Binding Messages}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding}" ToolTip="{Binding}" />
@@ -44,40 +36,6 @@
         </ListBox>
 
         <Label Grid.Row="3" Content="Timeout (seconds):" />
-        <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Timeout}" Margin="5,5,10,5" />
-
-        <Label Grid.Column="2" Content="Execution traces:" Padding="0,5,5,5" />
-        <ListBox Grid.Row="1" Grid.RowSpan="4" Grid.Column="2"
-                         ItemsSource="{Binding Paths}" SelectedItem="{Binding SelectedPath}" DisplayMemberPath="Name" />
-
-        <GridSplitter Grid.Column="3" Grid.RowSpan="5" Width="5" HorizontalAlignment="Stretch" />
-
-        <Label Grid.Column="4" Content="Call tree:" Padding="0,5,5,5" />
-        <TreeView Grid.Row="1" Grid.RowSpan="4" Grid.Column="4"
-                         ItemsSource="{Binding SelectedPath.MethodFlows}">
-            <TreeView.Resources>
-                <Style TargetType="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                </Style>
-            </TreeView.Resources>
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate DataType="{x:Type vm:MethodFlowView}" ItemsSource="{Binding Callees}">
-                    <TextBlock Text="{Binding Name}" />
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
-
-        <GridSplitter Grid.Column="5" Grid.RowSpan="5" Width="5" HorizontalAlignment="Stretch" />
-
-        <Label Grid.Column="6" Grid.ColumnSpan="2" Content="Method statements:" Padding="0,5,5,5" />
-        <DataGrid Grid.Row="1" Grid.RowSpan="4" Grid.Column="6" Grid.ColumnSpan="3" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" SelectionMode="Single"
-                          ItemsSource="{Binding SelectedPath.SelectedMethodFlow.StatementFlows}" SelectedItem="{Binding SelectedPath.SelectedMethodFlow.SelectedStatementFlow}">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Statement" Binding="{Binding Statement}" Width="2*" />
-                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
-                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*" />
-            </DataGrid.Columns>
-        </DataGrid>
+        <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Timeout}" Margin="5,5,0,5" />
     </Grid>
 </UserControl>

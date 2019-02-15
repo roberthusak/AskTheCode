@@ -49,6 +49,14 @@
 
         <controls:ReplayPanel x:Name="replayWindow" Grid.Row="1" Grid.Column="1" BorderBrush="Black" BorderThickness="0,0,1,0" />
 
-        <controls:ToolPanel x:Name="explorerWindow" Grid.Row="2" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1" />
+        <Grid  Grid.Row="2" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="5*" />
+            </Grid.ColumnDefinitions>
+            
+            <controls:ToolPanel x:Name="toolWindow" BorderBrush="Black" BorderThickness="1" />
+            <controls:TracePanel Grid.Column="1" x:Name="traceWindow" BorderBrush="Black" BorderThickness="0,1,1,1" />
+        </Grid>
     </Grid>
 </Window>

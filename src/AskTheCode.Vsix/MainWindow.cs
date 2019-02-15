@@ -32,7 +32,7 @@ namespace AskTheCode.Vsix
         public MainWindow()
             : base(null)
         {
-            this.Caption = "AskTheCode";
+            this.Caption = "AskTheCode: Control Panel";
 
             var dte2 = ShellPackageAlias.GetGlobalService(typeof(SDTE)) as EnvDTE80.DTE2;
             var highlightService = ShellPackageAlias.GetGlobalService(typeof(SHighlightService)) as IHighlightService;

@@ -20,7 +20,7 @@
 
         <local:MsaglGraphPresenter Grid.Row="0" GraphViewerConsumer="{Binding Heap}" />
 
-        <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" />
+        <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Background="Transparent" />
         
         <DataGrid Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" SelectionMode="Single"
                           ItemsSource="{Binding Variables}" SelectedItem="{Binding SelectedVariable}">
