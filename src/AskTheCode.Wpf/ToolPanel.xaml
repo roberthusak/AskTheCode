@@ -16,6 +16,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -37,5 +38,8 @@
 
         <Label Grid.Row="3" Content="Timeout (seconds):" />
         <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Timeout}" Margin="5,5,0,5" />
+
+        <Label Grid.Row="4" Content="Ignored methods:" />
+        <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding IgnoredMethods}" AcceptsReturn="True" Margin="5,5,0,5" />
     </Grid>
 </UserControl>

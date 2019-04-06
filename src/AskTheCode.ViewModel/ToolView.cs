@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -30,6 +31,7 @@ namespace AskTheCode.ViewModel
         private PathView selectedPath;
         private HashSet<ExecutionModel> foundModels = new HashSet<ExecutionModel>();
         private int timeout = 30;
+        private string ignoredMethods = string.Empty;
 
         public ToolView(IIdeServices ideServices)
         {
@@ -81,6 +83,12 @@ namespace AskTheCode.ViewModel
         {
             get { return this.timeout; }
             set { this.SetProperty(ref this.timeout, value); }
+        }
+
+        public string IgnoredMethods
+        {
+            get { return this.ignoredMethods; }
+            set { this.SetProperty(ref this.ignoredMethods, value); }
         }
 
         public Command DisplayFlowGraphCommand { get; private set; }
@@ -161,12 +169,14 @@ namespace AskTheCode.ViewModel
                 flowNodeRecord.OperationIndex,
                 isAssertCheck);
             var z3ContextFactory = new ContextFactory();
-            var options = new ExplorationOptions();
-            options.FinalNodeRecognizer = new PublicMethodEntryRecognizer();
-            if (this.Timeout > 0)
+            var options = new ExplorationOptions
             {
-                options.TimeoutSeconds = this.Timeout;
-            }
+                FinalNodeRecognizer = new PublicMethodEntryRecognizer(),
+                TimeoutSeconds = (this.Timeout > 0) ? this.Timeout : (int?)null,
+                IgnoredMethods = string.IsNullOrEmpty(this.IgnoredMethods)
+                    ? ImmutableArray<string>.Empty
+                    : this.IgnoredMethods.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToImmutableArray()
+            };
 
             this.ExplorationContext = new ExplorationContext(this.GraphProvider, z3ContextFactory, startNode, options);
 

@@ -117,9 +117,9 @@ namespace AskTheCode.PathExploration
                 int i = 0;
                 foreach (bool doBranch in this.ExplorationHeuristic.DoBranch(currentState, edges))
                 {
-                    if (doBranch)
+                    var edge = edges[i];
+                    if (doBranch && this.IsEdgeAllowed(edge))
                     {
-                        var edge = edges[i];
                         var branchedPath = new Path(
                             ImmutableArray.Create(currentState.Path),
                             currentState.Path.Depth + 1,
@@ -237,6 +237,19 @@ namespace AskTheCode.PathExploration
             }
 
             return callSiteStack;
+        }
+
+        private bool IsEdgeAllowed(FlowEdge edge)
+        {
+            var ignoredMethods = this.context.Options.IgnoredMethods;
+            if (ignoredMethods.Length > 0 && edge is OuterFlowEdge)
+            {
+                var extensionGraphId = edge.From.Graph.Id;
+                var extensionGraphLocation = this.context.FlowGraphProvider.GetLocation(extensionGraphId);
+                return !ignoredMethods.Any(m => extensionGraphLocation.ToString().EndsWith(m));
+            }
+
+            return true;
         }
 
         private bool IsFinalState(ExplorationState branchedState)

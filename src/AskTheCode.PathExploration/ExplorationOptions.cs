@@ -1,4 +1,5 @@
-﻿using AskTheCode.PathExploration.Heap;
+﻿using System.Collections.Immutable;
+using AskTheCode.PathExploration.Heap;
 using AskTheCode.PathExploration.Heuristics;
 
 namespace AskTheCode.PathExploration
@@ -24,5 +25,7 @@ namespace AskTheCode.PathExploration
             new SimpleHeuristicFactory<MultipleIngoingSmtHeuristic>();
 
         public int? TimeoutSeconds { get; set; } = 30;
+
+        public ImmutableArray<string> IgnoredMethods { get; set; } = ImmutableArray<string>.Empty;
     }
 }
