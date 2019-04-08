@@ -13,6 +13,7 @@ Its main idea is pretty simple - the user selects an assertion in the code and *
 The user can then see all the inputs violating the assertion and replay the particular error trace to see how it happened.
 Due to the high complexity of the problem, it is not guaranteed to find the complete results every time.
 Nevertheless, even partial information can save the user a lot of time (by not having to manually inspect the call sites that are "safe").
+To grasp the basic principles and GUI of the tool, please see the latest [paper from InterAVT 2019](https://github.com/roberthusak/AskTheCode/blob/master/docs/InterAVT_2019_paper.pdf).
 
 ![Usage of AskTheCode inside Microsoft Visual Studio](https://github.com/roberthusak/AskTheCode/blob/master/docs/gui.png)
 
@@ -24,7 +25,8 @@ The most comprehensive documentation of the project are the theses and publicati
 
 - [Diploma thesis from Charles University](https://github.com/roberthusak/AskTheCode/blob/master/docs/CUNI_DiplomaThesis.pdf) - basic motivation and functionality of the tool
 - [Diploma thesis from Czech Technical University](https://github.com/roberthusak/AskTheCode/blob/master/docs/CTU_DiplomaThesis.pdf) - handling of the heap objects
-- [Paper from SCLIT 2018](https://github.com/roberthusak/AskTheCode/blob/master/docs/SCLIT_2018_paper.pdf) - overview of the main backward symbolic execution algorithm
+- [Paper from SCLIT 2018](https://github.com/roberthusak/AskTheCode/blob/master/docs/SCLIT_2018_paper.pdf) (accepted for publication) - overview of the main backward symbolic execution algorithm
+- [Paper from InterAVT 2019](https://github.com/roberthusak/AskTheCode/blob/master/docs/InterAVT_2019_paper.pdf) (accepted for publication) - high-level description of the tool and its recent GUI
 
 ## Future Plans
 
