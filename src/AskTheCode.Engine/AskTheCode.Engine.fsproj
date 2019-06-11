@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net461</TargetFramework>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.10.0" />
     <PackageReference Include="Microsoft.Msagl.GraphViewerGDI" Version="1.1.3" />
-    <PackageReference Include="Microsoft.Z3.x86" Version="4.8.1" />
+    <PackageReference Include="Microsoft.Z3.x64" Version="4.8.5" />
   </ItemGroup>
 
   <ItemGroup>
