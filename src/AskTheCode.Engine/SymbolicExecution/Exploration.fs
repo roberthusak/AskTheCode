@@ -103,7 +103,7 @@ module Exploration =
                         let states'' =
                             Graph.edgesTo graph node
                             |> List.map (Inner >> extend condFn heapFn graph state)
-                            |> List.append states'
+                            |> (fun addedStates -> List.append addedStates states')
                         step states'' results
                 | _ ->
                     step states' results
