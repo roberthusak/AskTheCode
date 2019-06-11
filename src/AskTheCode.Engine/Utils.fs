@@ -42,3 +42,10 @@ let nullableToList value =
     match value with
     | null -> []
     | _ -> [ value ]
+
+let mergeOptions fn opt1 opt2 =
+    match (opt1, opt2) with
+    | (None, None) -> None
+    | (Some a, None) -> Some a
+    | (None, Some b) -> Some b
+    | (Some a, Some b) -> Some <| fn a b

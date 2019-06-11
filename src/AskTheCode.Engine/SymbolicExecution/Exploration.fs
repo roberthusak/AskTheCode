@@ -11,89 +11,97 @@ module Exploration =
 
     type ConditionFunctions<'condition> = { GetEmpty: unit -> 'condition; Assert: Term -> 'condition -> 'condition; Solve: 'condition -> SolveResult }
 
-    type State<'condition, 'heap> = { Path: Path; Condition: 'condition; Versions: Map<string, int>; Heap: 'heap }
-
     let solverCondFn solver :ConditionFunctions<Term> = { GetEmpty = (fun () -> BoolConst true); Assert = Utils.curry2 And; Solve = solver }
 
-    let extend condFn heapFn graph state (edge:Edge) =
+    // Variable version handling
 
-        let getVersion versions name =
-            Map.tryFind name versions |> Option.defaultValue 0
+    let getVersion versions name =
+        Map.tryFind name versions |> Option.defaultValue 0
 
-        let formatVersioned name version =
-            sprintf "%s!%d" name version
+    let formatVersioned name version =
+        sprintf "%s!%d" name version
 
-        let addVersion versions (variable:Variable) =
-            let version = getVersion versions variable.Name
-            { variable with Name = formatVersioned variable.Name version }
+    let addVersion versions (variable:Variable) =
+        let version = getVersion versions variable.Name
+        { variable with Name = formatVersioned variable.Name version }
 
-        let rec addVersions versions term =
-            match term with
-            | Var v ->
-                Var <| addVersion versions v
-            | _ ->
-                Term.updateChildren (addVersions versions) term
+    let rec addVersions versions term =
+        match term with
+        | Var v ->
+            Var <| addVersion versions v
+        | _ ->
+            Term.updateChildren (addVersions versions) term
 
-        let addHeapOpVersions versions heapOp =
-            match heapOp with
-            | AssignEquals (trg, left, right) ->
-                AssignEquals (addVersion versions trg, left, right)
-            | AssignNotEquals (trg, left, right) ->
-                AssignNotEquals (addVersion versions trg, left, right)
-            | ReadVal (trg, ins, field) ->
-                ReadVal (addVersion versions trg, ins, field)
-            | WriteVal (ins, field, value) ->
-                WriteVal (ins, field, addVersions versions value)
-            | _ ->
-                heapOp
+    let addHeapOpVersions versions heapOp =
+        match heapOp with
+        | AssignEquals (trg, left, right) ->
+            AssignEquals (addVersion versions trg, left, right)
+        | AssignNotEquals (trg, left, right) ->
+            AssignNotEquals (addVersion versions trg, left, right)
+        | ReadVal (trg, ins, field) ->
+            ReadVal (addVersion versions trg, ins, field)
+        | WriteVal (ins, field, value) ->
+            WriteVal (ins, field, addVersions versions value)
+        | _ ->
+            heapOp
 
-        let processOperation op state =
-            match op with
-            | (Assign assign) ->
-                let trgName = assign.Target.Name
-                let trgVersion = getVersion state.Versions trgName
-                let target = Var { assign.Target with Name = formatVersioned trgName trgVersion }
-                let versions = Map.add trgName (trgVersion + 1) state.Versions
-                let value = addVersions versions assign.Value
-                let cond = condFn.Assert (Eq (target, value)) state.Condition
-                { state with Condition = cond; Versions = versions }
-            | (HeapOp heapOp) ->
-                let versions =
-                    match HeapOperation.targetVariable heapOp with
-                    | Some { Name = varName } ->
-                        let curVersion = getVersion state.Versions varName
-                        Map.add varName (curVersion + 1) state.Versions
-                    | None ->
-                        state.Versions
-                let versionedHeapOp = addHeapOpVersions state.Versions heapOp
-                let (heap, heapCond) = heapFn.PerformOp versionedHeapOp state.Heap
-                let cond =
-                    match heapCond with
-                    | Some term -> condFn.Assert term state.Condition
-                    | None -> state.Condition
-                { state with Heap = heap; Condition = cond; Versions = versions }
+    // Processing operations into path constraints, version changes and heap updates
 
-        match edge with
-        | Inner innerEdge ->
-            let node = Graph.node graph innerEdge.From
-            let path = Step (node, edge, state.Path)
-            let cond =
-                match innerEdge.Condition with
-                | BoolConst true ->
-                    state.Condition
-                | _ ->
-                    let edgeCondTerm = addVersions state.Versions innerEdge.Condition
-                    condFn.Assert edgeCondTerm state.Condition
-            let state' = { state with Path = path; Condition = cond }
-            match node with
-            | Basic (_, operations) ->
-                List.foldBack processOperation operations state'
-            | _ ->
-                state'
-        | Outer _ ->
-            failwith "Not implemented"
+    let processOperation heapFn op versions heap =
+        match op with
+        | (Assign assign) ->
+            let trgName = assign.Target.Name
+            let trgVersion = getVersion versions trgName
+            let target = Var { assign.Target with Name = formatVersioned trgName trgVersion }
+            let versions = Map.add trgName (trgVersion + 1) versions
+            let value = addVersions versions assign.Value
+            (Some (Eq (target, value)), versions, heap)
+        | (HeapOp heapOp) ->
+            let versionedHeapOp = addHeapOpVersions versions heapOp
+            let (heap, heapCond) = heapFn.PerformOp versionedHeapOp heap
+            let versions =
+                match HeapOperation.targetVariable heapOp with
+                | Some { Name = varName } ->
+                    let curVersion = getVersion versions varName
+                    Map.add varName (curVersion + 1) versions
+                | None ->
+                    versions
+            (heapCond, versions, heap)
+
+    let processNode heapFn node versions heap =
+        let folder op (cond, versions, heap) =
+            let (opCond, versions, heap) = processOperation heapFn op versions heap
+            (Utils.mergeOptions (Utils.curry2 And) cond opCond, versions, heap)
+        match node with
+        | Basic (_, operations) ->
+            List.foldBack folder operations (None, versions, heap)
+        | _ ->
+            (None, versions, heap)
+
+    type ExplorerState<'condition, 'heap> = { Path: Path; Condition: 'condition; Versions: Map<string, int>; Heap: 'heap }
 
     let run condFn heapFn graph node =
+        let extend graph state (edge:Edge) =
+            match edge with
+            | Inner innerEdge ->
+                let node = Graph.node graph innerEdge.From
+                let path = Step (node, edge, state.Path)
+                let cond =
+                    match innerEdge.Condition with
+                    | BoolConst true ->
+                        state.Condition
+                    | _ ->
+                        let edgeCondTerm = addVersions state.Versions innerEdge.Condition
+                        condFn.Assert edgeCondTerm state.Condition
+                let (nodeCond, versions, heap) = processNode heapFn node state.Versions state.Heap
+                let cond =
+                    match nodeCond with
+                    | Some term -> condFn.Assert term cond
+                    | None -> cond
+                { state with Path = path; Condition = cond; Versions = versions; Heap = heap }
+            | Outer _ ->
+                failwith "Not implemented"
+
         let rec step states results =
             match states with
             | [] ->
@@ -108,7 +116,7 @@ module Exploration =
                     | _ ->
                         let states'' =
                             Graph.edgesTo graph node
-                            |> List.map (Inner >> extend condFn heapFn graph state)
+                            |> List.map (Inner >> extend graph state)
                             |> (fun addedStates -> List.append addedStates states')
                         step states'' results
                 | _ ->
