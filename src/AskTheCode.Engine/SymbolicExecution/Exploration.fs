@@ -77,8 +77,14 @@ module Exploration =
         | Inner innerEdge ->
             let node = Graph.node graph innerEdge.From
             let path = Step (node, edge, state.Path)
-            let edgeCondTerm = addVersions state.Versions innerEdge.Condition
-            let state' = { state with Path = path; Condition = condFn.Assert edgeCondTerm state.Condition }
+            let cond =
+                match innerEdge.Condition with
+                | BoolConst true ->
+                    state.Condition
+                | _ ->
+                    let edgeCondTerm = addVersions state.Versions innerEdge.Condition
+                    condFn.Assert edgeCondTerm state.Condition
+            let state' = { state with Path = path; Condition = cond }
             match node with
             | Basic (_, operations) ->
                 List.foldBack processOperation operations state'
@@ -109,3 +115,4 @@ module Exploration =
                     step states' results
         let states = [ { Path = Target node; Condition = condFn.GetEmpty(); Versions = Map.empty; Heap = heapFn.GetEmpty() } ]
         step states []
+        
