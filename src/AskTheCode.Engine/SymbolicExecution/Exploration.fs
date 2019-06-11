@@ -9,9 +9,13 @@ module Exploration =
 
     type HeapFunctions<'heap> = { GetEmpty: unit -> 'heap; PerformOp: HeapOperation -> 'heap -> 'heap * Term option }
 
-    type State<'heap> = { Path: Path; Condition: Term; Versions: Map<string, int>; Heap: 'heap }
+    type ConditionFunctions<'condition> = { GetEmpty: unit -> 'condition; Assert: Term -> 'condition -> 'condition; Solve: 'condition -> SolveResult }
 
-    let extend heapFn graph state (edge:Edge) =
+    type State<'condition, 'heap> = { Path: Path; Condition: 'condition; Versions: Map<string, int>; Heap: 'heap }
+
+    let solverCondFn solver :ConditionFunctions<Term> = { GetEmpty = (fun () -> BoolConst true); Assert = Utils.curry2 And; Solve = solver }
+
+    let extend condFn heapFn graph state (edge:Edge) =
 
         let getVersion versions name =
             Map.tryFind name versions |> Option.defaultValue 0
@@ -51,7 +55,7 @@ module Exploration =
                 let target = Var { assign.Target with Name = formatVersioned trgName trgVersion }
                 let versions = Map.add trgName (trgVersion + 1) state.Versions
                 let value = addVersions versions assign.Value
-                let cond = And (state.Condition, Eq (target, value))
+                let cond = condFn.Assert (Eq (target, value)) state.Condition
                 { state with Condition = cond; Versions = versions }
             | (HeapOp heapOp) ->
                 let versions =
@@ -63,7 +67,10 @@ module Exploration =
                         state.Versions
                 let versionedHeapOp = addHeapOpVersions state.Versions heapOp
                 let (heap, heapCond) = heapFn.PerformOp versionedHeapOp state.Heap
-                let cond = Option.fold (Utils.curry2 And) state.Condition heapCond
+                let cond =
+                    match heapCond with
+                    | Some term -> condFn.Assert term state.Condition
+                    | None -> state.Condition
                 { state with Heap = heap; Condition = cond; Versions = versions }
 
         match edge with
@@ -71,7 +78,7 @@ module Exploration =
             let node = Graph.node graph innerEdge.From
             let path = Step (node, edge, state.Path)
             let edgeCondTerm = addVersions state.Versions innerEdge.Condition
-            let state' = { state with Path = path; Condition = And (state.Condition, edgeCondTerm) }
+            let state' = { state with Path = path; Condition = condFn.Assert edgeCondTerm state.Condition }
             match node with
             | Basic (_, operations) ->
                 List.foldBack processOperation operations state'
@@ -80,14 +87,14 @@ module Exploration =
         | Outer _ ->
             failwith "Not implemented"
 
-    let run heapFn solver graph node =
+    let run condFn heapFn graph node =
         let rec step states results =
             match states with
             | [] ->
                 results
             | state :: states' ->
                 let node = Path.node state.Path
-                match solver state.Condition with
+                match condFn.Solve state.Condition with
                 | Sat _ ->
                     match node with
                     | Enter _ ->
@@ -95,10 +102,10 @@ module Exploration =
                     | _ ->
                         let states'' =
                             Graph.edgesTo graph node
-                            |> List.map (Inner >> extend heapFn graph state)
+                            |> List.map (Inner >> extend condFn heapFn graph state)
                             |> List.append states'
                         step states'' results
                 | _ ->
                     step states' results
-        let states = [ { Path = Target node; Condition = BoolConst true; Versions = Map.empty; Heap = heapFn.GetEmpty() } ]
+        let states = [ { Path = Target node; Condition = condFn.GetEmpty(); Versions = Map.empty; Heap = heapFn.GetEmpty() } ]
         step states []
