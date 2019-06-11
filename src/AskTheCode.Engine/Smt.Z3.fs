@@ -3,6 +3,7 @@ module AskTheCode.Z3
 open Microsoft
 
 open AskTheCode.Smt
+open AskTheCode.SymbolicExecution
 
 let mkContext () =
     new Z3.Context()
@@ -42,10 +43,7 @@ let rec termFromZ3 (expr:Z3.Expr) =
      | _ when expr.IsIntNum -> IntVal (expr :?> Z3.IntNum).Int
      | _ -> failwith "Unknown Z3 value"
 
-let solve (ctx:Z3.Context) term =
-    let z3expr = termToZ3 ctx term
-    use solver = ctx.MkSolver()
-    solver.Assert(z3expr :?> Z3.BoolExpr)
+let runSolve ctx (solver:Z3.Solver) =
     let z3status = solver.Check()
     match z3status with
     | Z3.Status.UNSATISFIABLE -> Unsat
@@ -57,3 +55,55 @@ let solve (ctx:Z3.Context) term =
             termFromZ3 <| z3model.Eval(modelledZ3Expr, true)
         Sat model
     | _ -> failwith "Invalid return type from Z3"
+
+let solve (ctx:Z3.Context) term =
+    let z3expr = termToZ3 ctx term
+    use solver = ctx.MkSolver()
+    solver.Assert(z3expr :?> Z3.BoolExpr)
+    runSolve ctx solver
+
+type SolverState = { Solver: Z3.Solver; mutable Stack: Term list }
+
+type ConditionTrace = { SolverState: SolverState; Stack: Term list }
+
+let stackCondFn (ctx:Z3.Context) :Exploration.ConditionFunctions<ConditionTrace> =
+    let baseSolver = ctx.MkSolver()
+    let empty = { SolverState = { Solver = baseSolver; Stack = [] }; Stack = [] }
+    let getEmpty () = empty
+
+    let assertTerm term (trace:ConditionTrace) = { trace with Stack = term :: trace.Stack }
+
+    let solve trace =
+        let solver = trace.SolverState.Solver
+        let rec reduceToCommon (solverStack, solverSize, traceStack, traceSize, pending) =
+            match (solverStack, traceStack) with
+            | (_, _) when Utils.refEq solverStack traceStack ->
+                (solverStack, solverSize, traceStack, traceSize, pending)
+
+            | (_, _) when solverSize > traceSize ->
+                solver.Pop((uint32)(solverSize - traceSize))
+                reduceToCommon (List.skip (solverSize - traceSize) solverStack, traceSize, traceStack, traceSize, pending)
+
+            | (_, traceHead :: traceTail) when solverSize < traceSize ->
+                reduceToCommon (solverStack, solverSize, traceTail, traceSize - 1, traceHead :: pending)
+
+            | (solverHead :: solverTail, traceHead :: traceTail) when solverSize = traceSize ->
+                solver.Pop()
+                reduceToCommon (solverTail, solverSize - 1, traceTail, traceSize - 1, traceHead :: pending)
+
+            | _ -> failwith "Unreachable"
+
+        let (_, _, _, _, pending) =
+            reduceToCommon (trace.SolverState.Stack, List.length trace.SolverState.Stack, trace.Stack, List.length trace.Stack, [])
+        for term in pending do
+            let z3expr = termToZ3 ctx term
+            solver.Push()
+            solver.Assert(z3expr :?> Z3.BoolExpr)
+        trace.SolverState.Stack <- trace.Stack
+        runSolve ctx solver
+
+    {
+        GetEmpty = getEmpty;
+        Assert = assertTerm;
+        Solve = solve;
+    }
