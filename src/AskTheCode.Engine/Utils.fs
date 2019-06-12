@@ -6,6 +6,8 @@ let curry2 fn arg1 arg2 = fn (arg1, arg2)
 
 let curry3 fn arg1 arg2 arg3 = fn (arg1, arg2, arg3)
 
+let swap fn arg1 arg2 = fn arg2 arg1
+
 let lazyUpdateUnion cons fn orig item =
     let res = fn item
     match refEq item res with
@@ -37,6 +39,8 @@ let accumulate2 fn inputs =
         let (next1, next2) = fn input
         (results1 @ next1, results2 @ next2)
     Seq.fold step ([], []) inputs
+
+let cons head tail = head :: tail
 
 let nullableToList value =
     match value with
