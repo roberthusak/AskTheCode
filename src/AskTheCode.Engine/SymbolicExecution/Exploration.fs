@@ -7,11 +7,22 @@ open AskTheCode.Heap
 module Exploration =
     open AskTheCode
 
+    // Definition of functions for heap handling and default value
+
     type HeapFunctions<'heap> = { GetEmpty: unit -> 'heap; PerformOp: HeapOperation -> 'heap -> 'heap * Term option }
+
+    let unsupportedHeapFn : HeapFunctions<unit> = { GetEmpty = id; PerformOp = (fun _ _ -> failwith "Heap unsupported") }
+
+    // Definition of functions for path condition handling and the simplest implementation based on solver function
 
     type ConditionFunctions<'condition> = { GetEmpty: unit -> 'condition; Assert: Term -> 'condition -> 'condition; Solve: 'condition -> SolveResult }
 
     let solverCondFn solver :ConditionFunctions<Term> = { GetEmpty = (fun () -> BoolConst true); Assert = Utils.curry2 And; Solve = solver }
+
+    let assertCondition condFn cond term =
+        match term with
+        | BoolConst true -> cond
+        | _ -> condFn.Assert term cond
 
     // Variable version handling
 
@@ -78,26 +89,21 @@ module Exploration =
         | _ ->
             (None, versions, heap)
 
+    // Explore each path separately
+
     type ExplorerState<'condition, 'heap> = { Path: Path; Condition: 'condition; Versions: Map<string, int>; Heap: 'heap }
 
-    let run condFn heapFn graph node =
+    let run condFn heapFn graph targetNode =
         let extend graph state (edge:Edge) =
             match edge with
             | Inner innerEdge ->
                 let node = Graph.node graph innerEdge.From
                 let path = Step (node, edge, state.Path)
                 let cond =
-                    match innerEdge.Condition with
-                    | BoolConst true ->
-                        state.Condition
-                    | _ ->
-                        let edgeCondTerm = addVersions state.Versions innerEdge.Condition
-                        condFn.Assert edgeCondTerm state.Condition
+                    addVersions state.Versions innerEdge.Condition
+                    |> assertCondition condFn state.Condition
                 let (nodeCond, versions, heap) = processNode heapFn node state.Versions state.Heap
-                let cond =
-                    match nodeCond with
-                    | Some term -> condFn.Assert term cond
-                    | None -> cond
+                let cond = Option.fold (assertCondition condFn) cond nodeCond
                 { state with Path = path; Condition = cond; Versions = versions; Heap = heap }
             | Outer _ ->
                 failwith "Not implemented"
@@ -121,6 +127,6 @@ module Exploration =
                         step states'' results
                 | _ ->
                     step states' results
-        let states = [ { Path = Target node; Condition = condFn.GetEmpty(); Versions = Map.empty; Heap = heapFn.GetEmpty() } ]
+        let states = [ { Path = Target targetNode; Condition = condFn.GetEmpty(); Versions = Map.empty; Heap = heapFn.GetEmpty() } ]
         step states []
         

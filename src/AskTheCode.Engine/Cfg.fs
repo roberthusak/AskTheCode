@@ -52,6 +52,8 @@ module Graph =
 
     let node graph nodeId = List.find (fun (n:Node) -> n.Id = nodeId) graph.Nodes
 
+    let enterNode graph = List.find (fun n -> match n with | Enter _ -> true | _ -> false) graph.Nodes
+
     let edgesFromId graph id = List.filter (fun (e:InnerEdge) -> e.From = id) graph.Edges
 
     let edgesToId graph id = List.filter (fun (e:InnerEdge) -> e.To = id) graph.Edges
@@ -155,7 +157,7 @@ module Graph =
     type internal NodeColor = Unvisited = 0 | Visiting = 1 | Visited = 2
 
     let findLoops graph =
-        let enterNode = List.find (fun n -> match n with | Enter _ -> true | _ -> false) graph.Nodes
+        let enter = enterNode graph
         let nodeCount = List.length graph.Nodes
         let colors = Array.create nodeCount NodeColor.Unvisited
 
@@ -181,7 +183,7 @@ module Graph =
             | _ ->
                 failwith "Invalid enum value"
 
-        let (stack, results) = explore enterNode.Id.Value ([], [])
+        let (stack, results) = explore enter.Id.Value ([], [])
         assert (stack = [])
         results
 
