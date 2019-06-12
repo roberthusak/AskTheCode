@@ -24,6 +24,7 @@ type Term =
     | And of Term * Term
     | Or of Term * Term
     | Not of Term
+    | Implies of Term * Term
     | Select of Term * Term
     | Store of Term * Term * Term
 
@@ -32,7 +33,7 @@ module Term =
     // Helper types for term pattern matching
 
     [<RequireQualifiedAccess>]
-    type BinaryOp = Add | Lt | Leq | Gt | Geq | Eq | Neq | And | Or
+    type BinaryOp = Add | Lt | Leq | Gt | Geq | Eq | Neq | And | Or | Implies
 
     [<RequireQualifiedAccess>]
     type UnaryOp = Neg | Not
@@ -49,15 +50,16 @@ module Term =
             | Neq -> "!="
             | And -> " && "
             | Or -> " || "
+            | Implies -> " ==> "
         member this.Sort =
             match this with
             | Add -> Int
-            | Lt | Leq | Gt | Geq | Eq | Neq | And | Or -> Bool
+            | Lt | Leq | Gt | Geq | Eq | Neq | And | Or | Implies -> Bool
         member this.Precedence = 
             match this with
             | Add -> 3
             | Lt | Leq | Gt | Geq | Eq | Neq -> 2
-            | And | Or -> 1
+            | And | Or | Implies -> 1
 
     type UnaryOp with  
         member this.Symbol =
@@ -85,6 +87,7 @@ module Term =
         | And (a, b) -> Binary (BinaryOp.And, a, b)
         | Or (a, b) -> Binary (BinaryOp.Or, a, b)
         | Not a -> Unary (UnaryOp.Not, a)
+        | Implies (a, b) -> Binary (BinaryOp.Implies, a, b)
         | Select (a, i) -> Function ("select", [ a; i])
         | Store (a, i, v) -> Function ("store", [ a; i; v ])
     
@@ -130,6 +133,7 @@ module Term =
         | And (a, b) -> Utils.lazyUpdateUnion2 And fn term (a, b)
         | Or (a, b) -> Utils.lazyUpdateUnion2 Or fn term (a, b)
         | Not a -> Utils.lazyUpdateUnion Not fn term a
+        | Implies (a, b) -> Utils.lazyUpdateUnion2 Implies fn term (a, b)
         | Select (a, i) -> Utils.lazyUpdateUnion2 Select fn term (a, i)
         | Store (a, i, v) -> Utils.lazyUpdateUnion3 Store fn term (a, i, v)
 

@@ -34,6 +34,7 @@ let rec termToZ3 (ctx:Z3.Context) term :Z3.Expr =
     | And (a, b) -> ctx.MkAnd(innerBool a, innerBool b) :> _
     | Or (a, b) -> ctx.MkOr(innerBool a, innerBool b) :> _
     | Not a -> ctx.MkNot(innerBool a) :> _
+    | Implies (a, b) -> ctx.MkImplies(innerBool a, innerBool b) :> _
     | Select (a, i) -> ctx.MkSelect(innerArray a, inner i)
     | Store (a, i, v) -> ctx.MkStore(innerArray a, inner i, inner v) :> _
 
