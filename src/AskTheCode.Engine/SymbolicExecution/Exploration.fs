@@ -184,6 +184,7 @@ module Exploration =
         let asserts = Array.create nodeCount <| BoolConst true
         let conditions = Array.create nodeCount <| condFn.GetEmpty()
         let versions = Array.create nodeCount Map.empty<string, int>
+        let varSorts = Array.create nodeCount Map.empty<string, Sort>
 
         let rec processCondition id =
             let nextIds = deps.[NodeId.Value id]
@@ -191,37 +192,75 @@ module Exploration =
                 match processed.[nextId.Value] with
                 | false -> processCondition nextId
                 | true -> ()
+
+            let edges =
+                Graph.edgesFromId graph id
+                |> List.filter (fun edge -> List.contains edge.To nextIds)
             
             let (currentAssert, finalVersions) =
                 let mergedVersions =
                     nextIds
                     |> List.map (NodeId.Value >> Array.get versions)
                     |> List.fold mergeVersions Map.empty
-                let edges =
-                    Graph.edgesFromId graph id
-                    |> List.filter (fun edge -> List.contains edge.To nextIds)
                 let getJoinCond (edge:InnerEdge) =
                     let nextVersions = versions.[edge.To.Value]
+                    let nextVariables = varSorts.[edge.To.Value]
                     let edgeCond = addVersions nextVersions edge.Condition
                     let versionMergeCond = 
-                        let addVarMerge term name version =
-                            match Map.find name mergedVersions with
-                            | mergedVersion when mergedVersion > version ->
-                                // FIXME: Store somewhere the sort of the variable and set it here
-                                let oldVar = Var { Name = formatVersioned name version; Sort = Int }
-                                let newVar = Var { Name = formatVersioned name mergedVersion; Sort = Int }
+                        let addVarMerge term name sort =
+                            let nextVersion = getVersion nextVersions name
+                            match getVersion mergedVersions name with
+                            | mergedVersion when mergedVersion > nextVersion ->
+                                let oldVar = Var { Name = formatVersioned name nextVersion; Sort = sort }
+                                let newVar = Var { Name = formatVersioned name mergedVersion; Sort = sort }
                                 Term.foldAnd term <| Eq (oldVar, newVar)
                             | _ ->
                                 term
-                        Map.fold addVarMerge (BoolConst true) nextVersions
+                        Map.fold addVarMerge (BoolConst true) nextVariables
                     Term.foldAnd edgeCond versionMergeCond
                     |> Term.foldAnd <| getNodeCondVar edge.To
+
                 let joinDisjunction = edges |> Seq.map getJoinCond |> Term.disjunction
                 let node = Graph.node graph id
                 let (operationCondOpt, finalVersions, _) = processNode unsupportedHeapFn node mergedVersions ()
                 let operationCond = Option.defaultValue (BoolConst true) operationCondOpt
                 let currentAssert = Implies (getNodeCondVar id, Term.foldAnd joinDisjunction operationCond)
                 (currentAssert, finalVersions)
+
+            let variableSorts =
+                let addTermVariable varSorts term =
+                    match term with
+                    | Var v -> Map.add v.Name v.Sort varSorts
+                    | _ -> varSorts
+                let getTermVariables term =
+                    Term.fold addTermVariable Map.empty term
+                let addOperationVariables varSorts op =
+                    let operationVars =
+                        match op with
+                        | Assign assign ->
+                            getTermVariables assign.Value
+                            |> Map.add assign.Target.Name assign.Target.Sort
+                        | HeapOp heapOp ->
+                            let trgVar =
+                                HeapOperation.targetVariable heapOp
+                                |> Option.map (fun variable -> Map.add variable.Name variable.Sort Map.empty)
+                            let term =
+                                HeapOperation.term heapOp
+                                |> Option.map getTermVariables
+                            Utils.mergeOptions Utils.mergeMaps trgVar term
+                            |> Option.defaultValue Map.empty
+                    Utils.mergeMaps varSorts operationVars
+
+                let edgeVariables =
+                    edges
+                    |> List.map (InnerEdge.Condition >> getTermVariables)
+                    |> List.fold Utils.mergeMaps Map.empty
+                let edgeAndNodeVariables =
+                    Node.operations <| Graph.node graph id
+                    |> List.fold addOperationVariables edgeVariables
+                nextIds
+                |> List.map (NodeId.Value >> Array.get varSorts)
+                |> List.fold Utils.mergeMaps edgeAndNodeVariables
 
             let pathCond =
                 match nextIds with
@@ -247,13 +286,16 @@ module Exploration =
             asserts.[id.Value] <- currentAssert
             conditions.[id.Value] <- pathCond
             versions.[id.Value] <- finalVersions
+            varSorts.[id.Value] <- variableSorts
             processed.[id.Value] <- true
 
         processCondition enterNode.Id
 
-        let termTexts = Array.map Term.print asserts
         let cond = condFn.Assert (getNodeCondVar enterNode.Id) conditions.[enterNode.Id.Value]
         let res = condFn.Solve cond
+
+        // TODO: Remove once completed
+        let termTexts = Array.map Term.print asserts
 
         // TODO: Produce paths according to the model
         ()
