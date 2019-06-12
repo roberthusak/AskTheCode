@@ -8,6 +8,13 @@ let curry3 fn arg1 arg2 arg3 = fn (arg1, arg2, arg3)
 
 let swap fn arg1 arg2 = fn arg2 arg1
 
+let mergeOptions fn opt1 opt2 =
+    match (opt1, opt2) with
+    | (None, None) -> None
+    | (Some a, None) -> Some a
+    | (None, Some b) -> Some b
+    | (Some a, Some b) -> Some <| fn a b
+
 let lazyUpdateUnion cons fn orig item =
     let res = fn item
     match refEq item res with
@@ -47,9 +54,5 @@ let nullableToList value =
     | null -> []
     | _ -> [ value ]
 
-let mergeOptions fn opt1 opt2 =
-    match (opt1, opt2) with
-    | (None, None) -> None
-    | (Some a, None) -> Some a
-    | (None, Some b) -> Some b
-    | (Some a, Some b) -> Some <| fn a b
+let mergeMaps map1 map2 =
+    Map.fold (fun res key value -> Map.add key value res) map2 map1

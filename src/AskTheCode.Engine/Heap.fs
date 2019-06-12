@@ -36,6 +36,7 @@ type HeapOperation =
     | WriteVal of Instance: Reference * Field: ValueField * Value: Term
 
 module HeapOperation =
+
     let targetVariable heapOp =
         match heapOp with
         | AssignEquals (v, _, _)
@@ -44,6 +45,11 @@ module HeapOperation =
             Some v
         | _ ->
             None
+
+    let term heapOp =
+        match heapOp with
+        | WriteVal (_, _, v) -> Some v
+        | _ -> None
 
 type TypeSystem = { Classes: Class list; Fields: Field list }
 

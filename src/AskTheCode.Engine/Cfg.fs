@@ -37,6 +37,11 @@ module Node =
         | Enter _ -> Enter id
         | Return (_, value) -> Return (id, value)
 
+    let operations node =
+        match node with
+        | Basic (_, ops) -> ops
+        | Enter _ | Return _ -> List.empty
+
 type InnerEdge = { From: NodeId; To: NodeId; Condition: Term }
 
 type Graph = { Nodes: Node list; Edges: InnerEdge list }
@@ -46,6 +51,11 @@ type OuterEdge = { FromGraph: Graph; ToGraph: Graph; From: NodeId; To: NodeId; C
 type Edge =
     | Inner of InnerEdge
     | Outer of OuterEdge
+
+module InnerEdge =
+    let From (edge:InnerEdge) = edge.From
+    let To (edge:InnerEdge) = edge.To
+    let Condition (edge:InnerEdge) = edge.Condition
 
 module Graph =
     open AskTheCode
