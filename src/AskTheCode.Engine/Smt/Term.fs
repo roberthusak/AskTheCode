@@ -155,3 +155,43 @@ module Term =
             |> sprintf "%s(%s)" name
         | Variable v -> v.Name
         | Constant (_, value) -> value.ToString()
+
+    let foldAnd left right =
+        match (left, right) with
+        | (BoolConst false, _)
+        | (_, BoolConst false) ->
+            BoolConst false
+        | (BoolConst true, BoolConst true) ->
+            BoolConst true
+        | (BoolConst true, right) ->
+            right
+        | (left, BoolConst true) ->
+            left
+        | (left, right) ->
+            And (left, right)
+
+    let foldOr left right=
+        match (left, right) with
+        | (BoolConst true, _)
+        | (_, BoolConst true) ->
+            BoolConst true
+        | (BoolConst false, BoolConst false) ->
+            BoolConst false
+        | (BoolConst false, right) ->
+            right
+        | (left, BoolConst false) ->
+            left
+        | (left, right) ->
+            Or (left, right)
+
+    let conjunction terms =
+        if Seq.isEmpty terms then
+            BoolConst true
+        else
+            Seq.fold foldAnd (BoolConst true) terms
+
+    let disjunction terms =
+        if Seq.isEmpty terms then
+            BoolConst true
+        else
+            Seq.fold foldOr (BoolConst false) terms
