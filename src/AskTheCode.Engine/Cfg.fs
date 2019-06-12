@@ -185,7 +185,7 @@ module Graph =
         assert (stack = [])
         results
 
-    let unwindLoops loops graph count =
+    let unwindLoops graph count =
         assert (count > 0)
 
         let getStructure graph results (head, group) =
@@ -284,6 +284,10 @@ module Graph =
                 let structures = List.map updateStructure structures
                 unwindLoop graph structures
 
-        List.groupBy List.head loops
-        |> List.fold (getStructure graph) List.empty
-        |> unwindLoop graph
+        match findLoops graph with
+        | [] ->
+            graph
+        | loops ->
+            List.groupBy List.head loops
+            |> List.fold (getStructure graph) List.empty
+            |> unwindLoop graph
