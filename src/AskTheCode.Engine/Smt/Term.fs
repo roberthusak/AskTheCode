@@ -119,6 +119,35 @@ module Term =
         | Var _ | IntConst _ | BoolConst _ -> true
         | _ -> false
 
+    let rec iter action term =
+        action term
+        match term with
+        | Variable _ | Constant _ ->
+            ()
+        | Unary (_, a) ->
+            action a
+        | Binary (_, a, b) ->
+            action a
+            action b
+        | Function (_, args) ->
+            List.iter action args
+
+    let rec fold folder state term =
+        let recFold = fold folder
+        let state = folder state term
+        match term with
+        | Variable _ | Constant _ -> state
+        | Unary (_, a) -> recFold state a
+        | Binary (_, a, b) -> recFold state a |> Utils.swap recFold b
+        | Function (_, args) -> List.fold recFold state args
+
+    let foldChildren folder state term =
+        match term with
+        | Variable _ | Constant _ -> state
+        | Unary (_, a) -> folder state a
+        | Binary (_, a, b) -> folder state a |> Utils.swap folder b
+        | Function (_, args) -> args |> List.fold folder state
+
     let updateChildren fn term =
         match term with
         | Var _ | IntConst _ | BoolConst _ -> term
