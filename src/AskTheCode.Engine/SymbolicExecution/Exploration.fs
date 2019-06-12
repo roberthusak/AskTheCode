@@ -43,6 +43,17 @@ module Exploration =
         | _ ->
             Term.updateChildren (addVersions versions) term
 
+    let mergeVersions versions1 versions2 =
+        let mergeItem res name version =
+            match Map.tryFind name res with
+            | Some currentVersion when currentVersion < version ->
+                Map.add name version res
+            | None ->
+                Map.add name version res
+            | _ ->
+                res
+        Map.fold mergeItem versions2 versions1      // The order to ease folding with Map.empty
+
     let addHeapOpVersions versions heapOp =
         match heapOp with
         | AssignEquals (trg, left, right) ->
@@ -130,3 +141,119 @@ module Exploration =
         let states = [ { Path = Target targetNode; Condition = condFn.GetEmpty(); Versions = Map.empty; Heap = heapFn.GetEmpty() } ]
         step states []
         
+    // Systematically merge program paths (heap is currently not supported)
+
+    let mergeRun condFn graph (targetNode:Node) =
+        let getNodeCondVar id =
+            let name = sprintf "node!!%d" <| NodeId.Value id
+            Var { Name = name; Sort = Bool }
+
+        let nodeCount = List.length graph.Nodes
+        let relevant = Array.create nodeCount false
+        let deps = Array.create nodeCount List.empty<NodeId>
+        let depsClosure = Array.create nodeCount Set.empty<NodeId>
+        let enterNode = Graph.enterNode graph
+
+        let markRelevant () (id:NodeId) =
+            relevant.[id.Value] <- true
+            ((), true)
+        Graph.dfs (Graph.backwardExtender graph) markRelevant () graph targetNode.Id
+
+        let relevantExtender = Graph.forwardExtender graph >> List.filter (fun id -> relevant.[id.Value])
+        let rec processDependency id =
+            let getNestedDeps nextId =
+                match depsClosure.[NodeId.Value id] with
+                | nextDeps when nextDeps.IsEmpty && id <> targetNode.Id ->
+                    processDependency nextId
+                | nextDeps ->
+                    nextDeps
+
+            let currentDeps = relevantExtender id
+            let nestedDeps =
+                currentDeps
+                |> List.map getNestedDeps
+                |> Utils.cons (Set.ofList currentDeps)
+                |> Set.unionMany
+            deps.[id.Value] <- currentDeps
+            depsClosure.[id.Value] <- nestedDeps
+            nestedDeps
+        processDependency enterNode.Id |> ignore
+
+        let processed = Array.create nodeCount false
+        processed.[targetNode.Id.Value] <- true
+        let asserts = Array.create nodeCount <| BoolConst true
+        let conditions = Array.create nodeCount <| condFn.GetEmpty()
+        let versions = Array.create nodeCount Map.empty<string, int>
+
+        let rec processCondition id =
+            let nextIds = deps.[NodeId.Value id]
+            for nextId in nextIds do
+                match processed.[nextId.Value] with
+                | false -> processCondition nextId
+                | true -> ()
+            
+            let (currentAssert, finalVersions) =
+                let mergedVersions =
+                    nextIds
+                    |> List.map (NodeId.Value >> Array.get versions)
+                    |> List.fold mergeVersions Map.empty
+                let edges =
+                    Graph.edgesFromId graph id
+                    |> List.filter (fun edge -> List.contains edge.To nextIds)
+                let getJoinCond (edge:InnerEdge) =
+                    let nextVersions = versions.[edge.To.Value]
+                    let edgeCond = addVersions nextVersions edge.Condition
+                    let versionMergeCond = 
+                        let addVarMerge term name version =
+                            match Map.find name mergedVersions with
+                            | mergedVersion when mergedVersion > version ->
+                                // FIXME: Store somewhere the sort of the variable and set it here
+                                let oldVar = Var { Name = formatVersioned name version; Sort = Int }
+                                let newVar = Var { Name = formatVersioned name mergedVersion; Sort = Int }
+                                Term.foldAnd term <| Eq (oldVar, newVar)
+                            | _ ->
+                                term
+                        Map.fold addVarMerge (BoolConst true) nextVersions
+                    Term.foldAnd edgeCond versionMergeCond
+                    |> Term.foldAnd <| getNodeCondVar edge.To
+                let joinDisjunction = edges |> Seq.map getJoinCond |> Term.disjunction
+                let node = Graph.node graph id
+                let (operationCondOpt, finalVersions, _) = processNode unsupportedHeapFn node mergedVersions ()
+                let operationCond = Option.defaultValue (BoolConst true) operationCondOpt
+                let currentAssert = Implies (getNodeCondVar id, Term.foldAnd joinDisjunction operationCond)
+                (currentAssert, finalVersions)
+
+            let pathCond =
+                match nextIds with
+                | [ onlyId ] ->
+                    assertCondition condFn conditions.[onlyId.Value] currentAssert
+                | (firstId :: otherIds) ->
+                    let currentNodes = Set.add firstId depsClosure.[firstId.Value]
+                    let addedAsserts =
+                        otherIds
+                        |> List.map (fun id -> depsClosure.[id.Value])
+                        |> Utils.cons (Set.ofList otherIds)
+                        |> Set.unionMany
+                        |> Utils.swap Set.difference currentNodes
+                        |> List.ofSeq
+                        |> List.map (NodeId.Value >> Array.get asserts)
+                        |> Utils.cons currentAssert
+                    let baseCond = conditions.[firstId.Value]
+                    List.fold (assertCondition condFn) baseCond addedAsserts
+                | [] ->
+                    // No dependencies are only from the target node, which is marked as completed by default
+                    failwith "Unreachable"
+
+            asserts.[id.Value] <- currentAssert
+            conditions.[id.Value] <- pathCond
+            versions.[id.Value] <- finalVersions
+            processed.[id.Value] <- true
+
+        processCondition enterNode.Id
+
+        let termTexts = Array.map Term.print asserts
+        let cond = condFn.Assert (getNodeCondVar enterNode.Id) conditions.[enterNode.Id.Value]
+        let res = condFn.Solve cond
+
+        // TODO: Produce paths according to the model
+        ()
