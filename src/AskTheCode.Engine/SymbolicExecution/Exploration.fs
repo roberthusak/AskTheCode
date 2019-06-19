@@ -193,6 +193,14 @@ module Exploration =
         let heaps = Array.create nodeCount <| heapFn.GetEmpty()
 
         let rec processCondition id =
+
+            let addTermVariable varSorts term =
+                match term with
+                | Var v -> Map.add v.Name v.Sort varSorts
+                | _ -> varSorts
+            let getTermVariables term =
+                Term.fold addTermVariable Map.empty term
+
             let nextIds = deps.[NodeId.Value id]
             for nextId in nextIds do
                 match processed.[nextId.Value] with
@@ -219,7 +227,9 @@ module Exploration =
                         |> heapFn.Merge
                 let getJoinCond (edge:InnerEdge) heapMergeCond =
                     let nextVersions = versions.[edge.To.Value]
-                    let nextVariables = varSorts.[edge.To.Value]
+                    let nextVariables =
+                        varSorts.[edge.To.Value]
+                        |> Utils.mergeMaps <| getTermVariables edge.Condition
                     let edgeCond = addVersions nextVersions edge.Condition
                     let versionMergeCond = 
                         let addVarMerge term name sort =
@@ -244,12 +254,6 @@ module Exploration =
                 (currentAssert, finalVersions, finalHeap)
 
             let variableSorts =
-                let addTermVariable varSorts term =
-                    match term with
-                    | Var v -> Map.add v.Name v.Sort varSorts
-                    | _ -> varSorts
-                let getTermVariables term =
-                    Term.fold addTermVariable Map.empty term
                 let addOperationVariables varSorts op =
                     let operationVars =
                         match op with
