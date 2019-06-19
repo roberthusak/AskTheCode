@@ -35,8 +35,12 @@ let getFreeVerNo () =
 let freshVarName refName =
     sprintf "%s!%d" refName <| getFreeVerNo()
 
-let fieldVersion field versions =
-    Map.tryFind field versions |> Option.defaultValue 0
+let fieldVersionInit field versions =
+    match Map.tryFind field versions with
+    | Some version ->
+        (versions, version)
+    | None ->
+        (Map.add field 0 versions, 0)
 
 let fieldVarName name version =
     sprintf "!%s!%d" name version
@@ -65,7 +69,7 @@ let performOp op heap =
 
     let performWriteOp ins field valTerm env =
         let (env, insEval) = init ins env
-        let fieldVer = fieldVersion field heap.FieldVersions
+        let fieldVer = Map.tryFind field heap.FieldVersions |> Option.defaultValue 0
         let fieldVerBefore = fieldVer + 1
         let fieldVersions = Map.add field fieldVerBefore heap.FieldVersions
         let fieldVar = Var { Sort = fieldSort; Name = fieldVarName field.Name fieldVer }
@@ -101,10 +105,11 @@ let performOp op heap =
             | (EnvEval.Var trgVarName) ->
                 let env = Map.remove trg env
                 let inited = Set.add trgVarName heap.InitializedVars
-                let fieldVar = Var { Sort = fieldSort; Name = fieldVarName field.Name <| fieldVersion (Field.Reference field) heap.FieldVersions }
+                let (fieldVersions, fieldVersion) = fieldVersionInit (Field.Reference field) heap.FieldVersions
+                let fieldVar = Var { Sort = fieldSort; Name = fieldVarName field.Name fieldVersion }
                 let cond = And (cond, Eq (trgEval.AsTerm, Select (fieldVar, insEval.AsTerm)))
                 // TODO: In case of ReferenceField, constrain all the fields of trg to be <= 0 if trg < 0
-                ({ heap with Environment = env; InitializedVars = inited }, Some cond)
+                ({ heap with Environment = env; InitializedVars = inited; FieldVersions = fieldVersions }, Some cond)
             | _ ->
                 failwithf "Invalid mapping of reference %A" trg
         | None ->
@@ -112,9 +117,10 @@ let performOp op heap =
             ({ heap with Environment = env }, Some cond)
     | ReadVal (trg, ins, field) ->
         let (env, insEval) = init ins heap.Environment
-        let fieldVar = Var { Sort = fieldSort; Name = fieldVarName field.Name <| fieldVersion (Field.Value field) heap.FieldVersions }
+        let (fieldVersions, fieldVersion) = fieldVersionInit (Field.Value field) heap.FieldVersions
+        let fieldVar = Var { Sort = fieldSort; Name = fieldVarName field.Name fieldVersion }
         let cond = And (Neq (insEval.AsTerm, nullEval.AsTerm), Eq (Var trg, Select (fieldVar, insEval.AsTerm)))
-        ({ heap with Environment = env }, Some cond)
+        ({ heap with Environment = env; FieldVersions = fieldVersions }, Some cond)
     | WriteRef (ins, field, value) ->
         let (env, valEval) = init value heap.Environment
         performWriteOp ins (Field.Reference field) valEval.AsTerm env
@@ -130,7 +136,7 @@ let merge heaps =
     let mergedObjCounter = heaps |> Seq.map (fun heap -> heap.ObjectCounter) |> Seq.max
 
     let fieldFolder cond field version =
-        let mergedVersion = fieldVersion field mergedFieldVers
+        let mergedVersion = Map.find field mergedFieldVers
         if mergedVersion > version then
             Term.foldAnd cond <| Eq (getFieldVar field version, getFieldVar field mergedVersion)
         else
