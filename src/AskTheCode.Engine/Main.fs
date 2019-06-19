@@ -41,6 +41,91 @@ public class Node
     }
 }"
 
+let swapNodeSource2 = @"
+using System.Diagnostics;
+
+public class Node
+{
+    public int value;
+    public Node next;
+
+    public int SwapNode()
+    {
+        Node result = this;
+        if (this.next != null)
+        {
+            if (this.value > this.next.value)
+            {
+                Node t = this.next;
+                this.next = t.next;
+                t.next = this;
+                result = t;
+            }
+
+            if (this.value > this.next.value)
+            {
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+}"
+
+let nodeMaxSource = @"
+public class Node
+{
+    public int value;
+    public Node next;
+
+    public static int Max(Node a, Node b)
+    {
+        Node m;
+        if (a.value >= b.value)
+        {
+            m = a;
+        }
+        else
+        {
+            m = b;
+        }
+
+        if (m.value < a.value || m.value < b.value)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+}"
+
+let nodeMaxSource2 = @"
+public class Node
+{
+    public int value;
+    public Node next;
+
+    public static int Max(Node m, Node b)
+    {
+        if (b.value > m.value)
+        {
+            b = b.next;
+            m = b;
+        }
+
+        if (m.value < b.value)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+}"
+
 let degreeCountingSource = @"
 using System;
 
@@ -154,6 +239,9 @@ let sourceToCfg (source:string) =
 let main args =
 
     //let (cfg, target) = (sourceToCfg swapNodeSource, NodeId 4)
+    //let (cfg, target) = (sourceToCfg swapNodeSource2, NodeId 5)
+    //let (cfg, target) = (sourceToCfg nodeMaxSource, NodeId 6)
+    //let (cfg, target) = (sourceToCfg nodeMaxSource2, NodeId 4)
     let (cfg, target) = (sourceToCfg degreeCountingSource, NodeId 13)
     //let (cfg, target) = (sourceToCfg absoluteValueSource, NodeId 5)
     //let (cfg, target) = (sourceToCfg absoluteValue2source, NodeId 4)
@@ -183,6 +271,7 @@ let main args =
     let condFn = (Exploration.solverCondFn solver)
     //let condFn = Z3.stackCondFn ctx
     let res = Exploration.run condFn ArrayHeap.functions cfg (Graph.node cfg target)
+    //let res = Exploration.mergeRun condFn ArrayHeap.functions cfg (Graph.node cfg target)
 
     wholeWatch.Stop()
 
