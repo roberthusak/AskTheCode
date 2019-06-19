@@ -1,5 +1,6 @@
 ﻿module AskTheCode.SymbolicExecution.ArrayHeap
 
+open AskTheCode
 open AskTheCode.Smt
 open AskTheCode.Heap
 open System
@@ -39,6 +40,9 @@ let fieldVersion field versions =
 
 let fieldVarName name version =
     sprintf "!%s!%d" name version
+
+let getFieldVar (field:Field) version =
+    Var { Sort = fieldSort; Name = fieldVarName field.Name version}
 
 let mapFresh r env =
     let eval = EnvEval.Var <| freshVarName r.Name
@@ -119,4 +123,34 @@ let performOp op heap =
     | New _ ->
         failwith "Not implemented"
 
-let functions :Exploration.HeapFunctions<Heap> = { GetEmpty = (fun () -> empty); PerformOp = performOp; Merge = (fun _ -> failwith "Not supported") }
+let merge heaps =
+    let mergedEnv = heaps |> Seq.map (fun heap -> heap.Environment) |> Seq.fold Utils.mergeMaps Map.empty
+    let mergedInited = heaps |> Seq.map (fun heap -> heap.InitializedVars) |> Set.unionMany
+    let mergedFieldVers = heaps |> Seq.map (fun heap -> heap.FieldVersions) |> Seq.fold Exploration.mergeVersions Map.empty
+    let mergedObjCounter = heaps |> Seq.map (fun heap -> heap.ObjectCounter) |> Seq.max
+
+    let fieldFolder cond field version =
+        let mergedVersion = fieldVersion field mergedFieldVers
+        if mergedVersion > version then
+            Term.foldAnd cond <| Eq (getFieldVar field version, getFieldVar field mergedVersion)
+        else
+            cond
+
+    let envFolder cond varRef eval =
+        let mergedEval = Map.find varRef mergedEnv
+        if eval <> mergedEval then
+            Term.foldAnd cond <| Eq (eval.AsTerm, mergedEval.AsTerm)
+        else
+            cond
+
+    let joinConds =
+        seq {
+            for heap in heaps do
+                let joinCond = Map.fold fieldFolder (BoolConst true) heap.FieldVersions
+                let joinCond = Map.fold envFolder joinCond heap.Environment
+                yield joinCond
+        }
+
+    ({ Environment = mergedEnv; InitializedVars = mergedInited; FieldVersions = mergedFieldVers; ObjectCounter = mergedObjCounter }, joinConds)
+
+let functions :Exploration.HeapFunctions<Heap> = { GetEmpty = (fun () -> empty); PerformOp = performOp; Merge = merge }
