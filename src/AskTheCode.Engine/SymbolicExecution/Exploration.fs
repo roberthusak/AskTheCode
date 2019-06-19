@@ -146,7 +146,7 @@ module Exploration =
         let states = [ { Path = Target targetNode; Condition = condFn.GetEmpty(); Versions = Map.empty; Heap = heapFn.GetEmpty() } ]
         step states []
         
-    // Systematically merge program paths (heap is currently not supported)
+    // Systematically merge program paths
 
     let mergeRun condFn (heapFn:HeapFunctions<'heap>) graph (targetNode:Node) =
         let getNodeCondVar id =
@@ -209,10 +209,14 @@ module Exploration =
                     |> List.map (NodeId.Value >> Array.get versions)
                     |> List.fold mergeVersions Map.empty
                 let (mergedHeap, heapMergeConds) =
-                    nextIds
-                    |> List.map (NodeId.Value >> Array.get heaps)
-                    |> Seq.ofList
-                    |> heapFn.Merge
+                    match nextIds with
+                    | [ nextId ] ->
+                        (heaps.[nextId.Value], Seq.singleton <| BoolConst true)
+                    | _ ->
+                        nextIds
+                        |> List.map (NodeId.Value >> Array.get heaps)
+                        |> Seq.ofList
+                        |> heapFn.Merge
                 let getJoinCond (edge:InnerEdge) heapMergeCond =
                     let nextVersions = versions.[edge.To.Value]
                     let nextVariables = varSorts.[edge.To.Value]
