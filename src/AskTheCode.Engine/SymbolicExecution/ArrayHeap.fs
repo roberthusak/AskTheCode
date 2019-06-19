@@ -119,4 +119,4 @@ let performOp op heap =
     | New _ ->
         failwith "Not implemented"
 
-let functions :Exploration.HeapFunctions<Heap> = { GetEmpty = (fun () -> empty); PerformOp = performOp }
+let functions :Exploration.HeapFunctions<Heap> = { GetEmpty = (fun () -> empty); PerformOp = performOp; Merge = (fun _ -> failwith "Not supported") }

@@ -9,9 +9,14 @@ module Exploration =
 
     // Definition of functions for heap handling and default value
 
-    type HeapFunctions<'heap> = { GetEmpty: unit -> 'heap; PerformOp: HeapOperation -> 'heap -> 'heap * Term option }
+    type HeapFunctions<'heap> = { GetEmpty: unit -> 'heap; PerformOp: HeapOperation -> 'heap -> 'heap * Term option; Merge: seq<'heap> -> 'heap * seq<Term> }
 
-    let unsupportedHeapFn : HeapFunctions<unit> = { GetEmpty = id; PerformOp = (fun _ _ -> failwith "Heap unsupported") }
+    let unsupportedHeapFn : HeapFunctions<unit> =
+        {
+            GetEmpty = id;
+            PerformOp = (fun _ _ -> failwith "Heap unsupported");
+            Merge = (fun (heaps) -> ((), Seq.replicate (Seq.length heaps) (BoolConst true)))
+        }
 
     // Definition of functions for path condition handling and the simplest implementation based on solver function
 
@@ -143,7 +148,7 @@ module Exploration =
         
     // Systematically merge program paths (heap is currently not supported)
 
-    let mergeRun condFn graph (targetNode:Node) =
+    let mergeRun condFn (heapFn:HeapFunctions<'heap>) graph (targetNode:Node) =
         let getNodeCondVar id =
             let name = sprintf "node!!%d" <| NodeId.Value id
             Var { Name = name; Sort = Bool }
@@ -185,6 +190,7 @@ module Exploration =
         let conditions = Array.create nodeCount <| condFn.GetEmpty()
         let versions = Array.create nodeCount Map.empty<string, int>
         let varSorts = Array.create nodeCount Map.empty<string, Sort>
+        let heaps = Array.create nodeCount <| heapFn.GetEmpty()
 
         let rec processCondition id =
             let nextIds = deps.[NodeId.Value id]
@@ -197,12 +203,17 @@ module Exploration =
                 Graph.edgesFromId graph id
                 |> List.filter (fun edge -> List.contains edge.To nextIds)
             
-            let (currentAssert, finalVersions) =
+            let (currentAssert, finalVersions, finalHeap) =
                 let mergedVersions =
                     nextIds
                     |> List.map (NodeId.Value >> Array.get versions)
                     |> List.fold mergeVersions Map.empty
-                let getJoinCond (edge:InnerEdge) =
+                let (mergedHeap, heapMergeConds) =
+                    nextIds
+                    |> List.map (NodeId.Value >> Array.get heaps)
+                    |> Seq.ofList
+                    |> heapFn.Merge
+                let getJoinCond (edge:InnerEdge) heapMergeCond =
                     let nextVersions = versions.[edge.To.Value]
                     let nextVariables = varSorts.[edge.To.Value]
                     let edgeCond = addVersions nextVersions edge.Condition
@@ -219,13 +230,14 @@ module Exploration =
                         Map.fold addVarMerge (BoolConst true) nextVariables
                     Term.foldAnd edgeCond versionMergeCond
                     |> Term.foldAnd <| getNodeCondVar edge.To
+                    |> Term.foldAnd heapMergeCond
 
-                let joinDisjunction = edges |> Seq.map getJoinCond |> Term.disjunction
+                let joinDisjunction = Seq.map2 getJoinCond edges heapMergeConds |> Term.disjunction
                 let node = Graph.node graph id
-                let (operationCondOpt, finalVersions, _) = processNode unsupportedHeapFn node mergedVersions ()
+                let (operationCondOpt, finalVersions, finalHeap) = processNode heapFn node mergedVersions mergedHeap
                 let operationCond = Option.defaultValue (BoolConst true) operationCondOpt
                 let currentAssert = Implies (getNodeCondVar id, Term.foldAnd joinDisjunction operationCond)
-                (currentAssert, finalVersions)
+                (currentAssert, finalVersions, finalHeap)
 
             let variableSorts =
                 let addTermVariable varSorts term =
@@ -287,6 +299,7 @@ module Exploration =
             conditions.[id.Value] <- pathCond
             versions.[id.Value] <- finalVersions
             varSorts.[id.Value] <- variableSorts
+            heaps.[id.Value] <- finalHeap
             processed.[id.Value] <- true
 
         processCondition enterNode.Id
