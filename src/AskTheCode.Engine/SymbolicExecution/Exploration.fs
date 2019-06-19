@@ -307,12 +307,38 @@ module Exploration =
             processed.[id.Value] <- true
 
         processCondition enterNode.Id
-
         let cond = condFn.Assert (getNodeCondVar enterNode.Id) conditions.[enterNode.Id.Value]
-        let res = condFn.Solve cond
 
         // TODO: Remove once completed
         let termTexts = Array.map Term.print asserts
 
-        // TODO: Produce paths according to the model
-        ()
+        // Produce paths according to the model
+        let rec gatherResults res cond =
+            let rec gatherPath model path =
+                let node = Path.node path
+                match node with
+                | Enter _ ->
+                    path
+                | _ ->
+                    let extendEdge =
+                        node
+                        |> Node.Id
+                        |> Graph.edgesToId graph
+                        |> List.find (InnerEdge.From >> getNodeCondVar >> model >> (=) (BoolVal true))
+                    let path = Step (Graph.node graph extendEdge.From, Inner extendEdge, path)
+                    gatherPath model path
+
+            match condFn.Solve cond with
+            | Unsat | Unknown ->
+                res
+            | Sat model ->
+                let path = gatherPath model (Target targetNode)
+                // FIXME: Block the repetition of the same path using edge conditions, not nodes
+                let pathBlockingTerm =
+                    Path.nodes path
+                    |> Seq.map (Node.Id >> getNodeCondVar >> Not)
+                    |> Term.disjunction
+                let cond = condFn.Assert pathBlockingTerm cond
+                gatherResults (path :: res) cond
+
+        gatherResults [] cond

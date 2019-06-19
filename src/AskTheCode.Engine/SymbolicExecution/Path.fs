@@ -21,3 +21,13 @@ module Path =
         | Step (node, _, path) ->
             let (NodeId id) = node.Id
             sprintf "[%d] ==> %s" id <| print path
+
+    let rec nodes path =
+        seq {
+            match path with
+            | Target node ->
+                yield node
+            | Step (node, _, tail) ->
+                yield node
+                yield! nodes tail
+        }
