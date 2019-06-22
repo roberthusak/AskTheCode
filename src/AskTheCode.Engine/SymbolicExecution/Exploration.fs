@@ -148,7 +148,34 @@ module Exploration =
         
     // Systematically merge program paths
 
-    let mergeRun condFn (heapFn:HeapFunctions<'heap>) graph (targetNode:Node) =
+    type MergedState<'condition, 'heap> =
+        {
+            DependencyClosure: Set<NodeId>; Assertion: Term;
+            Condition: 'condition;
+            VariableVersions: Map<string, int>;
+            VariableSorts: Map<string, Sort>;
+            Heap: 'heap
+        }
+
+    module MergedState =
+        let empty condFn (heapFn:HeapFunctions<'heap>) =
+            {
+                DependencyClosure = Set.empty;
+                Assertion = BoolConst true;
+                Condition = condFn.GetEmpty();
+                VariableVersions = Map.empty;
+                VariableSorts = Map.empty;
+                Heap = heapFn.GetEmpty();
+            }
+
+        let DependencyClosure state = state.DependencyClosure
+        let Assertion state = state.Assertion
+        let Condition state = state.Condition
+        let VariableVersions state = state.VariableVersions
+        let VariableSorts state = state.VariableSorts
+        let Heap state = state.Heap
+
+    let mergeRun (condFn:ConditionFunctions<'cond>) (heapFn:HeapFunctions<'heap>) graph (targetNode:Node) =
         let getNodeCondVar id =
             let name = sprintf "node!!%d" <| NodeId.Value id
             Var { Name = name; Sort = Bool }
@@ -164,14 +191,10 @@ module Exploration =
 
         let relevantExtender = Graph.forwardExtender graph >> List.filter (fun id -> relevant.[id.Value])
 
-        let depIdsClosure = Array.create nodeCount Set.empty<NodeId>
-        let processed = Array.create nodeCount false
-        processed.[targetNode.Id.Value] <- true
-        let asserts = Array.create nodeCount <| BoolConst true
-        let conditions = Array.create nodeCount <| condFn.GetEmpty()
-        let versions = Array.create nodeCount Map.empty<string, int>
-        let varSorts = Array.create nodeCount Map.empty<string, Sort>
-        let heaps = Array.create nodeCount <| heapFn.GetEmpty()
+        let states = Array.create<MergedState<'cond, 'heap> option> nodeCount None
+        states.[targetNode.Id.Value] <- Some <| MergedState.empty condFn heapFn
+
+        let idToStateProperty getter = NodeId.Value >> Array.get states >> Option.get >> getter
 
         let rec processCondition id =
 
@@ -184,17 +207,17 @@ module Exploration =
 
             let depIds = relevantExtender id
             for depId in depIds do
-                match processed.[depId.Value] with
-                | false -> processCondition depId
-                | true -> ()
+                match states.[depId.Value] with
+                | None -> processCondition depId
+                | Some _ -> ()
 
             let edges =
                 Graph.edgesFromId graph id
                 |> List.filter (fun edge -> List.contains edge.To depIds)
 
-            depIdsClosure.[id.Value] <-
+            let depClosure =
                 depIds
-                |> List.map (NodeId.Value >> Array.get depIdsClosure)
+                |> List.map (idToStateProperty MergedState.DependencyClosure)
                 |> Utils.cons (Set.ofList depIds)
                 |> Set.unionMany
                 |> Set.add id
@@ -202,21 +225,21 @@ module Exploration =
             let (currentAssert, finalVersions, finalHeap) =
                 let mergedVersions =
                     depIds
-                    |> List.map (NodeId.Value >> Array.get versions)
+                    |> List.map (idToStateProperty MergedState.VariableVersions)
                     |> List.fold mergeVersions Map.empty
                 let (mergedHeap, heapMergeConds) =
                     match depIds with
                     | [ nextId ] ->
-                        (heaps.[nextId.Value], Seq.singleton <| BoolConst true)
+                        (idToStateProperty MergedState.Heap nextId, Seq.singleton <| BoolConst true)
                     | _ ->
                         depIds
-                        |> List.map (NodeId.Value >> Array.get heaps)
+                        |> List.map (idToStateProperty MergedState.Heap)
                         |> Seq.ofList
                         |> heapFn.Merge
                 let getJoinCond (edge:InnerEdge) heapMergeCond =
-                    let nextVersions = versions.[edge.To.Value]
+                    let nextVersions = idToStateProperty MergedState.VariableVersions edge.To
                     let nextVariables =
-                        varSorts.[edge.To.Value]
+                        idToStateProperty MergedState.VariableSorts edge.To
                         |> Utils.mergeMaps <| getTermVariables edge.Condition
                     let edgeCond = addVersions nextVersions edge.Condition
                     let versionMergeCond = 
@@ -267,42 +290,45 @@ module Exploration =
                     Node.operations <| Graph.node graph id
                     |> List.fold addOperationVariables edgeVariables
                 depIds
-                |> List.map (NodeId.Value >> Array.get varSorts)
+                |> List.map (idToStateProperty MergedState.VariableSorts)
                 |> List.fold Utils.mergeMaps edgeAndNodeVariables
 
             let pathCond =
                 match depIds with
                 | [ onlyId ] ->
-                    assertCondition condFn conditions.[onlyId.Value] currentAssert
+                    assertCondition condFn (idToStateProperty MergedState.Condition onlyId) currentAssert
                 | (firstId :: otherIds) ->
-                    let currentNodes = Set.add firstId depIdsClosure.[firstId.Value]
+                    let currentNodes = Set.add firstId <| idToStateProperty MergedState.DependencyClosure firstId
                     let addedAsserts =
                         otherIds
-                        |> List.map (fun id -> depIdsClosure.[id.Value])
+                        |> List.map (idToStateProperty MergedState.DependencyClosure)
                         |> Utils.cons (Set.ofList otherIds)
                         |> Set.unionMany
                         |> Utils.swap Set.difference currentNodes
                         |> List.ofSeq
-                        |> List.map (NodeId.Value >> Array.get asserts)
+                        |> List.map (idToStateProperty MergedState.Assertion)
                         |> Utils.cons currentAssert
-                    let baseCond = conditions.[firstId.Value]
+                    let baseCond = idToStateProperty MergedState.Condition firstId
                     List.fold (assertCondition condFn) baseCond addedAsserts
                 | [] ->
                     // No dependencies are only from the target node, which is marked as completed by default
                     failwith "Unreachable"
 
-            asserts.[id.Value] <- currentAssert
-            conditions.[id.Value] <- pathCond
-            versions.[id.Value] <- finalVersions
-            varSorts.[id.Value] <- variableSorts
-            heaps.[id.Value] <- finalHeap
-            processed.[id.Value] <- true
+            states.[id.Value] <-
+                Some {
+                    DependencyClosure = depClosure;
+                    Assertion = currentAssert;
+                    Condition = pathCond;
+                    VariableVersions = finalVersions;
+                    VariableSorts = variableSorts;
+                    Heap = finalHeap;
+                }
 
         processCondition enterNode.Id
-        let cond = condFn.Assert (getNodeCondVar enterNode.Id) conditions.[enterNode.Id.Value]
+        let cond = condFn.Assert (getNodeCondVar enterNode.Id) states.[enterNode.Id.Value].Value.Condition
 
         // TODO: Remove once completed
-        let termTexts = Array.map Term.print asserts
+        let termTexts = Array.map (Option.defaultValue (MergedState.empty condFn heapFn) >> fun (s:MergedState<'cond, 'heap>) -> Term.print s.Assertion) states
 
         // Produce paths according to the model
         let rec gatherResults res cond =
