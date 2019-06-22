@@ -155,8 +155,6 @@ module Exploration =
 
         let nodeCount = List.length graph.Nodes
         let relevant = Array.create nodeCount false
-        let deps = Array.create nodeCount List.empty<NodeId>
-        let depsClosure = Array.create nodeCount Set.empty<NodeId>
         let enterNode = Graph.enterNode graph
 
         let markRelevant () (id:NodeId) =
@@ -165,25 +163,8 @@ module Exploration =
         Graph.dfs (Graph.backwardExtender graph) markRelevant () graph targetNode.Id
 
         let relevantExtender = Graph.forwardExtender graph >> List.filter (fun id -> relevant.[id.Value])
-        let rec processDependency id =
-            let getNestedDeps nextId =
-                match depsClosure.[NodeId.Value id] with
-                | nextDeps when nextDeps.IsEmpty && id <> targetNode.Id ->
-                    processDependency nextId
-                | nextDeps ->
-                    nextDeps
 
-            let currentDeps = relevantExtender id
-            let nestedDeps =
-                currentDeps
-                |> List.map getNestedDeps
-                |> Utils.cons (Set.ofList currentDeps)
-                |> Set.unionMany
-            deps.[id.Value] <- currentDeps
-            depsClosure.[id.Value] <- nestedDeps
-            nestedDeps
-        processDependency enterNode.Id |> ignore
-
+        let depIdsClosure = Array.create nodeCount Set.empty<NodeId>
         let processed = Array.create nodeCount false
         processed.[targetNode.Id.Value] <- true
         let asserts = Array.create nodeCount <| BoolConst true
@@ -201,27 +182,34 @@ module Exploration =
             let getTermVariables term =
                 Term.fold addTermVariable Map.empty term
 
-            let nextIds = deps.[NodeId.Value id]
-            for nextId in nextIds do
-                match processed.[nextId.Value] with
-                | false -> processCondition nextId
+            let depIds = relevantExtender id
+            for depId in depIds do
+                match processed.[depId.Value] with
+                | false -> processCondition depId
                 | true -> ()
 
             let edges =
                 Graph.edgesFromId graph id
-                |> List.filter (fun edge -> List.contains edge.To nextIds)
+                |> List.filter (fun edge -> List.contains edge.To depIds)
+
+            depIdsClosure.[id.Value] <-
+                depIds
+                |> List.map (NodeId.Value >> Array.get depIdsClosure)
+                |> Utils.cons (Set.ofList depIds)
+                |> Set.unionMany
+                |> Set.add id
             
             let (currentAssert, finalVersions, finalHeap) =
                 let mergedVersions =
-                    nextIds
+                    depIds
                     |> List.map (NodeId.Value >> Array.get versions)
                     |> List.fold mergeVersions Map.empty
                 let (mergedHeap, heapMergeConds) =
-                    match nextIds with
+                    match depIds with
                     | [ nextId ] ->
                         (heaps.[nextId.Value], Seq.singleton <| BoolConst true)
                     | _ ->
-                        nextIds
+                        depIds
                         |> List.map (NodeId.Value >> Array.get heaps)
                         |> Seq.ofList
                         |> heapFn.Merge
@@ -278,19 +266,19 @@ module Exploration =
                 let edgeAndNodeVariables =
                     Node.operations <| Graph.node graph id
                     |> List.fold addOperationVariables edgeVariables
-                nextIds
+                depIds
                 |> List.map (NodeId.Value >> Array.get varSorts)
                 |> List.fold Utils.mergeMaps edgeAndNodeVariables
 
             let pathCond =
-                match nextIds with
+                match depIds with
                 | [ onlyId ] ->
                     assertCondition condFn conditions.[onlyId.Value] currentAssert
                 | (firstId :: otherIds) ->
-                    let currentNodes = Set.add firstId depsClosure.[firstId.Value]
+                    let currentNodes = Set.add firstId depIdsClosure.[firstId.Value]
                     let addedAsserts =
                         otherIds
-                        |> List.map (fun id -> depsClosure.[id.Value])
+                        |> List.map (fun id -> depIdsClosure.[id.Value])
                         |> Utils.cons (Set.ofList otherIds)
                         |> Set.unionMany
                         |> Utils.swap Set.difference currentNodes
