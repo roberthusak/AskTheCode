@@ -194,7 +194,8 @@ module Exploration =
         let states = Array.create<MergedState<'cond, 'heap> option> nodeCount None
         states.[targetNode.Id.Value] <- Some <| MergedState.empty condFn heapFn
 
-        let idToStateProperty getter = NodeId.Value >> Array.get states >> Option.get >> getter
+        let idToState = NodeId.Value >> Array.get states >> Option.get
+        let idToStateProperty getter = idToState >> getter
 
         let rec processCondition id =
 
@@ -211,29 +212,31 @@ module Exploration =
                 | None -> processCondition depId
                 | Some _ -> ()
 
+            let depStates = List.map idToState depIds
+
             let edges =
                 Graph.edgesFromId graph id
                 |> List.filter (fun edge -> List.contains edge.To depIds)
 
             let depClosure =
-                depIds
-                |> List.map (idToStateProperty MergedState.DependencyClosure)
+                depStates
+                |> List.map MergedState.DependencyClosure
                 |> Utils.cons (Set.ofList depIds)
                 |> Set.unionMany
                 |> Set.add id
             
             let (currentAssert, finalVersions, finalHeap) =
                 let mergedVersions =
-                    depIds
-                    |> List.map (idToStateProperty MergedState.VariableVersions)
+                    depStates
+                    |> List.map MergedState.VariableVersions
                     |> List.fold mergeVersions Map.empty
                 let (mergedHeap, heapMergeConds) =
-                    match depIds with
-                    | [ nextId ] ->
-                        (idToStateProperty MergedState.Heap nextId, Seq.singleton <| BoolConst true)
+                    match depStates with
+                    | [ depState ] ->
+                        (depState.Heap, Seq.singleton <| BoolConst true)
                     | _ ->
-                        depIds
-                        |> List.map (idToStateProperty MergedState.Heap)
+                        depStates
+                        |> List.map MergedState.Heap
                         |> Seq.ofList
                         |> heapFn.Merge
                 let getJoinCond (edge:InnerEdge) heapMergeCond =
@@ -289,8 +292,8 @@ module Exploration =
                 let edgeAndNodeVariables =
                     Node.operations <| Graph.node graph id
                     |> List.fold addOperationVariables edgeVariables
-                depIds
-                |> List.map (idToStateProperty MergedState.VariableSorts)
+                depStates
+                |> List.map MergedState.VariableSorts
                 |> List.fold Utils.mergeMaps edgeAndNodeVariables
 
             let pathCond =
