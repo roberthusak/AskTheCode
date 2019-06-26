@@ -7,18 +7,11 @@ open AskTheCode.Heap
 module Exploration =
     open AskTheCode
 
-    // Definition of functions for heap handling and default value
-
-    type HeapFunctions<'heap> = { GetEmpty: unit -> 'heap; PerformOp: HeapOperation -> 'heap -> 'heap * Term option; Merge: seq<'heap> -> 'heap * seq<Term> }
-
-    let unsupportedHeapFn : HeapFunctions<unit> =
-        {
-            GetEmpty = id;
-            PerformOp = (fun _ _ -> failwith "Heap unsupported");
-            Merge = (fun (heaps) -> ((), Seq.replicate (Seq.length heaps) (BoolConst true)))
-        }
-
     // Definition of functions for path condition handling and the simplest implementation based on solver function
+
+    type ConditionModification =
+    | Assert of Assertion: Term
+    | Replace of Target: Term * Value: Term
 
     type ConditionFunctions<'condition> = { GetEmpty: unit -> 'condition; Assert: Term -> 'condition -> 'condition; Solve: 'condition -> SolveResult }
 
@@ -28,6 +21,17 @@ module Exploration =
         match term with
         | BoolConst true -> cond
         | _ -> condFn.Assert term cond
+
+    // Definition of functions for heap handling and default value
+
+    type HeapFunctions<'heap> = { GetEmpty: unit -> 'heap; PerformOp: HeapOperation -> 'heap -> 'heap * ConditionModification option; Merge: seq<'heap> -> 'heap * seq<ConditionModification> }
+
+    let unsupportedHeapFn : HeapFunctions<unit> =
+        {
+            GetEmpty = id;
+            PerformOp = (fun _ _ -> failwith "Heap unsupported");
+            Merge = (fun (heaps) -> ((), Seq.replicate (Seq.length heaps) (Assert <| BoolConst true)))
+        }
 
     // Variable version handling
 
@@ -74,6 +78,11 @@ module Exploration =
 
     // Processing operations into path constraints, version changes and heap updates
 
+    let getAssertFromCondUpdate condUpdate =
+        match condUpdate with
+        | (Assert cond) -> cond
+        | _ -> failwith "Not supported"
+
     let processOperation heapFn op versions heap =
         match op with
         | (Assign assign) ->
@@ -93,7 +102,7 @@ module Exploration =
                     Map.add varName (curVersion + 1) versions
                 | None ->
                     versions
-            (heapCond, versions, heap)
+            (Option.map getAssertFromCondUpdate heapCond, versions, heap)
 
     let processNode heapFn node versions heap =
         let folder op (cond, versions, heap) =
@@ -148,6 +157,16 @@ module Exploration =
         
     // Systematically merge program paths
 
+    let getRelevantExtender graph targetNodeId =
+        let nodeCount = List.length graph.Nodes
+        let relevant = Array.create nodeCount false
+
+        let markRelevant () (id:NodeId) =
+            relevant.[id.Value] <- true
+            ((), true)
+        Graph.dfs (Graph.backwardExtender graph) markRelevant () graph targetNodeId
+        Graph.forwardExtender graph >> List.filter (fun id -> relevant.[id.Value])
+
     type MergedState<'condition, 'heap> =
         {
             DependencyClosure: Set<NodeId>; Assertion: Term;
@@ -158,7 +177,7 @@ module Exploration =
         }
 
     module MergedState =
-        let empty condFn (heapFn:HeapFunctions<'heap>) =
+        let empty (condFn:ConditionFunctions<'cond>) (heapFn:HeapFunctions<'heap>) =
             {
                 DependencyClosure = Set.empty;
                 Assertion = BoolConst true;
@@ -180,16 +199,10 @@ module Exploration =
             let name = sprintf "node!!%d" <| NodeId.Value id
             Var { Name = name; Sort = Bool }
 
-        let nodeCount = List.length graph.Nodes
-        let relevant = Array.create nodeCount false
         let enterNode = Graph.enterNode graph
+        let nodeCount = List.length graph.Nodes
 
-        let markRelevant () (id:NodeId) =
-            relevant.[id.Value] <- true
-            ((), true)
-        Graph.dfs (Graph.backwardExtender graph) markRelevant () graph targetNode.Id
-
-        let relevantExtender = Graph.forwardExtender graph >> List.filter (fun id -> relevant.[id.Value])
+        let relevantExtender = getRelevantExtender graph targetNode.Id
 
         let states = Array.create<MergedState<'cond, 'heap> option> nodeCount None
         states.[targetNode.Id.Value] <- Some <| MergedState.empty condFn heapFn
@@ -239,6 +252,7 @@ module Exploration =
                         |> List.map MergedState.Heap
                         |> Seq.ofList
                         |> heapFn.Merge
+                        |> (fun (heap, condOp) -> (heap, Seq.map getAssertFromCondUpdate condOp))
                 let getJoinCond (edge:InnerEdge) heapMergeCond =
                     let nextVersions = idToStateProperty MergedState.VariableVersions edge.To
                     let nextVariables =

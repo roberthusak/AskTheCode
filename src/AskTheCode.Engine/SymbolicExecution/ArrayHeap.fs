@@ -62,10 +62,12 @@ let init r env =
 
 let performOp op heap =
 
+    let assertSome term = term |> Exploration.ConditionModification.Assert |> Some
+
     let performEqualOp cons trg ref1 ref2 =
         let (env, eval1) = init ref1 heap.Environment
         let (env', eval2) = init ref2 env
-        ({ heap with Environment = env' }, Some <| Eq (Var trg, cons (eval1.AsTerm, eval2.AsTerm)))
+        ({ heap with Environment = env' }, assertSome <| Eq (Var trg, cons (eval1.AsTerm, eval2.AsTerm)))
 
     let performWriteOp ins field valTerm env =
         let (env, insEval) = init ins env
@@ -75,7 +77,7 @@ let performOp op heap =
         let fieldVar = Var { Sort = fieldSort; Name = fieldVarName field.Name fieldVer }
         let fieldVarBefore = Var { Sort = fieldSort; Name = fieldVarName field.Name fieldVerBefore }
         let cond = And (Neq (insEval.AsTerm, nullEval.AsTerm), Eq (fieldVar, Store (fieldVarBefore, insEval.AsTerm, valTerm)))
-        ({ heap with Environment = env; FieldVersions = fieldVersions}, Some cond)
+        ({ heap with Environment = env; FieldVersions = fieldVersions}, assertSome cond)
 
     match op with
     | AssignEquals (trg, ref1, ref2) ->
@@ -86,7 +88,7 @@ let performOp op heap =
         match (Map.tryFind trg heap.Environment, Map.tryFind value heap.Environment) with
         | (Some trgEval, Some valEval) ->
             let env = Map.remove trg heap.Environment
-            ({ heap with Environment = env }, Some <| Eq (trgEval.AsTerm, valEval.AsTerm))
+            ({ heap with Environment = env }, assertSome <| Eq (trgEval.AsTerm, valEval.AsTerm))
         | (Some trgEval, None) ->
             let env =
                 heap.Environment
@@ -109,18 +111,18 @@ let performOp op heap =
                 let fieldVar = Var { Sort = fieldSort; Name = fieldVarName field.Name fieldVersion }
                 let cond = And (cond, Eq (trgEval.AsTerm, Select (fieldVar, insEval.AsTerm)))
                 // TODO: In case of ReferenceField, constrain all the fields of trg to be <= 0 if trg < 0
-                ({ heap with Environment = env; InitializedVars = inited; FieldVersions = fieldVersions }, Some cond)
+                ({ heap with Environment = env; InitializedVars = inited; FieldVersions = fieldVersions }, assertSome cond)
             | _ ->
                 failwithf "Invalid mapping of reference %A" trg
         | None ->
             // We are not interested in the returned reference, no need to reason about the dereference (apart from the instance not being null)
-            ({ heap with Environment = env }, Some cond)
+            ({ heap with Environment = env }, assertSome cond)
     | ReadVal (trg, ins, field) ->
         let (env, insEval) = init ins heap.Environment
         let (fieldVersions, fieldVersion) = fieldVersionInit (Field.Value field) heap.FieldVersions
         let fieldVar = Var { Sort = fieldSort; Name = fieldVarName field.Name fieldVersion }
         let cond = And (Neq (insEval.AsTerm, nullEval.AsTerm), Eq (Var trg, Select (fieldVar, insEval.AsTerm)))
-        ({ heap with Environment = env; FieldVersions = fieldVersions }, Some cond)
+        ({ heap with Environment = env; FieldVersions = fieldVersions }, assertSome cond)
     | WriteRef (ins, field, value) ->
         let (env, valEval) = init value heap.Environment
         performWriteOp ins (Field.Reference field) valEval.AsTerm env
@@ -154,7 +156,7 @@ let merge heaps =
             for heap in heaps do
                 let joinCond = Map.fold fieldFolder (BoolConst true) heap.FieldVersions
                 let joinCond = Map.fold envFolder joinCond heap.Environment
-                yield joinCond
+                yield Exploration.ConditionModification.Assert joinCond
         }
 
     ({ Environment = mergedEnv; InitializedVars = mergedInited; FieldVersions = mergedFieldVers; ObjectCounter = mergedObjCounter }, joinConds)
