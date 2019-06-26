@@ -377,3 +377,86 @@ module Exploration =
                 gatherResults (path :: res) cond
 
         gatherResults [] cond
+
+    // Gather weakest precondition at the enter node by simplifying and merging weakest preconditions along the way
+
+    type WeakestPreconditionFn<'wp> =
+        {
+            GetEmpty: unit -> 'wp;
+            Assert: Term -> 'wp -> 'wp;
+            Replace: Term -> Term -> 'wp -> 'wp;
+            Simplify: 'wp -> 'wp;
+            Merge: seq<'wp> -> 'wp;
+            Solve: 'wp -> SolveResult;
+        }
+
+    type WeakestPreconditonState<'wp, 'heap> =
+        {
+            WeakestPrecondition: 'wp;
+            Heap: 'heap;
+        }
+
+    module WeakestPreconditionState =
+        let empty (wpFn:WeakestPreconditionFn<'wp>) (heapFn:HeapFunctions<'heap>) =
+            {
+                WeakestPrecondition = wpFn.GetEmpty();
+                Heap = heapFn.GetEmpty();
+            }
+
+        let WeakestPrecondition state = state.WeakestPrecondition
+        let Heap state = state.Heap
+
+    let wpRun (wpFn:WeakestPreconditionFn<'wp>) (heapFn:HeapFunctions<'heap>) graph (targetNode:Node) =
+
+        let processOperation op heap =
+            match op with
+            | Assign assign ->
+                (heap, Some <| Replace (Var assign.Target, assign.Value))
+            | HeapOp heapOp ->
+                heapFn.PerformOp heapOp heap
+
+        let applyCondMod wp condMod =
+            match condMod with
+            | Assert cond -> wpFn.Assert cond wp
+            | Replace (trg, value) -> wpFn.Replace trg value wp
+
+        let processNode node wp heap =
+            let folder op (wp, heap) =
+                let (heap, condModOpt) = processOperation op heap
+                (Option.fold applyCondMod wp condModOpt, heap)
+            match node with
+            | Basic (_, ops) ->
+                List.foldBack folder ops (wp, heap)
+            | _ ->
+                (wp, heap)
+
+        let enterNode = Graph.enterNode graph
+        let nodeCount = List.length graph.Nodes
+
+        let relevantExtender = getRelevantExtender graph targetNode.Id
+
+        let states = Array.create<WeakestPreconditonState<'wp, 'heap> option> nodeCount None
+        states.[targetNode.Id.Value] <- Some <| WeakestPreconditionState.empty wpFn heapFn
+
+        let rec processCondition id =
+            let depIds = relevantExtender id
+            for depId in depIds do
+                match states.[depId.Value] with
+                | None -> processCondition depId
+                | Some _ -> ()
+
+            let depStates = List.map (NodeId.Value >> Array.get states >> Option.get) depIds
+            let (mergedHeap, condMods) = depStates |> Seq.map WeakestPreconditionState.Heap |> heapFn.Merge    // TODO: Handle condition modifications as well
+            let mergedWp =
+                condMods
+                |> Seq.map2 (WeakestPreconditionState.WeakestPrecondition >> applyCondMod) depStates // applyCondMod (Seq.map WeakestPreconditionState.WeakestPrecondition depStates)
+                |> Seq.map wpFn.Simplify
+                |> wpFn.Merge
+
+            states.[id.Value] <- Some { WeakestPrecondition = mergedWp; Heap = mergedHeap }
+        
+        processCondition enterNode.Id
+        let res = wpFn.Solve states.[enterNode.Id.Value].Value.WeakestPrecondition
+
+        // TODO: Resolve and return the path(s) to reach the target noe
+        res
