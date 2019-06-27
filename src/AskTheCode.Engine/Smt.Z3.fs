@@ -57,11 +57,14 @@ let runSolve ctx (solver:Z3.Solver) =
         Sat model
     | _ -> failwith "Invalid return type from Z3"
 
-let solve (ctx:Z3.Context) term =
-    let z3expr = termToZ3 ctx term
+let solveZ3 (ctx:Z3.Context) (z3expr:Z3.BoolExpr) =
     use solver = ctx.MkSolver()
-    solver.Assert(z3expr :?> Z3.BoolExpr)
+    solver.Assert(z3expr)
     runSolve ctx solver
+
+let solve (ctx:Z3.Context) term =
+    let z3expr = termToZ3 ctx term :?> Z3.BoolExpr
+    solveZ3 ctx z3expr
 
 type SolverState = { Solver: Z3.Solver; mutable Stack: Term list }
 
@@ -106,5 +109,36 @@ let stackCondFn (ctx:Z3.Context) :Exploration.ConditionFunctions<ConditionTrace>
     {
         GetEmpty = getEmpty;
         Assert = assertTerm;
+        Solve = solve;
+    }
+
+type MintermSet = Set<Z3.BoolExpr>
+
+let wpFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<MintermSet> =
+
+    let empty =
+        Set.singleton <| ctx.MkTrue()
+
+    let assertTerm term minterms =
+        let z3term = termToZ3 ctx term :?> Z3.BoolExpr
+        Set.map (fun minterm -> ctx.MkAnd(minterm, z3term)) minterms
+
+    let replace trg value minterms =
+        let z3trg = termToZ3 ctx trg
+        let z3val = termToZ3 ctx value
+        Set.map (fun (minterm:Z3.BoolExpr) -> minterm.Substitute(z3trg, z3val) :?> Z3.BoolExpr) minterms
+    
+    let simplify minterms =
+        Set.map (fun (minterm:Z3.BoolExpr) -> minterm.Simplify() :?> Z3.BoolExpr) minterms
+
+    let solve (minterms:MintermSet) =
+        solveZ3 ctx <| ctx.MkOr(minterms)
+
+    {
+        GetEmpty = (fun () -> empty);
+        Assert = assertTerm;
+        Replace = replace;
+        Simplify = simplify;
+        Merge = Set.unionMany;
         Solve = solve;
     }
