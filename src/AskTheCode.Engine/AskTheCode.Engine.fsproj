@@ -15,6 +15,7 @@
     <Compile Include="SymbolicExecution\Path.fs" />
     <Compile Include="SymbolicExecution\Exploration.fs" />
     <Compile Include="SymbolicExecution\ArrayHeap.fs" />
+    <Compile Include="SymbolicExecution\ArrayReplacementHeap.fs" />
     <Compile Include="Smt.Z3.fs" />
     <Compile Include="Cli\RoslynUtils.fs" />
     <Compile Include="Cli\Conversion.fs" />
