@@ -13,11 +13,6 @@ let main args =
     let sample = Samples.degreeCounting 1 3
     let cfg = sample.Cfg
 
-    printfn "%s" <| Graph.print cfg
-    cfg |> Msagl.convertCfg |> Msagl.displayGraph
-
-    let cfg = Graph.unwindLoops 3 cfg
-    printfn "%s" <| Graph.print cfg
     cfg |> Msagl.convertCfg |> Msagl.displayGraph
 
     let ctx = Z3.mkContext()
@@ -39,6 +34,7 @@ let main args =
     //let condFn = Z3.stackCondFn ctx
     let res = Exploration.run condFn ArrayHeap.functions cfg (Graph.node cfg sample.TargetNode)
     //let res = Exploration.mergeRun condFn ArrayHeap.functions cfg (Graph.node cfg sample.TargetNode)
+    //let res = Exploration.wpRun (Z3.wpFn ctx) ArrayReplacementHeap.functions cfg (Graph.node cfg sample.TargetNode)
 
     wholeWatch.Stop()
 

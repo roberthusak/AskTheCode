@@ -376,7 +376,10 @@ module Exploration =
                 let cond = condFn.Assert pathBlockingTerm cond
                 gatherResults (path :: res) cond
 
-        gatherResults [] cond
+        // TODO (when all aproaches feature it so that the comparison is fair): gatherResults [] cond
+        match condFn.Solve cond with
+        | Sat _ -> [ Path.Target targetNode ]   // Dummy found path
+        | _ -> []
 
     // Gather weakest precondition at the enter node by simplifying and merging weakest preconditions along the way
 
@@ -466,4 +469,6 @@ module Exploration =
         let res = wpFn.Solve states.[enterNode.Id.Value].Value.WeakestPrecondition
 
         // TODO: Resolve and return the path(s) to reach the target noe
-        res
+        match res with
+        | Sat _ -> [ Path.Target targetNode ]   // Dummy found path
+        | _ -> []
