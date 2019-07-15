@@ -197,7 +197,7 @@ module Graph =
         assert (stack = [])
         results
 
-    let unwindLoops graph count =
+    let unwindLoops count graph =
         assert (count > 0)
 
         let getStructure graph results (head, group) =

@@ -10,13 +10,13 @@ open System.Diagnostics
 [<EntryPoint>]
 let main args =
 
-    let sample = Samples.degreeCounting()
+    let sample = Samples.degreeCounting 1 3
     let cfg = sample.Cfg
 
     printfn "%s" <| Graph.print cfg
     cfg |> Msagl.convertCfg |> Msagl.displayGraph
 
-    let cfg = Graph.unwindLoops cfg 3
+    let cfg = Graph.unwindLoops 3 cfg
     printfn "%s" <| Graph.print cfg
     cfg |> Msagl.convertCfg |> Msagl.displayGraph
 

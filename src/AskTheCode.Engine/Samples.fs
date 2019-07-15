@@ -122,8 +122,9 @@ public class Node
     }
 }"
 
-let degreeCountingSource = @"
-using System;
+let degreeCountingSource indexGt =
+    sprintf 
+        @"using System;
 
 public class DegreeCounting
 {
@@ -163,7 +164,7 @@ public class DegreeCounting
         n = first;
         while (n != null)
         {
-            if (n.index > 1 && n.inDegree > n.index)
+            if (n.index > %d && n.inDegree > n.index)
             {
                 return 1;
             }
@@ -174,6 +175,7 @@ public class DegreeCounting
         return 0;
     }
 }"
+        indexGt
 
 let absoluteValueSource = @"
 public class C
@@ -237,6 +239,12 @@ let nodeSwap1 () = { Name = "Node swap #1"; Cfg = sourceToCfg swapNodeSource; Ta
 let nodeSwap2 () = { Name = "Node swap #2"; Cfg = sourceToCfg swapNodeSource2; TargetNode = NodeId 5; IsValid = true }
 let nodeMax1 () = { Name = "Node max #1"; Cfg = sourceToCfg nodeMaxSource; TargetNode = NodeId 6; IsValid = true }
 let nodeMax2 () = { Name = "Node max #2"; Cfg = sourceToCfg nodeMaxSource2; TargetNode = NodeId 4; IsValid = false }
-let degreeCounting () = { Name = "Degree counting"; Cfg = sourceToCfg degreeCountingSource; TargetNode = NodeId 13; IsValid = false }
+let degreeCounting indexGt loopUnwind =
+    {
+        Name = sprintf "Degree counting (%d, %d)" indexGt loopUnwind;
+        Cfg = degreeCountingSource indexGt |> sourceToCfg |> Graph.unwindLoops loopUnwind;
+        TargetNode = NodeId 13;
+        IsValid = indexGt + 2 > loopUnwind
+    }
 let absoluteValue1 () = { Name = "Absolute value #1"; Cfg = sourceToCfg absoluteValueSource; TargetNode = NodeId 5; IsValid = true }
 let absoluteValue2 () = { Name = "Absolute value #2"; Cfg = sourceToCfg absoluteValue2source; TargetNode = NodeId 4; IsValid = true }
