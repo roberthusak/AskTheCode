@@ -21,6 +21,7 @@
     <Compile Include="Cli\Conversion.fs" />
     <Compile Include="Cli\Cfg.fs" />
     <Compile Include="Gui\Msagl.fs" />
+    <Compile Include="Samples.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 
