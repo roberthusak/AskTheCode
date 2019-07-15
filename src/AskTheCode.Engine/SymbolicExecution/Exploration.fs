@@ -445,13 +445,20 @@ module Exploration =
                 | None -> processCondition depId
                 | Some _ -> ()
 
+            let node = Graph.node graph id
             let depStates = List.map (NodeId.Value >> Array.get states >> Option.get) depIds
-            let (mergedHeap, condMods) = depStates |> Seq.map WeakestPreconditionState.Heap |> heapFn.Merge    // TODO: Handle condition modifications as well
-            let mergedWp =
+            let edges =
+                Graph.edgesFromId graph id
+                |> List.filter (fun edge -> List.contains edge.To depIds)
+
+            let (mergedHeap, condMods) = depStates |> Seq.map WeakestPreconditionState.Heap |> heapFn.Merge
+            let (mergedWp, mergedHeap) =
                 condMods
-                |> Seq.map2 (WeakestPreconditionState.WeakestPrecondition >> applyCondMod) depStates // applyCondMod (Seq.map WeakestPreconditionState.WeakestPrecondition depStates)
+                |> Seq.map2 (WeakestPreconditionState.WeakestPrecondition >> applyCondMod) depStates
+                |> Seq.map2 (fun (edge:InnerEdge) wp -> applyCondMod wp <| Assert edge.Condition) edges
                 |> Seq.map wpFn.Simplify
                 |> wpFn.Merge
+                |> fun wp -> processNode node wp mergedHeap
 
             states.[id.Value] <- Some { WeakestPrecondition = mergedWp; Heap = mergedHeap }
         
