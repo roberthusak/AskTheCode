@@ -114,7 +114,7 @@ let stackCondFn (ctx:Z3.Context) :Exploration.ConditionFunctions<ConditionTrace>
 
 type MintermSet = Set<Z3.BoolExpr>
 
-let wpFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<MintermSet> =
+let wpSetFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<MintermSet> =
 
     let empty =
         Set.singleton <| ctx.MkTrue()
@@ -141,4 +141,19 @@ let wpFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<MintermSet> =
         Simplify = simplify;
         Merge = Set.unionMany;
         Solve = solve;
+    }
+
+let wpCombFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<MintermSet> =
+    let simplify (minterms:MintermSet) =
+        Set.singleton (ctx.MkOr(minterms).Simplify() :?> Z3.BoolExpr)
+    { wpSetFn ctx with Simplify = simplify }
+
+let wpTermFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<Z3.BoolExpr> =
+    {
+        GetEmpty = ctx.MkTrue;
+        Assert = (fun term wp -> ctx.MkAnd(wp, termToZ3 ctx term :?> Z3.BoolExpr));
+        Replace = (fun trg value wp -> wp.Substitute(termToZ3 ctx trg, termToZ3 ctx value) :?> Z3.BoolExpr);
+        Simplify = (fun wp -> wp.Simplify() :?> Z3.BoolExpr);
+        Merge = (fun wps -> ctx.MkOr(wps));
+        Solve = (fun wp -> solveZ3 ctx wp);
     }
