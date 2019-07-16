@@ -194,7 +194,7 @@ module Exploration =
         let VariableSorts state = state.VariableSorts
         let Heap state = state.Heap
 
-    let mergeRun (condFn:ConditionFunctions<'cond>) (heapFn:HeapFunctions<'heap>) graph (targetNode:Node) =
+    let mergeRun (condFn:ConditionFunctions<'cond>) (heapFn:HeapFunctions<'heap>) doSolve graph (targetNode:Node) =
         let getNodeCondVar id =
             let name = sprintf "node!!%d" <| NodeId.Value id
             Var { Name = name; Sort = Bool }
@@ -331,8 +331,8 @@ module Exploration =
                     // No dependencies are only from the target node, which is marked as completed by default
                     failwith "Unreachable"
 
-            states.[id.Value] <-
-                Some {
+            let state =
+                {
                     DependencyClosure = depClosure;
                     Assertion = currentAssert;
                     Condition = pathCond;
@@ -340,6 +340,13 @@ module Exploration =
                     VariableSorts = variableSorts;
                     Heap = finalHeap;
                 }
+
+            states.[id.Value] <-
+                if id <> enterNode.Id && doSolve id && SolveResult.isUnsat (condFn.Solve pathCond) then    // enterNode WP is solved below
+                    let falseAssert = Implies (getNodeCondVar id, BoolConst false)
+                    Some { state with Assertion = falseAssert; Condition = condFn.Assert falseAssert pathCond }
+                else
+                    Some state
 
         processCondition enterNode.Id
         let cond = condFn.Assert (getNodeCondVar enterNode.Id) states.[enterNode.Id.Value].Value.Condition
@@ -386,6 +393,7 @@ module Exploration =
     type WeakestPreconditionFn<'wp> =
         {
             GetEmpty: unit -> 'wp;
+            GetFalse: unit -> 'wp;
             Assert: Term -> 'wp -> 'wp;
             Replace: Term -> Term -> 'wp -> 'wp;
             Simplify: 'wp -> 'wp;
@@ -409,7 +417,7 @@ module Exploration =
         let WeakestPrecondition state = state.WeakestPrecondition
         let Heap state = state.Heap
 
-    let wpRun (wpFn:WeakestPreconditionFn<'wp>) (heapFn:HeapFunctions<'heap>) graph (targetNode:Node) =
+    let wpRun (wpFn:WeakestPreconditionFn<'wp>) (heapFn:HeapFunctions<'heap>) doSolve graph (targetNode:Node) =
 
         let processOperation op heap =
             match op with
@@ -463,12 +471,16 @@ module Exploration =
                 |> wpFn.Merge
                 |> fun wp -> processNode node wp mergedHeap
 
-            states.[id.Value] <- Some { WeakestPrecondition = mergedWp; Heap = mergedHeap }
+            states.[id.Value] <-
+                if node <> enterNode && doSolve id && SolveResult.isUnsat (wpFn.Solve mergedWp) then    // enterNode WP is solved below
+                    Some { WeakestPrecondition = wpFn.GetFalse(); Heap = mergedHeap }
+                else
+                    Some { WeakestPrecondition = mergedWp; Heap = mergedHeap }
         
         processCondition enterNode.Id
         let res = wpFn.Solve states.[enterNode.Id.Value].Value.WeakestPrecondition
 
-        // TODO: Resolve and return the path(s) to reach the target noe
+        // TODO: Resolve and return the path(s) to reach the target node
         match res with
         | Sat _ -> [ Path.Target targetNode ]   // Dummy found path
         | _ -> []

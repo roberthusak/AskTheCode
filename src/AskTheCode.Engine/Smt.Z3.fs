@@ -136,6 +136,7 @@ let wpSetFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<MintermSet> =
 
     {
         GetEmpty = (fun () -> empty);
+        GetFalse = (fun () -> Set.empty);
         Assert = assertTerm;
         Replace = replace;
         Simplify = simplify;
@@ -151,6 +152,7 @@ let wpCombFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<MintermSet> =
 let wpTermFn (ctx:Z3.Context) :Exploration.WeakestPreconditionFn<Z3.BoolExpr> =
     {
         GetEmpty = ctx.MkTrue;
+        GetFalse = ctx.MkFalse;
         Assert = (fun term wp -> ctx.MkAnd(wp, termToZ3 ctx term :?> Z3.BoolExpr));
         Replace = (fun trg value wp -> wp.Substitute(termToZ3 ctx trg, termToZ3 ctx value) :?> Z3.BoolExpr);
         Simplify = (fun wp -> wp.Simplify() :?> Z3.BoolExpr);
