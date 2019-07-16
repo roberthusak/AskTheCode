@@ -1,4 +1,4 @@
-﻿module AskTheCode.Samples
+﻿module AskTheCode.Evaluation.Samples
 
 open System.Linq
 open System.Collections.Generic

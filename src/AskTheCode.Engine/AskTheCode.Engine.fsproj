@@ -21,9 +21,9 @@
     <Compile Include="Cli\Conversion.fs" />
     <Compile Include="Cli\Cfg.fs" />
     <Compile Include="Gui\Msagl.fs" />
-    <Compile Include="Samples.fs" />
-    <Compile Include="Algorithms.fs" />
-    <Compile Include="Tests.fs" />
+    <Compile Include="Evaluation\Samples.fs" />
+    <Compile Include="Evaluation\Algorithms.fs" />
+    <Compile Include="Evaluation\Tests.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 

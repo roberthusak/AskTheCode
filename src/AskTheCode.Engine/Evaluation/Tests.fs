@@ -1,11 +1,11 @@
-﻿module AskTheCode.Tests
+﻿module AskTheCode.Evaluation.Tests
 
 open System.Diagnostics
 
 open AskTheCode.Cfg
 open AskTheCode.SymbolicExecution
-open AskTheCode.Samples
-open AskTheCode.Algorithms
+open AskTheCode.Evaluation.Samples
+open AskTheCode.Evaluation.Algorithms
 
 let efficiency sample algorithm =
     let trgNode = Graph.node sample.Cfg sample.TargetNode

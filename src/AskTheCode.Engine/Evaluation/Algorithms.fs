@@ -1,5 +1,6 @@
-﻿module AskTheCode.Algorithms
+﻿module AskTheCode.Evaluation.Algorithms
 
+open AskTheCode
 open AskTheCode.Cfg
 open AskTheCode.SymbolicExecution
 
