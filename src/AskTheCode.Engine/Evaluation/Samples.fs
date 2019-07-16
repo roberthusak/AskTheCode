@@ -233,18 +233,19 @@ let sourceToCfg (source:string) =
     let roslynCfg = ControlFlowGraph.Create(syntaxNode, compilation.GetSemanticModel(syntaxTree, true))
     Cfg.convertCfg roslynCfg
 
-type Sample = { Name: string; Cfg: Graph; TargetNode: NodeId; IsValid: bool }
+type Sample = { Name: string; Cfg: Graph; TargetNode: NodeId; IsValid: bool; LoopStarts: NodeId list }
 
-let nodeSwap1 () = { Name = "Node swap #1"; Cfg = sourceToCfg swapNodeSource; TargetNode = NodeId 4; IsValid = false }
-let nodeSwap2 () = { Name = "Node swap #2"; Cfg = sourceToCfg swapNodeSource2; TargetNode = NodeId 5; IsValid = true }
-let nodeMax1 () = { Name = "Node max #1"; Cfg = sourceToCfg nodeMaxSource; TargetNode = NodeId 6; IsValid = true }
-let nodeMax2 () = { Name = "Node max #2"; Cfg = sourceToCfg nodeMaxSource2; TargetNode = NodeId 4; IsValid = false }
+let nodeSwap1 () = { Name = "Node swap #1"; Cfg = sourceToCfg swapNodeSource; TargetNode = NodeId 4; IsValid = false; LoopStarts = [] }
+let nodeSwap2 () = { Name = "Node swap #2"; Cfg = sourceToCfg swapNodeSource2; TargetNode = NodeId 5; IsValid = true; LoopStarts = [] }
+let nodeMax1 () = { Name = "Node max #1"; Cfg = sourceToCfg nodeMaxSource; TargetNode = NodeId 6; IsValid = true; LoopStarts = [] }
+let nodeMax2 () = { Name = "Node max #2"; Cfg = sourceToCfg nodeMaxSource2; TargetNode = NodeId 4; IsValid = false; LoopStarts = [] }
 let degreeCounting indexGt loopUnwind =
     {
         Name = sprintf "Degree counting (%d, %d)" indexGt loopUnwind;
         Cfg = degreeCountingSource indexGt |> sourceToCfg |> Graph.unwindLoops loopUnwind;
         TargetNode = NodeId 13;
-        IsValid = indexGt + 2 > loopUnwind
+        IsValid = indexGt + 2 > loopUnwind;
+        LoopStarts = [ NodeId 4; NodeId 9 ]
     }
-let absoluteValue1 () = { Name = "Absolute value #1"; Cfg = sourceToCfg absoluteValueSource; TargetNode = NodeId 5; IsValid = true }
-let absoluteValue2 () = { Name = "Absolute value #2"; Cfg = sourceToCfg absoluteValue2source; TargetNode = NodeId 4; IsValid = true }
+let absoluteValue1 () = { Name = "Absolute value #1"; Cfg = sourceToCfg absoluteValueSource; TargetNode = NodeId 5; IsValid = true; LoopStarts = [] }
+let absoluteValue2 () = { Name = "Absolute value #2"; Cfg = sourceToCfg absoluteValue2source; TargetNode = NodeId 4; IsValid = true; LoopStarts = [] }

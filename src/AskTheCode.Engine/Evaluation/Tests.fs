@@ -7,11 +7,16 @@ open AskTheCode.SymbolicExecution
 open AskTheCode.Evaluation.Samples
 open AskTheCode.Evaluation.Algorithms
 
+let neverSolve _ = false
+let alwaysSolve _ = true
+let setSolve idSet id = Set.contains id idSet
+
 let efficiency sample algorithm =
     let trgNode = Graph.node sample.Cfg sample.TargetNode
+    let doSolve = setSolve <| Set.ofList sample.LoopStarts
 
     let wholeWatch = Stopwatch.StartNew()
-    let res = algorithm.Function sample.Cfg trgNode
+    let res = algorithm.Function doSolve sample.Cfg trgNode
     wholeWatch.Stop()
 
     match (res, sample.IsValid) with

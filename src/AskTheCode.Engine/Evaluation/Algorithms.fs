@@ -4,18 +4,16 @@ open AskTheCode
 open AskTheCode.Cfg
 open AskTheCode.SymbolicExecution
 
-type Algorithm = { Name: string; Function: Graph -> Node -> Path list }
-
-let neverSolve _ = false
+type Algorithm = { Name: string; Function: (NodeId -> bool) -> Graph -> Node -> Path list }
 
 let mergeFun =
     use ctx = Z3.mkContext()
-    let condFn = Exploration.solverCondFn <| Z3.solve ctx
-    Exploration.mergeRun condFn ArrayHeap.functions neverSolve
+    let condFn = Z3.stackCondFn ctx //Exploration.solverCondFn <| Z3.solve ctx
+    Exploration.mergeRun condFn ArrayHeap.functions
 
 let wpFun wpVariant =
     use ctx = Z3.mkContext()
-    Exploration.wpRun (wpVariant ctx) ArrayReplacementHeap.functions neverSolve
+    Exploration.wpRun (wpVariant ctx) ArrayReplacementHeap.functions
 
 let merge = { Name = "Merge"; Function = mergeFun }
 
