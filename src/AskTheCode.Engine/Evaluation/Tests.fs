@@ -35,6 +35,22 @@ let compare discipline printer samples algorithms =
 
 let printer (sample:Sample) algorithm ms = printfn "%s: %d ms" sample.Name ms
 
+let exportLatex discipline (samples:seq<Sample>) algorithms =
+    // Table header
+    printfn @"\hline"
+    algorithms
+    |> Seq.map (fun alg -> alg.Name)
+    |> String.concat " & "
+    |> printfn @"Test Case & %s \\"
+    printfn @"\hline"
+    // Rows
+    for sample in samples do
+        algorithms
+        |> Seq.map (discipline sample >> sprintf "%d")
+        |> String.concat " & "
+        |> printfn @"\textit{%s} & %s \\" sample.Name
+        printfn @"\hline"
+
 let compareDegreeCounting () =
     let samples = seq {
         for i in 1..4 do
