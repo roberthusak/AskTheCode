@@ -19,10 +19,14 @@ let efficiency sample algorithm =
     | ([], false) -> printfn "ERROR: The counterexample should have been found (%s, %s)." sample.Name algorithm.Name
     | _ -> ()
 
-    let repeats :int64 = 10L
+    let maxRepeats :int64 = 1000L
+    let maxTime :int64 = 60_000L
+
     let wholeWatch = Stopwatch.StartNew()
-    for i in 1L..repeats do
+    let mutable repeats :int64 = 0L
+    while repeats < maxRepeats && wholeWatch.ElapsedMilliseconds < maxTime do
         run() |> ignore
+        repeats <- repeats + 1L
     wholeWatch.Stop()
 
     wholeWatch.ElapsedMilliseconds / repeats
