@@ -7,13 +7,9 @@ open AskTheCode.SymbolicExecution
 open AskTheCode.Evaluation.Samples
 open AskTheCode.Evaluation.Algorithms
 
-let neverSolve _ = false
-let alwaysSolve _ = true
-let setSolve idSet id = Set.contains id idSet
-
 let efficiency sample algorithm =
     let trgNode = Graph.node sample.Cfg sample.TargetNode
-    let doSolve = setSolve <| Set.ofList sample.LoopStarts
+    let doSolve = algorithm.GetDoSolve sample
     let run () = algorithm.Function doSolve sample.Cfg trgNode
 
     let res = run()
@@ -45,5 +41,13 @@ let compareDegreeCounting () =
         for j in -1..1 do
         yield Samples.degreeCounting (i+j) (i+2) 
     }
-    let algorithms = [ Algorithms.merge; Algorithms.wpTerm; Algorithms.wpCombination; Algorithms.wpSet ]
+    let algorithms =
+        [
+            Algorithms.wpSet;
+            Algorithms.wpTerm;
+            Algorithms.wpCombination;
+            Algorithms.mergeNever;
+            Algorithms.mergeAlways;
+            Algorithms.mergeLoops
+        ]
     compare efficiency printer samples algorithms
