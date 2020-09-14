@@ -27,7 +27,7 @@ The most comprehensive documentation of the project are the theses and publicati
 - [Diploma thesis from Czech Technical University](https://github.com/roberthusak/AskTheCode/raw/master/docs/CTU_DiplomaThesis.pdf) - handling of the heap objects
 - [Paper from SCLIT 2018](https://github.com/roberthusak/AskTheCode/raw/master/docs/SCLIT_2018_paper.pdf) ([DOI](https://doi.org/10.1063/1.5114357)) - overview of the main backward symbolic execution algorithm
 - [Paper from InterAVT 2019](https://github.com/roberthusak/AskTheCode/raw/master/docs/InterAVT_2019_paper.pdf) ([DOI](https://doi.org/10.14279/tuj.eceasst.77.1109)) - high-level description of the tool and its recent GUI
-- [Paper from TAPAS 2019](https://github.com/roberthusak/AskTheCode/raw/master/docs/TAPAS_2019_paper.pdf) (the paper was accepted for publication in Springer LNCS postproceedings) - latest features implemented in the [F# branch](https://github.com/roberthusak/AskTheCode/tree/dev/fsharp)
+- [Paper from TAPAS 2019](https://github.com/roberthusak/AskTheCode/raw/master/docs/TAPAS_2019_paper.pdf) (The final authenticated version is available online at https://doi.org/10.1007/978-3-030-54997-8_33.) - latest features implemented in the [F# branch](https://github.com/roberthusak/AskTheCode/tree/dev/fsharp)
 
 ## Future Plans
 
