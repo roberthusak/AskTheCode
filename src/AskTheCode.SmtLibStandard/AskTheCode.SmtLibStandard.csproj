@@ -188,9 +188,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AskTheCode.SmtLibStandard.ruleset" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj">
