@@ -8,6 +8,7 @@
     </NuGetPackageImportStamp>
     <UseCodebase>true</UseCodebase>
     <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -26,7 +27,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AskTheCode.Vsix</RootNamespace>
     <AssemblyName>AskTheCode.Vsix</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
@@ -516,10 +517,6 @@
       <Name>AskTheCode.ViewModel</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
-    <ProjectReference Include="..\AskTheCode.Wpf\AskTheCode.Wpf.csproj">
-      <Project>{610dae9a-4124-4bb9-a75b-1a316b567ed6}</Project>
-      <Name>AskTheCode.Wpf</Name>
     </ProjectReference>
     <ProjectReference Include="..\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj">
       <Project>{05f6ebc4-04a9-482d-a442-70b251a7ff87}</Project>

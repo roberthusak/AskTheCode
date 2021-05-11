@@ -7,7 +7,7 @@
     <AssemblyName>AskTheCode.SmtLibStandard</AssemblyName>
     <ProjectGuid>{2A814F35-9B19-4487-9E85-C9D1A2FFC955}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
