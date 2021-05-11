@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Vsix", "src\AskTheCode.Vsix\AskTheCode.Vsix.csproj", "{B5DC00A9-F9A3-4577-8E59-195162DA79C4}"
 EndProject
@@ -65,6 +65,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.PathExploration.Tests", "test\AskTheCode.PathExploration.Tests\AskTheCode.PathExploration.Tests.csproj", "{2B5C14FF-9727-43C9-B953-CA50A2F6D344}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceEvaluation", "test\PerformanceEvaluation\PerformanceEvaluation.csproj", "{2FC7942B-CD88-489E-A80D-A3AB40FBC654}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E38DA8B8-349A-4CDB-A217-3B255F72DAD1}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
