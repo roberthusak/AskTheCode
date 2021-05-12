@@ -26,6 +26,7 @@ using AskTheCode.ControlFlowGraphs.Tests;
 using AskTheCode.PathExploration;
 using AskTheCode.SmtLibStandard;
 using AskTheCode.SmtLibStandard.Z3;
+using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -70,6 +71,8 @@ namespace ControlFlowGraphViewer
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            MSBuildLocator.RegisterDefaults();
+
             this.flowGraphConverter = new FlowToMsaglGraphConverter();
             this.csharpGraphConverter = new CSharpBuildToMsaglGraphConverter();
             this.heapGraphConverter = new HeapToMsaglGraphConverter();

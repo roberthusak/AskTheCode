@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using AskTheCode.ControlFlowGraphs.Cli;
 using AskTheCode.ControlFlowGraphs.Cli.Tests;
 using AskTheCode.ViewModel;
+using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
@@ -45,6 +46,8 @@ namespace StandaloneGui
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            MSBuildLocator.RegisterDefaults();
+
             Project project = null;
             var args = Environment.GetCommandLineArgs();
             if (args.Length >= 3 && File.Exists(args[1]))
