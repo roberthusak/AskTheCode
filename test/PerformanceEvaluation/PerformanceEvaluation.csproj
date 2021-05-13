@@ -1,116 +1,42 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2FC7942B-CD88-489E-A80D-A3AB40FBC654}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>PerformanceEvaluation</RootNamespace>
-    <AssemblyName>PerformanceEvaluation</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>net472</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
+    <AssemblyTitle>PerformanceEvaluation</AssemblyTitle>
+    <Product>PerformanceEvaluation</Product>
+    <Copyright>Copyright ©  2018</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResultRow.cs" />
+    <ProjectReference Include="..\..\src\AskTheCode.Common\AskTheCode.Common.csproj" />
+    <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj" />
+    <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj" />
+    <ProjectReference Include="..\..\src\AskTheCode.PathExploration\AskTheCode.PathExploration.csproj" />
+    <ProjectReference Include="..\..\src\AskTheCode.SmtLibStandard.Z3\AskTheCode.SmtLibStandard.Z3.csproj" />
+    <ProjectReference Include="..\..\src\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj" />
+    <ProjectReference Include="..\..\src\AskTheCode.ViewModel\AskTheCode.ViewModel.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Reactive.Core" Version="3.1.1" />
+    <PackageReference Include="System.Reflection.Metadata" Version="1.6.0" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\AskTheCode.Common\AskTheCode.Common.csproj">
-      <Project>{b2e80b5e-5d6d-4e5c-abd7-9bc39e0c5a7e}</Project>
-      <Name>AskTheCode.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj">
-      <Project>{a1a0861d-1d52-4f19-9782-96443d7f37f6}</Project>
-      <Name>AskTheCode.ControlFlowGraphs.Cli</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj">
-      <Project>{c39b0a93-11c6-4cf1-b0b8-31bd15d6a7f5}</Project>
-      <Name>AskTheCode.ControlFlowGraphs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AskTheCode.PathExploration\AskTheCode.PathExploration.csproj">
-      <Project>{3e566315-ad9d-4794-86f1-3353792e66ff}</Project>
-      <Name>AskTheCode.PathExploration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AskTheCode.SmtLibStandard.Z3\AskTheCode.SmtLibStandard.Z3.csproj">
-      <Project>{dccaf6a8-0f39-415b-b5e6-76658f314ee2}</Project>
-      <Name>AskTheCode.SmtLibStandard.Z3</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj">
-      <Project>{2a814f35-9b19-4487-9e85-c9d1a2ffc955}</Project>
-      <Name>AskTheCode.SmtLibStandard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AskTheCode.ViewModel\AskTheCode.ViewModel.csproj">
-      <Project>{d3713ce8-935f-4b88-a281-efe7ae07903b}</Project>
-      <Name>AskTheCode.ViewModel</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Locator">
-      <Version>1.4.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common">
-      <Version>3.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp">
-      <Version>3.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
-      <Version>3.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common">
-      <Version>3.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild">
-      <Version>3.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Collections.Immutable">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Reactive.Core">
-      <Version>3.1.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Reflection.Metadata">
-      <Version>1.6.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

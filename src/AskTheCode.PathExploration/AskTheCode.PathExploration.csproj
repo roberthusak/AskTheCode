@@ -1,156 +1,48 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3E566315-AD9D-4794-86F1-3353792E66FF}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AskTheCode.PathExploration</RootNamespace>
-    <AssemblyName>AskTheCode.PathExploration</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyTitle>AskTheCode.PathExploration</AssemblyTitle>
+    <Product>AskTheCode.PathExploration</Product>
+    <Copyright>Copyright ©  2016</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <CodeAnalysisRuleSet>AskTheCode.PathExploration.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AskTheCode.PathExploration.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AskTheCode.PathExploration.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Collections.Immutable.5.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Core, Version=3.0.3000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Core.3.1.1\lib\net46\System.Reactive.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Interfaces.3.1.1\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.3000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Linq.3.1.1\lib\net46\System.Reactive.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.3000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.PlatformServices.3.1.1\lib\net46\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Windows.Threading, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Windows.Threading.3.1.1\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="System.Reactive" Version="3.1.1" />
+    <PackageReference Include="System.Reactive.Core" Version="3.1.1" />
+    <PackageReference Include="System.Reactive.Interfaces" Version="3.1.1" />
+    <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
+    <PackageReference Include="System.Reactive.PlatformServices" Version="3.1.1" />
+    <PackageReference Include="System.Reactive.Windows.Threading" Version="3.1.1" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System.Windows" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BorderEntryPointRecognizer.cs" />
-    <Compile Include="CallSiteStack.cs" />
-    <Compile Include="ExecutionModel.cs" />
-    <Compile Include="ExecutionModelEventArgs.cs" />
-    <Compile Include="ExplorationContext.cs" />
-    <Compile Include="ExplorationOptions.cs" />
-    <Compile Include="ExplorationResult.cs" />
-    <Compile Include="ExplorationState.cs" />
-    <Compile Include="Explorer.cs" />
-    <Compile Include="Heap\ArrayTheorySymbolicHeap.cs" />
-    <Compile Include="Heap\ArrayTheorySymbolicHeap.State.cs" />
-    <Compile Include="Heap\IHeapModelRecorder.cs" />
-    <Compile Include="Heap\ISymbolicHeap.cs" />
-    <Compile Include="Heap\ISymbolicHeapContext.cs" />
-    <Compile Include="Heuristics\EntryPointSmtHeuristic.cs" />
-    <Compile Include="Heuristics\FixedIntervalSmtHeuristic.cs" />
-    <Compile Include="Heuristics\GreedyExplorationHeuristic.cs" />
-    <Compile Include="Heuristics\IExplorationHeuristic.cs" />
-    <Compile Include="Heuristics\IHeuristicFactory.cs" />
-    <Compile Include="Heuristics\ISmtHeuristic.cs" />
-    <Compile Include="Heuristics\LimitedExplorationHeuristic.cs" />
-    <Compile Include="Heuristics\MultipleIngoingSmtHeuristic.cs" />
-    <Compile Include="Heuristics\NeverMergeHeuristic.cs" />
-    <Compile Include="Heuristics\SimpleHeuristicFactory.cs" />
-    <Compile Include="Heuristics\SimpleSmtHeuristic.cs" />
-    <Compile Include="Heuristics\IHeuristic.cs" />
-    <Compile Include="Heuristics\IMergingHeuristic.cs" />
-    <Compile Include="Heuristics\IPartitioningHeuristic.cs" />
-    <Compile Include="IEntryPointRecognizer.cs" />
-    <Compile Include="NodeInterpretations.cs" />
-    <Compile Include="Path.cs" />
-    <Compile Include="PathConditionHandler.cs" />
-    <Compile Include="PathCounterExample.cs" />
-    <Compile Include="PathExtensions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SmtContextHandler.cs" />
-    <Compile Include="SmtSolverHandler.cs" />
-    <Compile Include="PathVariableVersionHandler.cs" />
-    <Compile Include="StartingNodeInfo.cs" />
-    <Compile Include="VersionedVariable.cs" />
+    <ProjectReference Include="..\AskTheCode.Common\AskTheCode.Common.csproj" />
+    <ProjectReference Include="..\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj" />
+    <ProjectReference Include="..\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj" />
+    <ProjectReference Include="..\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AskTheCode.Common\AskTheCode.Common.csproj">
-      <Project>{b2e80b5e-5d6d-4e5c-abd7-9bc39e0c5a7e}</Project>
-      <Name>AskTheCode.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj">
-      <Project>{c39b0a93-11c6-4cf1-b0b8-31bd15d6a7f5}</Project>
-      <Name>AskTheCode.ControlFlowGraphs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AskTheCode.SmtLibStandard\AskTheCode.SmtLibStandard.csproj">
-      <Project>{2a814f35-9b19-4487-9e85-c9d1a2ffc955}</Project>
-      <Name>AskTheCode.SmtLibStandard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj">
-      <Project>{05f6ebc4-04a9-482d-a442-70b251a7ff87}</Project>
-      <Name>CodeContractsRevival.Runtime</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
     <None Include="AskTheCode.PathExploration.ruleset" />
-    <Compile Include="Heap\ArrayTheorySymbolicHeap.Model.cs" />
-    <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.2\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
-    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.2\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
