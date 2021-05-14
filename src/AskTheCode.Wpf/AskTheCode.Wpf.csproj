@@ -24,13 +24,6 @@
     <Reference Include="Microsoft.Msagl.WpfGraphControl">
       <HintPath>..\..\lib\Microsoft.Msagl.WpfGraphControl.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AskTheCode.ViewModel\AskTheCode.ViewModel.csproj" />

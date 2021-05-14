@@ -15,11 +15,6 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\AskTheCode.Common\AskTheCode.Common.csproj" />
     <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs.Cli\AskTheCode.ControlFlowGraphs.Cli.csproj" />
     <ProjectReference Include="..\..\src\AskTheCode.ControlFlowGraphs\AskTheCode.ControlFlowGraphs.csproj" />
@@ -30,13 +25,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.0.0" />
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-    <PackageReference Include="System.Reactive.Core" Version="3.1.1" />
-    <PackageReference Include="System.Reflection.Metadata" Version="1.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.9.0" />
   </ItemGroup>
 </Project>

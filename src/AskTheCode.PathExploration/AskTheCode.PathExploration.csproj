@@ -14,27 +14,10 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="System.Reactive" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.Core" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.Interfaces" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.PlatformServices" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.Windows.Threading" Version="3.1.1" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Windows" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="WindowsBase" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AskTheCode.Common\AskTheCode.Common.csproj" />
