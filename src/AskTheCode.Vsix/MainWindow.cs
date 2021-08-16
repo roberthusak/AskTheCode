@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using AskTheCode.Core;
 using AskTheCode.ViewModel;
 using AskTheCode.Vsix.Highlighting;
+using CodeContractsRevival.Runtime;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Shell;

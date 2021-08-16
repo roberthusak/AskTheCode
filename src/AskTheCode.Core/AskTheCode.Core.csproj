@@ -99,6 +99,12 @@
   <ItemGroup>
     <None Include="AskTheCode.Core.ruleset" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj">
+      <Project>{6a66e21d-4819-4187-8a6f-9818a8ad57cc}</Project>
+      <Name>CodeContractsRevival.Runtime</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

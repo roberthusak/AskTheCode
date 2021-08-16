@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31605.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Vsix", "src\AskTheCode.Vsix\AskTheCode.Vsix.csproj", "{B5DC00A9-F9A3-4577-8E59-195162DA79C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.Core", "src\AskTheCode.Core\AskTheCode.Core.csproj", "{9DDF533A-C7FA-454E-9EFD-39305819CE04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskTheCode.ViewModel", "src\AskTheCode.ViewModel\AskTheCode.ViewModel.csproj", "{D3713CE8-935F-4B88-A281-EFE7AE07903B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeContractsRevival.Runtime", "src\CodeContractsRevival.Runtime\CodeContractsRevival.Runtime.csproj", "{6A66E21D-4819-4187-8A6F-9818A8AD57CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,8 +29,15 @@ Global
 		{D3713CE8-935F-4B88-A281-EFE7AE07903B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3713CE8-935F-4B88-A281-EFE7AE07903B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3713CE8-935F-4B88-A281-EFE7AE07903B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A66E21D-4819-4187-8A6F-9818A8AD57CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A66E21D-4819-4187-8A6F-9818A8AD57CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A66E21D-4819-4187-8A6F-9818A8AD57CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A66E21D-4819-4187-8A6F-9818A8AD57CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BBE2E39E-C068-4649-98AA-0B34EECB72E6}
 	EndGlobalSection
 EndGlobal

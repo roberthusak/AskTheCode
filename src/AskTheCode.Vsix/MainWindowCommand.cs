@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Design;
-using System.Diagnostics.Contracts;
 using System.Globalization;
+using CodeContractsRevival.Runtime;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
